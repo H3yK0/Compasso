@@ -2,10 +2,13 @@ package app.compasso
 
 import android.content.Context
 import android.os.Looper
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
@@ -15,6 +18,7 @@ import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performScrollToNode
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
+import app.compasso.audio.Track
 import app.compasso.data.ActiveSession
 import app.compasso.data.Store
 import app.compasso.model.Outcome
@@ -151,13 +155,14 @@ class FlowTest {
             compose.onNodeWithText("Continuar").performClick()
             tick(300)
 
-            // encerrar marcando "Não aguentei"
-            compose.onNodeWithContentDescription("Encerrar sessão").performClick()
-            tick(600)
-            compose.onNodeWithText("Encerrar a sessão?").assertExists()
+            // "Não aguentei" direto na tela da sessão: encerra ali mesmo
             compose.onNodeWithText("Não aguentei").performClick()
             tick(800)
             compose.onNodeWithText("Não foi dessa vez").assertExists()
+            // o resumo já sugere uma leitura sobre o que fazer depois do tropeço
+            compose.onNodeWithText("Uma leitura para agora").assertExists()
+            compose.onNodeWithText("Atenção plena contra recaídas").assertExists() // tropeço recente + cedo na sessão
+            compose.onNodeWithText("Por causa de um “não aguentei” recente", substring = true).assertExists()
             compose.onNodeWithText("Salvo no histórico").assertExists()
             compose.onNodeWithText("Próxima liberação").assertExists() // "não aguentei" conta como liberação
             compose.onNodeWithText("+3").assertExists() // honestidade vale pontos (sessão em foco)
@@ -412,10 +417,15 @@ class FlowTest {
             tick(500)
             startEasy()
             tick(5_000)
+            // pelo "Encerrar sessão" também dá para marcar (o botão da sessão fica atrás do aviso)
             compose.onNodeWithContentDescription("Encerrar sessão").performClick()
             tick(600)
-            compose.onNodeWithText("Não aguentei").performClick()
+            compose.onNodeWithText("Encerrar a sessão?").assertExists()
+            // atrás do aviso ficam o botão da sessão e o da tela de pausa; o aviso é o último
+            compose.onAllNodesWithText("Não aguentei").assertCountEquals(3)
+            compose.onAllNodesWithText("Não aguentei").onLast().performClick()
             tick(800)
+            compose.onNodeWithText("Não foi dessa vez").assertExists()
             assertTrue(Store(app).loadHistory().isEmpty())
             assertEquals(Outcome.LOST_CONTROL, Store(app).loadLapses().single().outcome)
         }
@@ -435,6 +445,82 @@ class FlowTest {
             compose.onNodeWithContentDescription("Seus tempos de treino aparecem aqui").performClick()
             tick(300)
             compose.onNodeWithText("Tempo de controle").assertExists()
+        }
+    }
+
+    /** Sugestão de leitura ao abrir: só depois de um dia de uso, abre o artigo e respeita o intervalo de 20 h. */
+    @Test
+    fun readingNudgeOnOpen() {
+        val app = readyApp()
+        // primeira abertura: não sugere nada, só começa a contar
+        ActivityScenario.launch(MainActivity::class.java).use {
+            tick(1_500)
+            assertToday()
+            compose.onNodeWithText("Uma leitura para você").assertDoesNotExist()
+        }
+        assertTrue(Store(app).nudgeAt > 0L)
+
+        // um dia depois: aparece a sugestão (sem histórico, a primeira leitura)
+        Store(app).nudgeAt = System.currentTimeMillis() - 21 * 3_600_000L
+        ActivityScenario.launch(MainActivity::class.java).use {
+            tick(1_500)
+            compose.onNodeWithText("Uma leitura para você").assertExists()
+            assertEquals(listOf("ondas"), Store(app).nudged) // o título também aparece no "Para você" da tela Hoje
+            compose.onRoot().captureRoboImage("build/shots/flow_11_sugestao.png")
+            compose.onNodeWithText("Ler agora").performClick()
+            tick(800)
+            compose.onNodeWithText("Mente e hábitos").assertExists()
+            compose.onNodeWithText("Uma leitura para você").assertDoesNotExist()
+        }
+        assertEquals(listOf("ondas"), Store(app).nudged)
+        assertTrue(Store(app).nudgeAt > System.currentTimeMillis() - 60_000)
+
+        // aberto de novo logo depois: nada
+        ActivityScenario.launch(MainActivity::class.java).use {
+            tick(1_500)
+            compose.onNodeWithText("Uma leitura para você").assertDoesNotExist()
+        }
+
+        // "Depois" fecha e fica na tela principal; desligada nos ajustes, não aparece
+        Store(app).nudgeAt = System.currentTimeMillis() - 21 * 3_600_000L
+        ActivityScenario.launch(MainActivity::class.java).use {
+            tick(1_500)
+            compose.onNodeWithText("Uma leitura para você").assertExists()
+            compose.onNodeWithText("Depois").performClick()
+            tick(800)
+            compose.onNodeWithText("Uma leitura para você").assertDoesNotExist()
+            assertToday()
+        }
+        Store(app).nudgeAt = System.currentTimeMillis() - 21 * 3_600_000L
+        Store(app).saveSettings(Store(app).loadSettings().copy(readingNudges = false))
+        ActivityScenario.launch(MainActivity::class.java).use {
+            tick(1_500)
+            compose.onNodeWithText("Uma leitura para você").assertDoesNotExist()
+        }
+    }
+
+    /** Leitor: o fone na barra liga e desliga a música de fundo, e a escolha fica salva. */
+    @Test
+    fun readerMusicToggle() {
+        val app = readyApp()
+        ActivityScenario.launch(MainActivity::class.java).use {
+            tick(500)
+            compose.onNodeWithText("Ler").performClick()
+            tick(800)
+            compose.onNodeWithText("Ler com música").assertExists()
+            compose.onNodeWithText("A vontade vem em ondas").performClick()
+            tick(800)
+            compose.onNodeWithContentDescription("Ligar música na leitura").performClick()
+            tick(500)
+            assertTrue(Store(app).loadSettings().readingMusic)
+            compose.onNodeWithContentDescription("Trocar trilha").performClick()
+            tick(500)
+            compose.onNodeWithText("Piano calmo", substring = true).performClick()
+            tick(500)
+            assertEquals(Track.PIANO, Store(app).loadSettings().readingTrack)
+            compose.onNodeWithContentDescription("Desligar música na leitura").performClick()
+            tick(500)
+            assertFalse(Store(app).loadSettings().readingMusic)
         }
     }
 }

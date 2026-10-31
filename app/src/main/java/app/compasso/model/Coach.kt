@@ -99,30 +99,34 @@ object Coach {
         zone: ZoneId = ZoneId.systemDefault(),
     ): List<Signal> {
         val out = mutableListOf<Signal>()
-        val recent = history.filter { it.startedAt > now - 28 * DAY && it.startedAt <= now }
-        if (lapses.any { it.outcome == Outcome.LOST_CONTROL && it.at > now - 7 * DAY && it.at <= now }) out += Signal.RECENT_LAPSE
+        // registros "no futuro" (relógio do aparelho mexido) não contam
+        val past = history.filter { it.startedAt <= now }
+        val pastLapses = lapses.filter { it.at <= now }
+        val pastPoints = points.filter { it.at <= now }
+        val recent = past.filter { it.startedAt > now - 28 * DAY }
+        if (pastLapses.any { it.outcome == Outcome.LOST_CONTROL && it.at > now - 7 * DAY }) out += Signal.RECENT_LAPSE
 
-        val last5 = history.sortedByDescending { it.startedAt }.take(5)
+        val last5 = past.sortedByDescending { it.startedAt }.take(5)
         val earlyLoss = last5.any { it.outcome == Outcome.LOST_CONTROL && it.roundsDone <= maxOf(1, it.roundsTotal / 3) }
         val completed = last5.filter { it.outcome == Outcome.RELEASED || it.outcome == Outcome.DENIED }
         val manyClose = completed.size >= 2 && completed.map { it.closeCount }.average() >= 3.0
         if (earlyLoss || manyClose) out += Signal.FAST_LOSS
 
-        if (lapses.any { it.outcome == Outcome.INTERRUPTED && it.at > now - 14 * DAY && it.at <= now }) out += Signal.INTERRUPTED
+        if (pastLapses.any { it.outcome == Outcome.INTERRUPTED && it.at > now - 14 * DAY }) out += Signal.INTERRUPTED
 
-        val moments = recent.map { it.startedAt } + lapses.filter { it.at > now - 28 * DAY && it.at <= now }.map { it.at }
+        // a sessão que virou lapso já está no histórico: conta o momento uma vez só
+        val moments = (recent.map { it.startedAt } + pastLapses.filter { it.at > now - 28 * DAY }.map { it.at }).toSet()
         val nightly = moments.count { isNight(it, zone) }
         if (moments.size >= 3 && nightly * 2 >= moments.size) out += Signal.NIGHT
 
-        if (history.count { it.startedAt > now - 7 * DAY && it.startedAt <= now } >= Pacing.BUSY_WEEK_SESSIONS) out += Signal.BUSY
+        if (past.count { it.startedAt > now - 7 * DAY } >= Pacing.BUSY_WEEK_SESSIONS) out += Signal.BUSY
 
-        val started = history.isNotEmpty() || points.isNotEmpty()
-        val activeDays = points.filter { it.at > now - 14 * DAY && it.at <= now }.map { Progress.day(it.at, zone) }.toSet().size
-        val firstUse = (history.map { it.startedAt } + points.map { it.at }).minOrNull()
-        if (started && firstUse != null && firstUse < now - 7 * DAY && activeDays <= 4) out += Signal.LOW_CONSISTENCY
+        val activeDays = pastPoints.filter { it.at > now - 14 * DAY }.map { Progress.day(it.at, zone) }.toSet().size
+        val firstUse = (past.map { it.startedAt } + pastPoints.map { it.at }).minOrNull()
+        if (firstUse != null && firstUse < now - 7 * DAY && activeDays <= 4) out += Signal.LOW_CONSISTENCY
 
-        if (Progress.streak(points, lapses, now, zone) >= 7) out += Signal.GOOD_STREAK
-        if (history.isEmpty() && lapses.isEmpty()) out += Signal.NEW
+        if (Progress.streak(pastPoints, pastLapses, now, zone) >= 7) out += Signal.GOOD_STREAK
+        if (past.isEmpty() && pastLapses.isEmpty()) out += Signal.NEW
         return out
     }
 

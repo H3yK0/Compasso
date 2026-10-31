@@ -452,7 +452,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (_locked.value || engine != null || _screen.value != Screen.Root) return
         if (store.seenVersion < CURRENT_VERSION || _articles.value.isEmpty()) return
         val now = clock.now()
-        if (store.nudgeAt > 0L && now - store.nudgeAt < NUDGE_EVERY_MS) return
+        // primeira vez: só começa a contar (a primeira sugestão vem depois de um dia de uso, não na estreia)
+        if (store.nudgeAt <= 0L) {
+            store.nudgeAt = now
+            return
+        }
+        if (now - store.nudgeAt < NUDGE_EVERY_MS) return
         val advice = Coach.reading(currentSignals(now), articleInfos(), _read.value, skip = store.nudged.toSet()) ?: return
         store.nudgeAt = now
         store.nudged = store.nudged + advice.articleId

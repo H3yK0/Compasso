@@ -1,8 +1,11 @@
 package app.compasso
 
 import app.compasso.audio.AmbientSynth
+import app.compasso.audio.Track
+import app.compasso.audio.soundscapeFor
 import app.compasso.model.ArticleParser
 import app.compasso.model.Block
+import app.compasso.model.Coach
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -76,6 +79,7 @@ class ContentTest {
             assertEquals(lang, pt.map { it.order }, other.map { it.order })
             assertEquals(lang, pt.map { it.theme }, other.map { it.theme })
             assertEquals(lang, pt.map { it.minutes }, other.map { it.minutes })
+            assertEquals(lang, pt.map { it.tags }, other.map { it.tags })
             pt.zip(other).forEach { (a, b) ->
                 assertEquals("$lang ${a.id}: títulos de seção", a.blocks.count { it is Block.Heading }, b.blocks.count { it is Block.Heading })
                 assertTrue("$lang ${a.id}: fontes", b.sources.size >= a.sources.size - 1 && b.sources.isNotEmpty())
@@ -91,7 +95,7 @@ class ContentTest {
 
     private fun checkArticles(language: String) {
         val articles = articles(language)
-        assertEquals(9, articles.size)
+        assertEquals(29, articles.size)
         assertEquals(articles.size, articles.map { it.id }.toSet().size)
         assertEquals(articles.size, articles.map { it.order }.toSet().size)
         articles.forEach { a ->
@@ -100,6 +104,8 @@ class ContentTest {
             assertTrue(a.id, a.sources.isNotEmpty())
             assertTrue(a.id, a.sources.all { it.text.length > 10 })
             assertTrue(a.id, a.blocks.count { it is Block.Heading } >= 2)
+            // as recomendações dependem das tags: todas conhecidas, de 1 a 4 por artigo
+            assertTrue("$language ${a.id}: tags ${a.tags}", a.tags.size in 1..4 && Coach.VOCABULARY.containsAll(a.tags))
             // tempo de leitura coerente: 120 a 260 palavras por minuto
             val wpm = ArticleParser.wordCount(a) / a.minutes.toFloat()
             assertTrue("$language ${a.id}: $wpm palavras/min", wpm in 120f..260f)
@@ -148,5 +154,39 @@ class ContentTest {
         rms(0f, 6)
         assertTrue(synth.masterLevel < 0.01)
         assertNotNull(synth)
+    }
+
+    /** As 6 trilhas: sem NaN, sem estourar, audíveis, respondem à respiração e somem no fade. */
+    @Test
+    fun everyTrackIsAudibleBoundedAndBreathes() {
+        val sr = 22_050
+        val frames = sr / 10
+        val buf = FloatArray(frames * 2)
+        Track.entries.forEach { track ->
+            val scape = soundscapeFor(track, sr, seed = 5)
+            fun rms(breath: Float, seconds: Int): Double {
+                var sum = 0.0
+                var n = 0
+                repeat(seconds * 10) {
+                    scape.render(buf, frames, breath)
+                    buf.forEach { x ->
+                        assertTrue("$track: NaN", x.isFinite())
+                        assertTrue("$track: $x", abs(x) <= 1f)
+                        sum += x * x
+                        n++
+                    }
+                }
+                return sqrt(sum / n)
+            }
+            rms(0f, 3)
+            val exhale = rms(0f, 8)
+            val inhale = rms(1f, 8)
+            assertTrue("$track: silêncio ($exhale)", exhale > 0.005)
+            assertTrue("$track: alto demais ($inhale)", inhale < 0.5)
+            assertTrue("$track: não segue a respiração ($inhale vs $exhale)", inhale > exhale * 1.1)
+            scape.masterTarget = 0.0
+            rms(0f, 6)
+            assertTrue("$track: não desliga", scape.masterLevel < 0.01)
+        }
     }
 }

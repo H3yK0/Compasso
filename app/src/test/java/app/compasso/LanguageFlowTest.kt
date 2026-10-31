@@ -111,11 +111,11 @@ class LanguageFlowTest {
             tick(1_000)
             compose.onNodeWithText("Inhala").assertExists()
             compose.onRoot().captureRoboImage("build/shots/lang_es_1_pausa.png")
-            compose.onNodeWithContentDescription("Terminar sesión").performClick()
-            tick(600)
+            // botón directo de la sesión
             compose.onNodeWithText("No aguanté").performClick()
             tick(800)
             compose.onNodeWithText("Esta vez no").assertExists()
+            compose.onNodeWithText("Una lectura para ahora", substring = true).assertExists()
             compose.onRoot().captureRoboImage("build/shots/lang_es_2_resumen.png")
         }
     }
