@@ -1,0 +1,4 @@
+<resources>
+    <!-- Céu noturno do Compasso: fundo da janela e da abertura (sem clarão branco). -->
+    <color name="window_bg">#070B1D</color>
+</resources>
