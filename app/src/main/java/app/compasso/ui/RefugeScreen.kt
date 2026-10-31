@@ -1,5 +1,6 @@
 package app.compasso.ui
 
+import app.compasso.model.Kegel
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -83,6 +84,9 @@ fun RefugeScreen(
     onQuickGame: () -> Unit,
     onRead: () -> Unit,
     bottomPadding: Dp = 0.dp,
+    kegelToday: Int = 0,
+    onKegel: () -> Unit = {},
+    onKegelStart: () -> Unit = onKegel,
 ) {
     val c = Ios.colors
     val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -120,6 +124,31 @@ fun RefugeScreen(
                         Text(stringResource(R.string.refuge_breathe_sub), style = Ios.type.subhead, color = Color.White.copy(alpha = 0.85f))
                     }
                     RoundPlayButton(Icons.Rounded.PlayArrow, stringResource(R.string.refuge_breathe_now), onBreathe, size = 60.dp, color = Color.White.copy(alpha = 0.95f))
+                }
+            }
+
+            // Kegel: logo abaixo do Respirar
+            Spacer(Modifier.height(12.dp))
+            CoverCard(
+                colors = CoverColors.kegel,
+                motif = Motif.ORBITS,
+                height = 150.dp,
+                onClick = onKegel,
+                modifier = Modifier.padding(horizontal = 16.dp),
+                seed = 5,
+            ) {
+                Row(Modifier.fillMaxSize().padding(20.dp), verticalAlignment = Alignment.Bottom) {
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(R.string.kegel_title), style = Ios.type.title1, color = Color.White)
+                        Text(
+                            stringResource(R.string.refuge_kegel_sub, kegelToday, Kegel.PER_DAY),
+                            style = Ios.type.subhead,
+                            color = Color.White.copy(alpha = 0.85f),
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        KegelDots(kegelToday, color = Color.White, size = 9.dp)
+                    }
+                    RoundPlayButton(Icons.Rounded.PlayArrow, stringResource(R.string.refuge_kegel_now), onKegelStart, size = 54.dp, color = Color.White.copy(alpha = 0.95f))
                 }
             }
 

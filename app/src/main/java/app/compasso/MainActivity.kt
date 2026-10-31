@@ -1,5 +1,7 @@
 package app.compasso
 
+import app.compasso.notify.Reminders
+import android.content.Intent
 import android.app.ActivityManager
 import android.content.Context
 import android.content.res.Configuration
@@ -45,6 +47,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         applyPrivacy(vm.settings.value.discreet, vm.hasPin.value)
         vm.setLanguage(AppLocale.language(resources.configuration.locales[0]))
+        if (savedInstanceState == null) handleOpen(intent)
         setContent {
             val settings by vm.settings.collectAsStateWithLifecycle()
             val hasPin by vm.hasPin.collectAsStateWithLifecycle()
@@ -66,6 +69,19 @@ class MainActivity : ComponentActivity() {
             }
         }
         vm.onMultiWindow(isInMultiWindowMode)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleOpen(intent)
+    }
+
+    /** Lembrete tocado: abre o Kegel (com senha, depois de destravar). */
+    private fun handleOpen(intent: Intent?) {
+        if (intent?.getStringExtra(Reminders.EXTRA_OPEN) == Reminders.OPEN_KEGEL) {
+            intent.removeExtra(Reminders.EXTRA_OPEN)
+            vm.openFromReminder()
+        }
     }
 
     /**
