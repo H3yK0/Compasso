@@ -1,8 +1,5 @@
-AntiFeatures:
-  NSFW:
-    en-US: Sexual health app with stop-start (control) training. No images or explicit content.
-    pt-BR: App de saúde sexual com treino de controle (para e recomeça). Sem imagens nem conteúdo explícito.
 Categories:
+  - Habit Tracker
   - Sports & Health
 License: AGPL-3.0-only
 AuthorName: H3yK0

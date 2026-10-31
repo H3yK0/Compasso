@@ -11,6 +11,14 @@ revisado por voluntários. Tudo do lado do código já está pronto neste reposi
   internet além do Google Maven e do Maven Central, sem bibliotecas fechadas, sem o bloco de dependências
   do Google e sem o commit do git dentro do APK.
 
+## Verificações já feitas (com o fdroidserver 2.4.5)
+
+- `fdroid lint` e `fdroid rewritemeta`: a receita passa e já está no formato canônico.
+- `fdroid build` a partir da tag `v0.0.0.1` (commit `0ef5962`): o scanner do F-Droid não encontrou nenhum
+  problema (só removeu o `gradle-wrapper.jar`, como faz com todo app) e o build terminou com sucesso.
+- O APK gerado pelo F-Droid é **idêntico, byte a byte**, ao `assembleRelease` local: o build é reproduzível.
+- `fdroid checkupdates`: encontra a versão 0.0.0.1 (código 1) pela tag.
+
 ## Passo a passo
 
 1. Crie uma conta em https://gitlab.com (pode usar o mesmo apelido, H3yK0).
@@ -26,9 +34,9 @@ revisado por voluntários. Tudo do lado do código já está pronto neste reposi
 
 ## Pontos que os revisores podem comentar
 
-- **NSFW**: deixei marcado de propósito. O app não tem imagens nem conteúdo explícito, mas o treino é de
-  saúde sexual; marcar logo evita idas e vindas. Se os revisores acharem desnecessário, é só remover.
-- **Categoria**: `Sports & Health`. O F-Droid revisou as categorias recentemente; se pedirem outra, troque.
+- **Categorias**: `Habit Tracker` e `Sports & Health` (da lista atual do F-Droid). Se pedirem outra, troque.
+- **Aviso de conteúdo**: a lista atual de anti-features do F-Droid não tem mais "NSFW" (o `fdroid lint` recusa),
+  por isso a receita não marca nenhuma. O app não tem anúncios, rastreamento, internet nem partes fechadas.
 - **Reproducible builds** (opcional): se um dia você quiser publicar o seu próprio APK assinado e ter o
   F-Droid distribuindo exatamente o mesmo arquivo, dá para adicionar `Binaries:` e `AllowedAPKSigningKeys:`
   na receita. Para a primeira versão não precisa.
