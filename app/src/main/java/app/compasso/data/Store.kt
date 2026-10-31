@@ -7,6 +7,9 @@ import app.compasso.model.Accent
 import app.compasso.model.Codename
 import app.compasso.model.Codenames
 import app.compasso.model.FocusSettings
+import app.compasso.model.KegelEntry
+import app.compasso.model.KegelHold
+import app.compasso.model.KegelLength
 import app.compasso.model.Lapse
 import app.compasso.model.Level
 import app.compasso.model.Levels
@@ -67,7 +70,21 @@ data class Settings(
     val readingTrack: Track = Track.RAIN,
     /** Sugestão de leitura ao abrir o app, de tempos em tempos. */
     val readingNudges: Boolean = true,
+    /** Kegel: quanto segurar cada contração e quanto dura o treino. */
+    val kegelHold: KegelHold = KegelHold.H3,
+    val kegelLength: KegelLength = KegelLength.M2,
+    /** Vibrar em cada troca (contrai/solta): dá para treinar de olhos fechados. */
+    val kegelVibrate: Boolean = true,
+    /** Sugestão "Hora do Kegel" ao abrir o app. */
+    val kegelNudges: Boolean = true,
+    /** Lembretes no celular (notificação discreta), desligados até a pessoa ligar. */
+    val kegelReminders: Boolean = false,
+    /** Horários dos lembretes, em minutos desde a meia-noite. */
+    val kegelTimes: List<Int> = DEFAULT_KEGEL_TIMES,
 )
+
+/** 9h, 14h e 20h. */
+val DEFAULT_KEGEL_TIMES = listOf(9 * 60, 14 * 60, 20 * 60)
 
 /** Sessão em andamento gravada no celular: se o app for fechado no meio, ela não some sem registro. */
 data class ActiveSession(
@@ -114,8 +131,19 @@ class Store(context: Context) {
             readingMusic = prefs.getBoolean("readingMusic", d.readingMusic),
             readingTrack = track("readingTrack", d.readingTrack),
             readingNudges = prefs.getBoolean("readingNudges", d.readingNudges),
+            kegelHold = prefs.getInt("kegelHold", d.kegelHold.seconds).let { KegelHold.ofSeconds(it) } ?: d.kegelHold,
+            kegelLength = prefs.getInt("kegelLength", d.kegelLength.minutes).let { KegelLength.ofMinutes(it) } ?: d.kegelLength,
+            kegelVibrate = prefs.getBoolean("kegelVibrate", d.kegelVibrate),
+            kegelNudges = prefs.getBoolean("kegelNudges", d.kegelNudges),
+            kegelReminders = prefs.getBoolean("kegelReminders", d.kegelReminders),
+            kegelTimes = parseTimes(prefs.getString("kegelTimes", null)) ?: d.kegelTimes,
         )
     }
+
+    /** "540,840,1200" → horários válidos (0 a 1439), sem repetir, em ordem; nulo se não houver nenhum. */
+    private fun parseTimes(raw: String?): List<Int>? =
+        raw?.split(',')?.mapNotNull { it.trim().toIntOrNull() }?.filter { it in 0 until 24 * 60 }?.distinct()?.sorted()?.take(3)
+            ?.takeIf { it.isNotEmpty() }
 
     fun saveSettings(s: Settings) {
         prefs.edit()
@@ -140,6 +168,12 @@ class Store(context: Context) {
             .putBoolean("readingMusic", s.readingMusic)
             .putString("readingTrack", s.readingTrack.name)
             .putBoolean("readingNudges", s.readingNudges)
+            .putInt("kegelHold", s.kegelHold.seconds)
+            .putInt("kegelLength", s.kegelLength.minutes)
+            .putBoolean("kegelVibrate", s.kegelVibrate)
+            .putBoolean("kegelNudges", s.kegelNudges)
+            .putBoolean("kegelReminders", s.kegelReminders)
+            .putString("kegelTimes", s.kegelTimes.joinToString(","))
             .apply()
     }
 
@@ -234,7 +268,7 @@ class Store(context: Context) {
     }
 
     fun clearHistory() {
-        prefs.edit().remove("history").apply()
+        prefs.edit().remove("history").remove("kegel_log").apply()
     }
 
     // ---------- Controle inteligente ----------
@@ -306,6 +340,38 @@ class Store(context: Context) {
         list.forEach { arr.put(JSONObject().put("a", it.at).put("k", it.kind.name).put("p", it.points)) }
         prefs.edit().putString("points", arr.toString()).apply()
     }
+
+    // ---------- Kegel ----------
+
+    /** Treinos de Kegel completos (só data, permanência, tempo e repetições). */
+    fun loadKegelLog(): List<KegelEntry> {
+        val raw = prefs.getString("kegel_log", null) ?: return emptyList()
+        return runCatching {
+            val arr = JSONArray(raw)
+            (0 until arr.length()).mapNotNull { i ->
+                runCatching {
+                    val o = arr.getJSONObject(i)
+                    KegelEntry(o.getLong("a"), o.getInt("h"), o.getInt("m"), o.getInt("r"))
+                }.getOrNull()
+            }
+        }.getOrDefault(emptyList())
+    }
+
+    fun saveKegelLog(list: List<KegelEntry>) {
+        val arr = JSONArray()
+        list.forEach { arr.put(JSONObject().put("a", it.at).put("h", it.holdSec).put("m", it.minutes).put("r", it.reps)) }
+        prefs.edit().putString("kegel_log", arr.toString()).apply()
+    }
+
+    /** Permanência mais longa já liberada (não volta a travar, mesmo apagando o histórico). */
+    var kegelUnlocked: KegelHold
+        get() = KegelHold.ofSeconds(prefs.getInt("kegel_unlocked", KegelHold.H3.seconds)) ?: KegelHold.H3
+        set(v) = prefs.edit().putInt("kegel_unlocked", v.seconds).apply()
+
+    /** Quando a sugestão "Hora do Kegel" apareceu pela última vez. */
+    var kegelNudgeAt: Long
+        get() = prefs.getLong("kegel_nudge_at", 0L)
+        set(v) = prefs.edit().putLong("kegel_nudge_at", v).apply()
 
     // ---------- Lapsos ("não aguentei" e sessões interrompidas) ----------
 

@@ -48,15 +48,17 @@ class ProgressTest {
     // ---------- Pontos do dia ----------
 
     @Test
-    fun dailyCapLimitsToFortyAndGivesPartialPoints() {
-        val full = listOf(p(0, PointKind.CHECKIN), p(0, PointKind.CONTROL_SESSION)) + List(3) { p(0, PointKind.BREATHE) }
-        assertEquals(40, Progress.pointsToday(full, now, zone))
+    fun dailyCapLimitsToFiftyAndGivesPartialPoints() {
+        val full = listOf(p(0, PointKind.CHECKIN), p(0, PointKind.CONTROL_SESSION)) + List(3) { p(0, PointKind.BREATHE) } +
+            List(2) { p(0, PointKind.KEGEL) }
+        assertEquals(50, Progress.pointsToday(full, now, zone))
         val capped = Progress.award(full, PointKind.GAME, now, zone)
         assertNull(capped.entry)
         assertEquals(NoPoints.DAILY_CAP, capped.reason)
 
-        val almost = listOf(p(0, PointKind.CHECKIN), p(0, PointKind.CONTROL_SESSION), p(0, PointKind.BREATHE), p(0, PointKind.ARTICLE), p(0, PointKind.GAME))
-        assertEquals(38, Progress.pointsToday(almost, now, zone))
+        val almost = listOf(p(0, PointKind.CHECKIN), p(0, PointKind.CONTROL_SESSION), p(0, PointKind.BREATHE), p(0, PointKind.ARTICLE), p(0, PointKind.GAME)) +
+            List(2) { p(0, PointKind.KEGEL) }
+        assertEquals(48, Progress.pointsToday(almost, now, zone))
         assertEquals(2, Progress.award(almost, PointKind.GAME, now, zone).entry?.points)
     }
 
