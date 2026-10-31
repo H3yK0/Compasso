@@ -7,7 +7,9 @@ import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -21,7 +23,10 @@ import androidx.test.core.app.ActivityScenario
 import app.compasso.audio.Track
 import app.compasso.data.ActiveSession
 import app.compasso.data.Store
+import app.compasso.model.KegelEntry
+import app.compasso.model.KegelHold
 import app.compasso.model.Outcome
+import app.compasso.model.PointEntry
 import app.compasso.model.PointKind
 import app.compasso.model.SessionRecord
 import app.compasso.ui.AppViewModel
@@ -521,6 +526,105 @@ class FlowTest {
             compose.onNodeWithContentDescription("Desligar música na leitura").performClick()
             tick(500)
             assertFalse(Store(app).loadSettings().readingMusic)
+        }
+    }
+
+    /** Refúgio → Kegel → treino completo: registra, dá pontos, libera a próxima permanência e liga os lembretes. */
+    @Test
+    fun kegelFromRefugeToTheEnd() {
+        val app = readyApp()
+        shadowOf(app as android.app.Application).grantPermissions(android.Manifest.permission.POST_NOTIFICATIONS)
+        val now = System.currentTimeMillis()
+        // 4 treinos completos de 3 s em dias anteriores: o 5º libera os 5 s
+        Store(app).saveKegelLog((1..4).map { KegelEntry(now - it * 24 * 3_600_000L, 3, 2, 15) })
+        ActivityScenario.launch(MainActivity::class.java).use {
+            tick(500)
+            compose.onNodeWithText("Refúgio").performClick()
+            tick(800)
+            compose.onNodeWithText("Fortaleça o músculo do controle · 0 de 3 hoje").performClick()
+            tick(800)
+            compose.onNodeWithText("Permanência: quanto segurar").assertExists()
+            compose.onNodeWithText("Mais 1 treino de 3 s libera 5 s").assertExists()
+            compose.onRoot().captureRoboImage("build/shots/flow_12_kegel.png")
+            // o treino anda por quadros: com o relógio automático do teste ele terminaria na hora
+            compose.mainClock.autoAdvance = false
+            compose.onNodeWithText("Começar Kegel").performScrollTo().performClick()
+            tick(800)
+            compose.onNodeWithText("Prepare-se").assertExists()
+            tick(5_000)
+            compose.onNodeWithText("Contraia").assertExists()
+            compose.onNodeWithText("Contração 1 de 15").assertExists()
+            compose.onRoot().captureRoboImage("build/shots/flow_13_kegel_contrai.png")
+            tick(3_000)
+            compose.onNodeWithText("Solte").assertExists()
+            // o resto (3 s/2 min = 115 s) anda com o relógio automático, sem desenhar quadro a quadro
+            compose.mainClock.autoAdvance = true
+            compose.waitForIdle()
+            tick(500)
+            compose.onNodeWithText("Feito!").assertExists()
+            compose.onNodeWithText("+5 pontos").assertExists()
+            compose.onNodeWithText("Nível novo liberado: segurar 5 s").assertExists()
+            compose.onRoot().captureRoboImage("build/shots/flow_14_kegel_feito.png")
+
+            val store = Store(app)
+            assertEquals(5, store.loadKegelLog().size)
+            assertEquals(KegelHold.H5, store.kegelUnlocked)
+            assertEquals(PointKind.KEGEL, store.loadPoints().single().kind)
+
+            // volta para a tela do Kegel, com o dia atualizado
+            compose.onNodeWithText("Voltar").performClick()
+            tick(3_000)
+            compose.onNodeWithText("1 de 3 treinos").assertExists()
+
+            // lembretes no celular (com a permissão já dada)
+            scrollTo("Lembretes no celular")
+            compose.onNodeWithText("Lembretes no celular").performClick()
+            tick(500)
+            assertTrue(Store(app).loadSettings().kegelReminders)
+            scrollTo("Lembrete 1")
+            compose.onNodeWithText("Lembrete 1").assertExists()
+            compose.onAllNodesWithContentDescription("15 minutos depois").onFirst().performClick()
+            tick(300)
+            assertEquals(9 * 60 + 15, Store(app).loadSettings().kegelTimes.first())
+        }
+    }
+
+    /** Os 3 do dia feitos: o cartão da tela Hoje avisa, e um 4º treino não rende pontos. */
+    @Test
+    fun fourthKegelOfTheDayEarnsNoPoints() {
+        val app = readyApp()
+        val now = System.currentTimeMillis()
+        val store = Store(app)
+        store.saveKegelLog(List(3) { KegelEntry(now - (it + 1) * 60_000L, 3, 2, 15) })
+        store.savePoints(List(3) { PointEntry(now - (it + 1) * 60_000L, PointKind.KEGEL, 5) })
+        ActivityScenario.launch(MainActivity::class.java).use {
+            tick(500)
+            compose.onNodeWithText("Os 3 de hoje estão feitos. Descansar também é treino.").performScrollTo().performClick()
+            tick(800)
+            compose.onNodeWithText("Começar Kegel").performScrollTo().performClick()
+            tick(800)
+            compose.onNodeWithText("Feito!").assertExists()
+            compose.onNodeWithText("Os 3 de hoje estão feitos. Descansar também é treino: até amanhã.").assertExists()
+            assertEquals(4, Store(app).loadKegelLog().size)
+            assertEquals(3, Store(app).loadPoints().size)
+        }
+    }
+
+    /** "Hora do Kegel" ao abrir o app (de dia, faltando treino, depois de 3 h): "Fazer agora" começa o treino. */
+    @Test
+    fun kegelNudgeOnOpen() {
+        val hour = java.time.LocalTime.now().hour
+        org.junit.Assume.assumeTrue("a sugestão só aparece de dia", hour in 8..21)
+        val app = readyApp()
+        Store(app).kegelNudgeAt = System.currentTimeMillis() - 4 * 3_600_000L
+        ActivityScenario.launch(MainActivity::class.java).use {
+            tick(1_500)
+            compose.onNodeWithText("Hora do Kegel").assertExists()
+            compose.onRoot().captureRoboImage("build/shots/flow_15_hora_do_kegel.png")
+            compose.mainClock.autoAdvance = false
+            compose.onNodeWithText("Fazer agora").performClick()
+            tick(800)
+            compose.onNodeWithText("Prepare-se").assertExists()
         }
     }
 }

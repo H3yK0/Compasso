@@ -6,17 +6,20 @@ Entrenamiento basado en el método de "parar y volver a empezar", usado desde ha
 <b>Control inteligente</b>
 Reglas fijas y visibles espacian las liberaciones (intervalo de 12 a 72 h, sin prisa entre sesiones, una semana llena duplica el intervalo). Aflojar las reglas solo vale 24 h después. El modo foco fija la pantalla durante la sesión.
 
+<b>Kegel: el músculo del control</b>
+Entrenamiento del suelo pélvico, que participa en la erección y la eyaculación, hasta 3 veces al día. Niveles de permanencia (sostener 3, 5, 8 o 10 s, liberados de a poco) y de tiempo (2, 4 o 6 min), vibración en cada cambio y, si quieres, recordatorios discretos en el teléfono: la notificación solo dice "Compasso".
+
 <b>Un refugio para cuando las ganas aprietan</b>
 Respirar 2 minutos con 6 músicas tranquilas generadas en vivo por la app (Marea, Lluvia suave, Bosque nocturno, Cuencos, Cielo estrellado y Piano en calma) y tres juegos originales para ocupar la cabeza hasta que pase la ola.
 
-<b>29 lecturas con fuentes</b>
-Artículos cortos sobre las ganas, los hábitos, la recaída, la vergüenza, el estrés, el sueño, el alcohol, la ansiedad de desempeño, las relaciones y cuándo buscar ayuda, cada uno con sus referencias científicas al final. Se pueden leer con música tranquila de fondo.
+<b>30 lecturas con fuentes</b>
+Artículos cortos sobre las ganas, los hábitos, el Kegel, la recaída, la vergüenza, el estrés, el sueño, el alcohol, la ansiedad de desempeño, las relaciones y cuándo buscar ayuda, cada uno con sus referencias científicas al final. Se pueden leer con música tranquila de fondo.
 
 <b>Recomendaciones que explican el porqué</b>
 Un algoritmo local mira tus sesiones y tropiezos y sugiere el nivel de entrenamiento y la próxima lectura, siempre mostrando el motivo. De vez en cuando, al abrir la app, sugiere una lectura (se puede desactivar).
 
 <b>Progreso por constancia</b>
-Los puntos premian aparecer, no "hacer más": check-in diario, respirar, leer y entrenar dentro de las reglas. Niveles de Principiante a Invicto, el cielo del mes, gráficos y récords.
+Los puntos premian aparecer, no "hacer más": check-in diario, Kegel, respirar, leer y entrenar dentro de las reglas. Niveles de Principiante a Invicto, el cielo del mes, gráficos y récords.
 
 <b>Privacidad</b>
 Nombre en clave anónimo, PIN opcional (con una espera que crece tras los errores), sin copia en la nube ni transferencia entre dispositivos, historial que se puede desactivar o borrar.

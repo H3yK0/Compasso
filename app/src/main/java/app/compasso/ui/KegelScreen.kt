@@ -559,15 +559,15 @@ fun KegelRunContent(
                 contentAlignment = Alignment.Center,
             ) {
                 Astro(progress = state.progress, tint = tint, size = 260.dp, level = 0.35f + 0.65f * squeeze)
-                if (!done && state.phase != KegelPhase.PREPARE) {
-                    Text(
-                        "${((state.remainingMs + 999) / 1000)}",
-                        style = Ios.type.display.copy(fontSize = 56.sp, lineHeight = 60.sp, fontFeatureSettings = "tnum"),
-                        color = Color.White,
-                    )
-                }
             }
-            Spacer(Modifier.height(18.dp))
+            // contagem da fase (embaixo do astro, para não brigar com a rosa dos ventos)
+            Text(
+                if (!done && state.phase != KegelPhase.PREPARE) "${(state.remainingMs + 999) / 1000}" else " ",
+                style = Ios.type.title1.copy(fontFeatureSettings = "tnum", fontWeight = FontWeight.SemiBold),
+                color = tint,
+                modifier = Modifier.padding(top = 6.dp),
+            )
+            Spacer(Modifier.height(4.dp))
             AnimatedContent(
                 targetState = stringResource(
                     when (state.phase) {

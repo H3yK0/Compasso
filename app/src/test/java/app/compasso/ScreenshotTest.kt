@@ -26,6 +26,9 @@ import app.compasso.model.Coach
 import app.compasso.model.Codename
 import app.compasso.model.FocusSettings
 import app.compasso.model.GateRule
+import app.compasso.model.KegelHold
+import app.compasso.model.KegelLength
+import app.compasso.model.KegelPlan
 import app.compasso.model.Lapse
 import app.compasso.model.Levels
 import app.compasso.model.Outcome
@@ -47,6 +50,12 @@ import app.compasso.ui.FocusPrepScreen
 import app.compasso.ui.GuideScreen
 import app.compasso.ui.HistoryScreen
 import app.compasso.ui.IntroScreen
+import app.compasso.ui.KegelCardUi
+import app.compasso.ui.KegelNudge
+import app.compasso.ui.KegelResult
+import app.compasso.ui.KegelRunContent
+import app.compasso.ui.KegelScreen
+import app.compasso.ui.KegelUi
 import app.compasso.ui.NoPointsReason
 import app.compasso.ui.OptionsActions
 import app.compasso.ui.OptionsScreen
@@ -220,6 +229,7 @@ class ScreenshotTest {
                 levelAdvice = Coach.level(records, records.mapNotNull { Lapse.from(it) }, now),
                 readingTitle = readingAdvice?.let { a -> articles.first { it.id == a.articleId }.title },
                 readingReason = readingAdvice?.reason,
+                kegel = KegelCardUi(1, KegelHold.H5, KegelLength.M4),
             )
         }
     }
@@ -342,7 +352,7 @@ class ScreenshotTest {
 
     @Test fun refuge() = shot("18_refugio") {
         WithTabs(Tab.REFUGE) {
-            RefugeScreen(mapOf(GameKind.BLOCKS to 1240, GameKind.ECHO to 9), Tip.REFUGE, {}, {}, {}, {}, {}, bottomPadding = FloatingTabBarSpace)
+            RefugeScreen(mapOf(GameKind.BLOCKS to 1240, GameKind.ECHO to 9), Tip.REFUGE, {}, {}, {}, {}, {}, bottomPadding = FloatingTabBarSpace, kegelToday = 1)
         }
     }
 
@@ -404,6 +414,50 @@ class ScreenshotTest {
 
     @Test fun about() = shot("24_licenca_creditos", dark = false) { AboutScreen({}, {}) }
 
+    // ---------- Kegel ----------
+
+    private val kegelUi = KegelUi(
+        today = 1,
+        week = listOf(2, 3, 0, 1, 3, 2, 1),
+        hold = KegelHold.H5,
+        length = KegelLength.M2,
+        unlocked = KegelHold.H5,
+        toUnlock = 2,
+        vibrate = true,
+        nudges = true,
+        reminders = true,
+        times = listOf(9 * 60, 14 * 60, 20 * 60),
+    )
+
+    @Test fun kegel() = shot("30_kegel") {
+        KegelScreen(kegelUi, Tip.KEGEL, {}, {}, {}, {}, {}, {}, {}, {}, { _, _ -> }, {})
+    }
+
+    @Test
+    @Config(qualifiers = "pt-rBR-w392dp-h2600dp-xhdpi")
+    fun kegelFull() = shot("30b_kegel_inteiro") {
+        KegelScreen(kegelUi, null, {}, {}, {}, {}, {}, {}, {}, {}, { _, _ -> }, {})
+    }
+
+    /** Treino no meio de uma contração (5 s, repetição 3). */
+    @Composable
+    private fun kegelRun() {
+        val plan = KegelPlan(KegelHold.H5, KegelLength.M2)
+        KegelRunContent(plan.at(5_000L + 2 * 10_000L + 1_800L), plan, true, Track.FOREST, null, {}, {}, {})
+    }
+
+    @Test fun kegelSqueeze() = shot("31_kegel_contrai") { kegelRun() }
+
+    @Test fun kegelDone() = shot("32_kegel_feito") {
+        val plan = KegelPlan(KegelHold.H3, KegelLength.M2)
+        KegelRunContent(plan.at(plan.totalMs), plan, true, Track.TIDE, KegelResult(5, null, KegelHold.H5, 3), {}, {}, {})
+    }
+
+    @Test fun kegelNudge() = shot("33_hora_do_kegel") {
+        WithTabs(Tab.TRAIN) { home(open)() }
+        KegelNudge(visible = true, today = 1, minutes = 2, onGo = {}, onLater = {})
+    }
+
     /** Ícone do app como aparece na tela inicial (máscara redonda). */
     @Test
     fun icon() {
@@ -441,11 +495,13 @@ class ScreenshotTest {
 
     private fun storeSession(lang: String) = storeShot(lang, 2) { SessionScreen(ui(PhaseType.GO), true, {}, {}, {}, {}) }
 
-    private fun storeBreathe(lang: String) = storeShot(lang, 3) {
+    private fun storeKegel(lang: String) = storeShot(lang, 3) { kegelRun() }
+
+    private fun storeBreathe(lang: String) = storeShot(lang, 4) {
         BreatheContent(elapsedMs = 33_000, durationMs = 120_000, onClose = {}, onMore = {})
     }
 
-    private fun storeRead(lang: String) = storeShot(lang, 4, dark = false) {
+    private fun storeRead(lang: String) = storeShot(lang, 5, dark = false) {
         WithTabs(Tab.READ) {
             ReadScreen(
                 articlesIn(lang.take(2)), setOf("gatilhos"), null, {}, {}, bottomPadding = FloatingTabBarSpace,
@@ -454,11 +510,11 @@ class ScreenshotTest {
         }
     }
 
-    private fun storeReader(lang: String) = storeShot(lang, 5) {
+    private fun storeReader(lang: String) = storeShot(lang, 6) {
         ReaderScreen(articlesIn(lang.take(2)).first { it.id == "habitos" }, isRead = false, onRead = {}, onBack = {})
     }
 
-    private fun storeProgress(lang: String) = storeShot(lang, 6, accent = Accent.GOLD) {
+    private fun storeProgress(lang: String) = storeShot(lang, 7, accent = Accent.GOLD) {
         WithTabs(Tab.PROGRESS) {
             ProgressScreen(level, codename, points, records, null, {}, {}, {}, {}, bottomPadding = FloatingTabBarSpace, now = now)
         }
@@ -470,6 +526,7 @@ class ScreenshotTest {
     @Test fun storePt4() = storeRead("pt-BR")
     @Test fun storePt5() = storeReader("pt-BR")
     @Test fun storePt6() = storeProgress("pt-BR")
+    @Test fun storePt7() = storeKegel("pt-BR")
 
     @Test @Config(qualifiers = EN) fun storeEn1() = storeToday("en-US")
     @Test @Config(qualifiers = EN) fun storeEn2() = storeSession("en-US")
@@ -477,6 +534,7 @@ class ScreenshotTest {
     @Test @Config(qualifiers = EN) fun storeEn4() = storeRead("en-US")
     @Test @Config(qualifiers = EN) fun storeEn5() = storeReader("en-US")
     @Test @Config(qualifiers = EN) fun storeEn6() = storeProgress("en-US")
+    @Test @Config(qualifiers = EN) fun storeEn7() = storeKegel("en-US")
 
     @Test @Config(qualifiers = ES) fun storeEs1() = storeToday("es-ES")
     @Test @Config(qualifiers = ES) fun storeEs2() = storeSession("es-ES")
@@ -484,6 +542,7 @@ class ScreenshotTest {
     @Test @Config(qualifiers = ES) fun storeEs4() = storeRead("es-ES")
     @Test @Config(qualifiers = ES) fun storeEs5() = storeReader("es-ES")
     @Test @Config(qualifiers = ES) fun storeEs6() = storeProgress("es-ES")
+    @Test @Config(qualifiers = ES) fun storeEs7() = storeKegel("es-ES")
 
     companion object {
         const val EN = "en-rUS-w392dp-h850dp-xhdpi"

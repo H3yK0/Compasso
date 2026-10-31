@@ -2,19 +2,20 @@
 
 Um refúgio para quem quer sair da pornografia: treino de controle pelo método "para e recomeça"
 (rodadas de ritmo com batida, pausas totais com respiração guiada e, dependendo do nível e do controle
-inteligente, liberação no fim), um lugar seguro para quando a vontade apertar, leituras com fontes e
-evolução por constância. App Android, 100% offline: não pede acesso à internet.
+inteligente, liberação no fim), treino de Kegel para o assoalho pélvico, um lugar seguro para quando a
+vontade apertar, leituras com fontes e evolução por constância. App Android, 100% offline: não pede acesso
+à internet.
 
-**Versão 0.0.0.1** (primeira versão). Em português, inglês e espanhol.
+**Versão 0.0.0.2**. Em português, inglês e espanhol.
 
 ## O que tem
 
 | Aba | O que faz |
 |---|---|
 | **Hoje** | O astro (cor = estado da liberação, anel = pontos do dia), níveis num carrossel, um botão para começar, o cartão "Para você" (nível e leitura sugeridos), a semana em estrelas |
-| **Refúgio** | Respirar 2 min com 6 trilhas calmas à escolha e três jogos originais: Encaixe, Dobra e Eco |
+| **Refúgio** | Respirar 2 min com 6 trilhas calmas à escolha, treino de **Kegel** e três jogos originais: Encaixe, Dobra e Eco |
 | **Evolução** | Nível pessoal (Iniciante → Invicto), check-in do dia, o céu do mês, gráficos, pódio das melhores semanas, recordes |
-| **Ler** | 29 artigos curtos (mente e hábitos, ciência, corpo e sexualidade, relações e emoções, apoio), cada um com as fontes no fim; dá para ler com música calma de fundo |
+| **Ler** | 30 artigos curtos (mente e hábitos, ciência, corpo e sexualidade, relações e emoções, apoio), cada um com as fontes no fim; dá para ler com música calma de fundo |
 
 Os **Ajustes** (controle inteligente, modo foco, sons e trilha, privacidade, visual Noite/Dia, idioma,
 ajuda, licença) abrem pelo emblema no alto da tela Hoje.
@@ -28,7 +29,7 @@ visita a cada parte ("ir descobrindo"), codinome anônimo com emblema gerado pel
 ## Idiomas
 
 O app segue o idioma do celular: **português**, **inglês** ou **espanhol** (outros idiomas caem no inglês).
-Também dá para escolher em Ajustes → Idioma. Traduzidos: todas as telas, os 29 artigos (com as mesmas fontes;
+Também dá para escolher em Ajustes → Idioma. Traduzidos: todas as telas, os 30 artigos (com as mesmas fontes;
 no artigo de ajuda, os serviços do Brasil viram linhas de apoio de outros países), datas, horas e números.
 
 - Textos das telas: `app/src/main/res/values/strings.xml` (inglês, o padrão), `values-pt/` e `values-es/`.
@@ -95,7 +96,7 @@ bloqueia outros apps, notificações e tela dividida, e fecha vídeos em picture
 
 ## Pontos e níveis (`model/Progress.kt`)
 
-Premiam constância, não "fazer mais sessões". Teto de 40 pontos por dia.
+Premiam constância, não "fazer mais sessões". Teto de 50 pontos por dia.
 
 | Ação | Pontos | Limite |
 |---|---|---|
@@ -106,11 +107,32 @@ Premiam constância, não "fazer mais sessões". Teto de 40 pontos por dia.
 | Respirar até o fim (2 min) | 5 | 3×/dia |
 | Jogar pelo menos 3 min | 3 | 2×/dia |
 | Ler um artigo até o fim | 5 | 3×/dia, cada artigo uma vez |
+| Treino de Kegel completo | 5 | 3×/dia |
 
 Sessões só pontuam com o modo foco ligado e a tela fixada. O nível conta os pontos dos últimos 28 dias:
 Bronze 60, Prata 180, Ouro 360, Platina 540, Diamante 720, Invicto 900 (Invicto também pede 14 dias
 seguidos de constância e 14 dias sem "não aguentei" nem sessão interrompida). Cada nível libera uma cor
 de destaque enquanto a pessoa estiver nele.
+
+## Kegel (`model/Kegel.kt`)
+
+Treino do assoalho pélvico, o músculo que participa da ereção e da ejaculação. Fica no Refúgio e num cartão
+"Kegel de hoje" na tela Hoje, e foi pensado para ser feito mais vezes que as sessões: até 3 treinos por dia
+rendem pontos (a sessão rende 1 por dia).
+
+- **Permanência** (quanto segurar cada contração): 3, 5, 8 ou 10 s. Começa em 3 s; cada nível libera depois
+  de 5 treinos completos no anterior.
+- **Tempo** (quanto dura o treino): 2, 4 ou 6 min.
+- **Roteiro**: 5 s de preparo → contrai e segura, solta pelo mesmo tempo (quantas couberem no tempo, no mínimo
+  5) → 10 contrações rápidas de 1 s. O astro encolhe ao contrair; a vibração marca cada troca (dá para treinar
+  de olhos fechados) e a trilha do Respirar pode tocar junto.
+- **Lembretes**: ao abrir o app, "Hora do Kegel" quando ainda falta treino no dia (no máximo a cada 3 h, só de
+  dia). Opcionalmente, **notificações no celular** em até 3 horários escolhidos: desligadas por padrão, a
+  permissão só é pedida quando a pessoa liga, só avisam se ainda faltar Kegel no dia e o texto não fala de
+  Kegel ("Compasso · Um minuto para você hoje."); na tela de bloqueio aparece só "Compasso". Usam alarmes não
+  exatos (`AlarmManager.setWindow`) e são reagendadas ao reiniciar o celular. Nada sai do aparelho.
+- "Como fazer" com os cuidados (não treinar segurando o xixi, respirar normalmente, soltar por completo, parar
+  se doer) e um artigo com as fontes.
 
 ## Recomendações (`model/Coach.kt`)
 
