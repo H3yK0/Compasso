@@ -1,0 +1,129 @@
+package app.compasso
+
+import android.app.ActivityManager
+import android.content.Context
+import android.content.res.Configuration
+import android.os.Build
+import android.os.Bundle
+import android.view.WindowManager
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import app.compasso.data.AppLanguage
+import app.compasso.data.Store
+import app.compasso.ui.AppLocale
+import app.compasso.ui.AppViewModel
+import app.compasso.ui.CompassoApp
+import app.compasso.ui.LockRequest
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+
+class MainActivity : ComponentActivity() {
+    private val vm: AppViewModel by viewModels { ViewModelProvider.AndroidViewModelFactory(application) }
+    private val activityManager: ActivityManager? by lazy { getSystemService(ActivityManager::class.java) }
+    private var appliedAttempt = -1
+
+    /** Idioma com que esta tela foi montada (trocar nos ajustes remonta a tela). */
+    private var appliedLanguage = AppLanguage.SYSTEM
+
+    override fun attachBaseContext(newBase: Context) {
+        appliedLanguage = Store(newBase).loadLanguage()
+        super.attachBaseContext(AppLocale.wrap(newBase, appliedLanguage))
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        applyPrivacy(vm.settings.value.discreet, vm.hasPin.value)
+        vm.setLanguage(AppLocale.language(resources.configuration.locales[0]))
+        setContent {
+            val settings by vm.settings.collectAsStateWithLifecycle()
+            val hasPin by vm.hasPin.collectAsStateWithLifecycle()
+            LaunchedEffect(settings.discreet, hasPin) { applyPrivacy(settings.discreet, hasPin) }
+            LaunchedEffect(settings.language) { if (settings.language != appliedLanguage) recreate() }
+            CompassoApp(vm)
+        }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch { vm.lockRequest.collect { applyLock(it) } }
+                launch { vm.focusActive.collect { hideOverlays(it) } }
+                // O Android só fixa a tela depois que a pessoa confirma: acompanha o estado.
+                launch {
+                    while (isActive) {
+                        vm.onPinState(isPinned())
+                        delay(400)
+                    }
+                }
+            }
+        }
+        vm.onMultiWindow(isInMultiWindowMode)
+    }
+
+    /**
+     * Modo discreto: esconde o conteúdo na tela de recentes e bloqueia prints e gravação de tela.
+     * Com senha, a miniatura dos recentes também fica escondida (Android 13+), senão ela
+     * mostraria o conteúdo sem pedir a senha.
+     */
+    private fun applyPrivacy(discreet: Boolean, hasPin: Boolean) {
+        if (discreet) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            runCatching { setRecentsScreenshotEnabled(!(discreet || hasPin)) }
+        }
+    }
+
+    /** Fixar a tela (recurso do Android): enquanto fixada, não dá para abrir outro app. */
+    private fun applyLock(req: LockRequest) {
+        if (req.attempt == appliedAttempt) return
+        appliedAttempt = req.attempt
+        if (req.wanted) {
+            runCatching { startLockTask() }
+        } else if (isPinned()) {
+            runCatching { stopLockTask() }
+        }
+    }
+
+    private fun isPinned(): Boolean {
+        val am = activityManager ?: return false
+        return runCatching { am.lockTaskModeState != ActivityManager.LOCK_TASK_MODE_NONE }.getOrDefault(false)
+    }
+
+    /** Android 12+: janelas flutuantes de outros apps somem enquanto o Compasso está na frente. */
+    private fun hideOverlays(on: Boolean) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) runCatching { window.setHideOverlayWindows(on) }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        vm.onAppForeground()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        vm.onReturn()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (!isChangingConfigurations) vm.onLeave()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (!isChangingConfigurations) vm.onAppBackground()
+    }
+
+    override fun onMultiWindowModeChanged(isInMultiWindowMode: Boolean, newConfig: Configuration) {
+        super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig)
+        vm.onMultiWindow(isInMultiWindowMode)
+    }
+}

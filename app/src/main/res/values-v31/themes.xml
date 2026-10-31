@@ -1,0 +1,9 @@
+<resources>
+    <style name="Theme.Compasso" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/window_bg</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <!-- Abertura do Android 12+: o astro sobre o céu -->
+        <item name="android:windowSplashScreenBackground">@color/window_bg</item>
+    </style>
+</resources>

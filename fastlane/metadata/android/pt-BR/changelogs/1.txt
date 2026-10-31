@@ -1,0 +1,1 @@
+Primeira versão: treino de controle em 5 níveis com o botão "Não aguentei", controle inteligente, modo foco, Respirar com 6 trilhas, 3 jogos, 29 leituras com fontes (com música de fundo opcional), recomendações de nível e leitura, pontos de constância, senha e codinome. Em português, inglês e espanhol.

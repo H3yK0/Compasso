@@ -1,0 +1,1 @@
+First version: control training in 5 levels with a "Couldn't hold on" button, smart control, focus mode, Breathe with 6 soundtracks, 3 games, 29 readings with sources (with optional background music), level and reading recommendations, consistency points, PIN and codename. In English, Portuguese and Spanish.

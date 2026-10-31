@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fundo do ícone: o céu noturno do Compasso -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:pathData="M0,0h108v108h-108z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="radial" android:centerX="54" android:centerY="36" android:gradientRadius="86">
+                <item android:offset="0" android:color="#FF1C2B6E"/>
+                <item android:offset="0.55" android:color="#FF0B1234"/>
+                <item android:offset="1" android:color="#FF050817"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- brilho da cor de destaque atrás do astro -->
+    <path android:pathData="M0,0h108v108h-108z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="radial" android:centerX="54" android:centerY="54" android:gradientRadius="34">
+                <item android:offset="0" android:color="#6643D9C8"/>
+                <item android:offset="0.6" android:color="#1A43D9C8"/>
+                <item android:offset="1" android:color="#0043D9C8"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#61FFFFFF" android:pathData="M39.91,26.07 m-0.78,0 a0.78,0.78 0 1,1 1.55,0 a0.78,0.78 0 1,1 -1.55,0"/>
+    <path android:fillColor="#8BFFFFFF" android:pathData="M18.64,54.59 m-0.47,0 a0.47,0.47 0 1,1 0.94,0 a0.47,0.47 0 1,1 -0.94,0"/>
+    <path android:fillColor="#B8FFFFFF" android:pathData="M19.59,21.26 m-0.66,0 a0.66,0.66 0 1,1 1.32,0 a0.66,0.66 0 1,1 -1.32,0"/>
+    <path android:fillColor="#C5FFFFFF" android:pathData="M23.90,31.86 m-0.76,0 a0.76,0.76 0 1,1 1.53,0 a0.76,0.76 0 1,1 -1.53,0"/>
+    <path android:fillColor="#7AFFFFFF" android:pathData="M92.10,17.73 m-0.88,0 a0.88,0.88 0 1,1 1.76,0 a0.88,0.88 0 1,1 -1.76,0"/>
+    <path android:fillColor="#B6FFFFFF" android:pathData="M25.54,23.42 m-0.60,0 a0.60,0.60 0 1,1 1.21,0 a0.60,0.60 0 1,1 -1.21,0"/>
+    <path android:fillColor="#70FFFFFF" android:pathData="M57.82,19.02 m-0.48,0 a0.48,0.48 0 1,1 0.96,0 a0.48,0.48 0 1,1 -0.96,0"/>
+    <path android:fillColor="#7AFFFFFF" android:pathData="M56.02,84.01 m-0.81,0 a0.81,0.81 0 1,1 1.63,0 a0.81,0.81 0 1,1 -1.63,0"/>
+    <path android:fillColor="#B0FFFFFF" android:pathData="M92.41,23.45 m-0.66,0 a0.66,0.66 0 1,1 1.32,0 a0.66,0.66 0 1,1 -1.32,0"/>
+    <path android:fillColor="#9BFFFFFF" android:pathData="M17.14,67.46 m-0.83,0 a0.83,0.83 0 1,1 1.66,0 a0.83,0.83 0 1,1 -1.66,0"/>
+    <path android:fillColor="#9DFFFFFF" android:pathData="M84.04,39.10 m-0.80,0 a0.80,0.80 0 1,1 1.60,0 a0.80,0.80 0 1,1 -1.60,0"/>
+    <path android:fillColor="#A5FFFFFF" android:pathData="M81.20,89.57 m-0.69,0 a0.69,0.69 0 1,1 1.37,0 a0.69,0.69 0 1,1 -1.37,0"/>
+    <path android:fillColor="#CBFFFFFF" android:pathData="M18.85,70.12 m-0.77,0 a0.77,0.77 0 1,1 1.55,0 a0.77,0.77 0 1,1 -1.55,0"/>
+    <path android:fillColor="#A5FFFFFF" android:pathData="M79.75,36.77 m-0.64,0 a0.64,0.64 0 1,1 1.29,0 a0.64,0.64 0 1,1 -1.29,0"/>
+    <path android:fillColor="#66FFFFFF" android:pathData="M15.81,50.94 m-0.53,0 a0.53,0.53 0 1,1 1.07,0 a0.53,0.53 0 1,1 -1.07,0"/>
+    <path android:fillColor="#75FFFFFF" android:pathData="M18.72,75.46 m-0.51,0 a0.51,0.51 0 1,1 1.03,0 a0.51,0.51 0 1,1 -1.03,0"/>
+</vector>
