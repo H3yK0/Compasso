@@ -18,11 +18,11 @@ Nesta pasta:
 ## Verificações feitas (fdroidserver 2.4.5)
 
 - `fdroid lint` e `fdroid rewritemeta`: a receita passa e está no formato canônico.
-- `fdroid build` do commit `0ef5962` (tag `v0.0.0.1`): o scanner não encontrou problemas; o APK sem assinatura do
+- `fdroid build` do commit `935ec3d` (versão 0.0.0.2): o scanner não encontrou problemas; o APK sem assinatura do
   F-Droid é idêntico, byte a byte, ao `assembleRelease` local.
 - Com `Binaries` apontando para o APK assinado: "compared built binary to supplied reference binary successfully"
   e "supplied reference binary has allowed signer". O `apksigcopier compare` também confere.
-- `fdroid checkupdates`: encontra a versão 0.0.0.1 (código 1) pela tag.
+- `fdroid checkupdates`: encontra a versão pela tag (`v<versão>`).
 
 ## A chave de assinatura
 
@@ -33,10 +33,10 @@ Nesta pasta:
   `.gitignore`). Guarde num gerenciador de senhas e numa cópia offline. **Sem ela, nenhuma versão nova sai**:
   o F-Droid só aceita APKs com essa assinatura.
 
-## Primeira versão: passo a passo
+## Envio ao F-Droid: passo a passo
 
-1. **APK no GitHub**: em https://github.com/H3yK0/Compasso/releases/edit/v0.0.0.1, anexe `Compasso-0.0.0.1.apk`
-   (o nome tem que ser exatamente esse) e clique em **Update release**.
+1. **APK no GitHub**: crie o release `v0.0.0.2` (alvo: o commit `935ec3d` do `main`) e anexe `Compasso-0.0.0.2.apk`
+   (o nome tem que ser exatamente esse).
 2. **Fork** de https://gitlab.com/fdroid/fdroiddata com a sua conta do GitLab. O fork tem que ser público.
 3. **Branch** `io.github.h3yk0.compasso`, a partir de `master`, no fork.
 4. **Arquivo** `metadata/io.github.h3yk0.compasso.yml` no branch, com o conteúdo de `io.github.h3yk0.compasso.yml`
