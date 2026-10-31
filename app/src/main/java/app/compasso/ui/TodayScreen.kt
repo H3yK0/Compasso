@@ -1,5 +1,8 @@
 package app.compasso.ui
 
+import app.compasso.ui.components.RoundPlayButton
+import app.compasso.model.Kegel
+import androidx.compose.material.icons.rounded.SelfImprovement
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -163,6 +166,9 @@ fun TodayScreen(
     readingTitle: String? = null,
     readingReason: Signal? = null,
     onOpenArticle: () -> Unit = {},
+    kegel: KegelCardUi? = null,
+    onKegel: () -> Unit = {},
+    onKegelInfo: () -> Unit = {},
 ) {
     val c = Ios.colors
     val levels = remember(customLevel) { Levels.presets + customLevel }
@@ -299,6 +305,12 @@ fun TodayScreen(
                     style = Ios.type.footnote,
                     color = c.secondary,
                 )
+            }
+
+            // Kegel de hoje: o treino que vale repetir ao longo do dia
+            if (kegel != null) {
+                Spacer(Modifier.height(18.dp))
+                KegelTodayCard(kegel, onKegel, onKegelInfo, Modifier.padding(horizontal = 16.dp))
             }
 
             if (tip != null) {
@@ -452,6 +464,49 @@ fun DifficultyMeter(difficulty: Int, tint: Color) {
                 size = Size(w, h),
                 cornerRadius = CornerRadius(w / 2f),
             )
+        }
+    }
+}
+
+/** "Kegel de hoje": feitos do dia, nível escolhido e um botão para começar na hora. */
+@Composable
+fun KegelTodayCard(k: KegelCardUi, onStart: () -> Unit, onOpen: () -> Unit, modifier: Modifier = Modifier) {
+    val c = Ios.colors
+    val tint = kegelTint()
+    val done = k.today >= Kegel.PER_DAY
+    GlassCard(modifier.fillMaxWidth(), onClick = onOpen, contentPadding = PaddingValues(16.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier.size(46.dp).clip(CircleShape).background(tint.copy(alpha = 0.18f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Rounded.SelfImprovement, contentDescription = null, tint = tint, modifier = Modifier.size(24.dp))
+            }
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.today_kegel_title), style = Ios.type.headline, color = c.label)
+                Text(
+                    if (done) {
+                        stringResource(R.string.today_kegel_done, Kegel.PER_DAY)
+                    } else {
+                        stringResource(R.string.today_kegel_sub, k.today, Kegel.PER_DAY, k.hold.seconds, k.length.minutes)
+                    },
+                    style = Ios.type.subhead,
+                    color = c.secondary,
+                )
+                Spacer(Modifier.height(6.dp))
+                KegelDots(k.today, color = tint, size = 9.dp, empty = c.label.copy(alpha = 0.14f))
+            }
+            if (!done) {
+                Spacer(Modifier.width(10.dp))
+                RoundPlayButton(Icons.Rounded.PlayArrow, stringResource(R.string.refuge_kegel_now), onStart, size = 48.dp, color = tint)
+            } else {
+                app.compasso.ui.components.Chevron(c.tertiary, Modifier.size(width = 8.dp, height = 13.dp))
+            }
+        }
+        if (k.hint && !done) {
+            Spacer(Modifier.height(10.dp))
+            Text(stringResource(R.string.kegel_hint), style = Ios.type.footnote, color = tint)
         }
     }
 }

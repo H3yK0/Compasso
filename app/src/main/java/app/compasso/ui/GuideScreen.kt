@@ -1,5 +1,6 @@
 package app.compasso.ui
 
+import androidx.compose.material.icons.rounded.SelfImprovement
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
@@ -55,6 +56,7 @@ private val topics = listOf(
     Topic(R.string.smart_control, Icons.Rounded.HourglassTop, { Ios.colors.orange }, R.string.guide_pacing_text),
     Topic(R.string.focus_title, Icons.Rounded.PhonelinkLock, { Ios.colors.indigo }, R.string.guide_focus_text),
     Topic(R.string.guide_refuge, Icons.Rounded.Air, { Ios.colors.indigo }, R.string.guide_refuge_text),
+    Topic(R.string.guide_kegel, Icons.Rounded.SelfImprovement, { Ios.colors.green }, R.string.guide_kegel_text),
     Topic(R.string.guide_points, Icons.Rounded.EmojiEvents, { Ios.colors.yellow }, R.string.guide_points_text),
     Topic(R.string.guide_reading, Icons.AutoMirrored.Rounded.MenuBook, { Ios.colors.blue }, R.string.guide_reading_text),
     Topic(R.string.settings_privacy, Icons.Rounded.Shield, { Ios.colors.gray }, R.string.guide_privacy_text),

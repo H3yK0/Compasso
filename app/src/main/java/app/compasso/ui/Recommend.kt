@@ -1,5 +1,8 @@
 package app.compasso.ui
 
+import app.compasso.model.Kegel
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.material.icons.rounded.SelfImprovement
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
@@ -214,9 +217,53 @@ private val NudgeEase = CubicBezierEasing(0.32f, 0.72f, 0f, 1f)
 @Composable
 fun ReadingNudge(visible: Boolean, title: String?, reason: Signal?, onRead: () -> Unit, onLater: () -> Unit) {
     val c = Ios.colors
+    NudgeCard(
+        visible = visible && title != null && reason != null,
+        icon = Icons.AutoMirrored.Rounded.MenuBook,
+        tint = c.blue,
+        label = stringResource(R.string.nudge_label),
+        title = title.orEmpty(),
+        subtitle = reason?.let { signalText(it) },
+        action = stringResource(R.string.nudge_read),
+        onAction = onRead,
+        onLater = onLater,
+    )
+}
+
+/** "Hora do Kegel": desce do topo ao abrir o app quando ainda falta treino no dia. */
+@Composable
+fun KegelNudge(visible: Boolean, today: Int, minutes: Int, onGo: () -> Unit, onLater: () -> Unit) {
+    val c = Ios.colors
+    NudgeCard(
+        visible = visible,
+        icon = Icons.Rounded.SelfImprovement,
+        tint = c.green,
+        label = stringResource(R.string.kegel_nudge_label),
+        title = stringResource(R.string.today_kegel_title),
+        subtitle = stringResource(R.string.kegel_nudge_text, today, Kegel.PER_DAY, minutes),
+        action = stringResource(R.string.kegel_nudge_go),
+        onAction = onGo,
+        onLater = onLater,
+    )
+}
+
+/** Cartão que desce do topo (sugestões ao abrir o app). */
+@Composable
+private fun NudgeCard(
+    visible: Boolean,
+    icon: ImageVector,
+    tint: Color,
+    label: String,
+    title: String,
+    subtitle: String?,
+    action: String,
+    onAction: () -> Unit,
+    onLater: () -> Unit,
+) {
+    val c = Ios.colors
     Box(Modifier.fillMaxSize().statusBarsPadding(), contentAlignment = Alignment.TopCenter) {
         AnimatedVisibility(
-            visible = visible && title != null && reason != null,
+            visible = visible,
             enter = slideInVertically(tween(360, easing = NudgeEase)) { -it * 2 } + fadeIn(tween(220)),
             exit = slideOutVertically(tween(280, easing = NudgeEase)) { -it * 2 } + fadeOut(tween(200)),
         ) {
@@ -233,22 +280,22 @@ fun ReadingNudge(visible: Boolean, title: String?, reason: Signal?, onRead: () -
                     .padding(16.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(30.dp).clip(CircleShape).background(c.blue.copy(alpha = 0.2f)), contentAlignment = Alignment.Center) {
-                        Icon(Icons.AutoMirrored.Rounded.MenuBook, contentDescription = null, tint = c.blue, modifier = Modifier.size(17.dp))
+                    Box(Modifier.size(30.dp).clip(CircleShape).background(tint.copy(alpha = 0.2f)), contentAlignment = Alignment.Center) {
+                        Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(17.dp))
                     }
                     Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.nudge_label), style = Ios.type.footnote.copy(fontWeight = FontWeight.SemiBold), color = c.secondary)
+                    Text(label, style = Ios.type.footnote.copy(fontWeight = FontWeight.SemiBold), color = c.secondary)
                 }
                 Spacer(Modifier.height(8.dp))
-                Text(title.orEmpty(), style = Ios.type.headline, color = c.label)
-                if (reason != null) {
+                Text(title, style = Ios.type.headline, color = c.label)
+                if (subtitle != null) {
                     Spacer(Modifier.height(2.dp))
-                    Text(signalText(reason), style = Ios.type.subhead, color = c.secondary)
+                    Text(subtitle, style = Ios.type.subhead, color = c.secondary)
                 }
                 Spacer(Modifier.height(12.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     IosButton(stringResource(R.string.nudge_later), onLater, Modifier.weight(1f), kind = ButtonKind.Tinted, height = 44.dp, shape = CircleShape)
-                    PrimaryButton(stringResource(R.string.nudge_read), onRead, Modifier.weight(1f), height = 44.dp)
+                    PrimaryButton(action, onAction, Modifier.weight(1f), height = 44.dp)
                 }
             }
         }

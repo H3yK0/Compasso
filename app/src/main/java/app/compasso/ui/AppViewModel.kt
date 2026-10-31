@@ -32,6 +32,12 @@ import app.compasso.model.Codenames
 import app.compasso.model.EngineEvent
 import app.compasso.model.Focus
 import app.compasso.model.FocusSettings
+import app.compasso.model.Kegel
+import app.compasso.model.KegelEntry
+import app.compasso.model.KegelHold
+import app.compasso.model.KegelLength
+import app.compasso.model.KegelPlan
+import app.compasso.notify.Reminders
 import app.compasso.model.Lapse
 import app.compasso.model.Level
 import app.compasso.model.NoPoints
@@ -154,6 +160,17 @@ sealed interface Screen {
         override val modal = true
     }
 
+    /** Kegel: níveis, progresso do dia e lembretes. */
+    data object Kegel : Screen {
+        override val depth = 1
+    }
+
+    /** O treino de Kegel em si (tela cheia, como o Respirar). */
+    data object KegelRun : Screen {
+        override val depth = 2
+        override val modal = true
+    }
+
     data class Game(val kind: GameKind) : Screen {
         override val depth = 1
         override val modal = true
@@ -233,6 +250,9 @@ data class StartPrompt(val level: Level, val gate: ReleaseGate.Closed)
 
 /** O que o app pede para a Activity: fixar a tela ou soltar. [attempt] muda a cada novo pedido. */
 data class LockRequest(val wanted: Boolean = false, val attempt: Int = 0)
+
+/** Fim de um treino de Kegel: pontos (ou por que não rendeu), permanência nova liberada e quantos hoje. */
+data class KegelResult(val points: Int?, val noPoints: NoPoints?, val unlocked: KegelHold?, val today: Int)
 
 /** Aviso rápido no topo da tela: pontos ganhos e com o quê. */
 data class Banner(val points: Int, val kind: PointKind, val id: Long = System.nanoTime())
@@ -329,6 +349,28 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     /** Leitor aberto (a música de fundo da leitura toca só nele). */
     private var readingActive = false
 
+    /** Kegel: treinos completos, permanência liberada, sugestão "Hora do Kegel" e o fim do último treino. */
+    private val _kegelLog = MutableStateFlow(store.loadKegelLog())
+    val kegelLog: StateFlow<List<KegelEntry>> = _kegelLog.asStateFlow()
+
+    private val _kegelUnlocked = MutableStateFlow(store.kegelUnlocked)
+    val kegelUnlocked: StateFlow<KegelHold> = _kegelUnlocked.asStateFlow()
+
+    private val _kegelNudge = MutableStateFlow(false)
+    val kegelNudge: StateFlow<Boolean> = _kegelNudge.asStateFlow()
+
+    private val _kegelResult = MutableStateFlow<KegelResult?>(null)
+    val kegelResult: StateFlow<KegelResult?> = _kegelResult.asStateFlow()
+
+    /** Treinos recentes terminando cedo: o cartão do Kegel lembra que ele ajuda no controle. */
+    private val _kegelHint = MutableStateFlow(false)
+    val kegelHint: StateFlow<Boolean> = _kegelHint.asStateFlow()
+
+    private var kegelActive = false
+
+    /** Aberto pelo lembrete com o app travado: vai para o Kegel depois da senha. */
+    private var kegelAfterUnlock = false
+
     private val _read = MutableStateFlow(store.loadRead())
     val read: StateFlow<Set<String>> = _read.asStateFlow()
 
@@ -368,6 +410,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         refreshPacing()
         refreshProgress()
         _screen.value = if (store.seenVersion >= CURRENT_VERSION) Screen.Root else Screen.Welcome
+        runCatching { Reminders.schedule(getApplication(), _settings.value) }
         // Atualiza prazos de tempos em tempos (podem vencer com o app aberto).
         viewModelScope.launch {
             while (isActive) {
@@ -403,6 +446,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         } else {
             // saiu da tela principal sem responder: a sugestão não volta a aparecer depois (ela é de "ao abrir")
             _nudge.value = null
+            _kegelNudge.value = false
         }
         _screen.value = screen
     }
@@ -443,7 +487,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun refreshAdvice() {
         val now = clock.now()
         _levelAdvice.value = Coach.level(_history.value, _lapses.value, now)
-        _readingAdvice.value = Coach.reading(currentSignals(now), articleInfos(), _read.value)
+        val signals = currentSignals(now)
+        _readingAdvice.value = Coach.reading(signals, articleInfos(), _read.value)
+        _kegelHint.value = Signal.FAST_LOSS in signals
     }
 
     /**
@@ -451,10 +497,19 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
      * destravado, fora de sessão, com a opção ligada e pelo menos [NUDGE_EVERY_MS] desde a última.
      */
     fun maybeNudge() {
-        if (!_settings.value.readingNudges || _nudge.value != null) return
+        if (_nudge.value != null || _kegelNudge.value) return
         if (_locked.value || engine != null || _screen.value != Screen.Root) return
-        if (store.seenVersion < CURRENT_VERSION || _articles.value.isEmpty()) return
+        if (store.seenVersion < CURRENT_VERSION) return
         val now = clock.now()
+        // Kegel primeiro: é o treino que mais vale repetir ao longo do dia. Na estreia só começa a contar.
+        if (store.kegelNudgeAt <= 0L) {
+            store.kegelNudgeAt = now
+        } else if (_settings.value.kegelNudges && Kegel.shouldNudge(_kegelLog.value, now, store.kegelNudgeAt)) {
+            store.kegelNudgeAt = now
+            _kegelNudge.value = true
+            return
+        }
+        if (!_settings.value.readingNudges || _articles.value.isEmpty()) return
         // primeira vez: só começa a contar (a primeira sugestão vem depois de um dia de uso, não na estreia)
         if (store.nudgeAt <= 0L) {
             store.nudgeAt = now
@@ -475,6 +530,16 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun dismissNudge() {
         _nudge.value = null
+    }
+
+    /** "Fazer agora" na sugestão do Kegel: começa o treino direto. */
+    fun openKegelNudge() {
+        _kegelNudge.value = false
+        startKegel()
+    }
+
+    fun dismissKegelNudge() {
+        _kegelNudge.value = false
     }
 
     fun finishOnboarding() {
@@ -525,6 +590,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun clearHistory() {
         store.clearHistory()
         _history.value = emptyList()
+        _kegelLog.value = emptyList()
         refreshProgress()
     }
 
@@ -625,7 +691,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     /** Trilha do Respirar (também usada nas pausas da sessão). Troca na hora se estiver tocando. */
     fun setBreatheTrack(track: Track) {
         updateSettings { it.copy(breatheTrack = track) }
-        if (breatheActive) ambient.track = track
+        if (breatheActive || kegelActive) ambient.track = track
     }
 
     fun breatheLevel(level: Float) {
@@ -639,7 +705,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setBreatheSound(on: Boolean) {
         updateSettings { it.copy(breatheSound = on) }
-        if (on && breatheActive) {
+        if (on && (breatheActive || kegelActive)) {
             ambient.allowAgain()
             ambient.start()
         } else if (!on) {
@@ -655,6 +721,102 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     /** Toque leve na troca da respiração (tela Respirar). */
     fun breathCue(inhale: Boolean) {
         if (_settings.value.vibrateBreath) feedback.vibrateBreath(inhale)
+    }
+
+    // ---------- Kegel ----------
+
+    /** Para onde o treino volta ao fechar (a tela do Kegel ou a principal). */
+    private var kegelBack: Screen = Screen.Root
+
+    fun startKegel() {
+        _kegelResult.value = null
+        kegelBack = if (_screen.value == Screen.Kegel) Screen.Kegel else Screen.Root
+        go(Screen.KegelRun)
+    }
+
+    fun closeKegel() = go(kegelBack)
+
+    fun setKegelHold(hold: KegelHold) {
+        if (hold.ordinal <= _kegelUnlocked.value.ordinal) updateSettings { it.copy(kegelHold = hold) }
+    }
+
+    fun setKegelLength(length: KegelLength) = updateSettings { it.copy(kegelLength = length) }
+
+    fun setKegelVibrate(on: Boolean) = updateSettings { it.copy(kegelVibrate = on) }
+
+    fun setKegelNudges(on: Boolean) = updateSettings { it.copy(kegelNudges = on) }
+
+    /** Liga ou desliga os lembretes no celular (a tela já pediu a permissão, se precisava). */
+    fun setKegelReminders(on: Boolean) {
+        updateSettings { it.copy(kegelReminders = on) }
+        runCatching { Reminders.schedule(getApplication(), _settings.value) }
+    }
+
+    /** Troca o horário [index] dos lembretes (em minutos desde a meia-noite). */
+    fun setKegelTime(index: Int, minutes: Int) {
+        val times = _settings.value.kegelTimes.toMutableList()
+        if (index !in times.indices) return
+        val day = 24 * 60
+        val others = times.filterIndexed { i, _ -> i != index }
+        // dois lembretes no mesmo horário viram um só: pula o horário ocupado, no sentido do ajuste
+        val step = if (Math.floorMod(minutes - times[index], day) <= day / 2) 15 else -15
+        var m = Math.floorMod(minutes, day)
+        var guard = 0
+        while (m in others && guard++ < day / 15) m = Math.floorMod(m + step, day)
+        times[index] = m
+        updateSettings { it.copy(kegelTimes = times.sorted()) }
+        runCatching { Reminders.schedule(getApplication(), _settings.value) }
+    }
+
+    fun remindersAllowed(): Boolean = Reminders.allowed(getApplication())
+
+    /** Aberto pelo lembrete: com senha, vai para o Kegel depois de destravar. */
+    fun openFromReminder() {
+        if (store.seenVersion < CURRENT_VERSION || engine != null) return
+        if (_locked.value) kegelAfterUnlock = true else go(Screen.Kegel)
+    }
+
+    fun kegelBegin() {
+        kegelActive = true
+        val s = _settings.value
+        ambient.gain = s.ambientVolume
+        ambient.track = s.breatheTrack
+        ambient.breathLevel = 0f
+        ambient.allowAgain()
+        if (s.breatheSound) ambient.start()
+    }
+
+    /** Nível da trilha: sobe ao contrair, desce ao soltar. */
+    fun kegelLevel(level: Float) {
+        ambient.breathLevel = level
+    }
+
+    /** Toque na troca de fase (dá para treinar de olhos fechados). */
+    fun kegelCue(squeeze: Boolean) {
+        if (_settings.value.kegelVibrate) feedback.vibrateBreath(squeeze)
+    }
+
+    fun kegelEnd() {
+        kegelActive = false
+        if (!breatheActive) ambient.stop()
+    }
+
+    /** Treino completo: registra, confere se liberou a próxima permanência e dá os pontos. */
+    fun onKegelDone(plan: KegelPlan) {
+        val now = clock.now()
+        val log = Kegel.prune(_kegelLog.value + KegelEntry(now, plan.hold.seconds, plan.length.minutes, plan.reps), now)
+        _kegelLog.value = log
+        store.saveKegelLog(log)
+        val before = _kegelUnlocked.value
+        val after = Kegel.unlockedAfter(before, log)
+        if (after != before) {
+            _kegelUnlocked.value = after
+            store.kegelUnlocked = after
+        }
+        val (entry, reason) = award(PointKind.KEGEL, banner = true)
+        val today = Kegel.today(log, now)
+        _kegelResult.value = KegelResult(entry?.points, reason, after.takeIf { it != before }, today)
+        if (today >= Kegel.PER_DAY) runCatching { Reminders.clear(getApplication()) }
     }
 
     // ---------- Jogos ----------
@@ -754,7 +916,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val r = checkPin(pin)
         if (r == PinCheck.OK) {
             _locked.value = false
-            maybeNudge()
+            if (kegelAfterUnlock) {
+                kegelAfterUnlock = false
+                go(Screen.Kegel)
+            } else {
+                maybeNudge()
+            }
         }
         return r
     }
@@ -805,7 +972,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun onAppBackground() {
         backgroundAt = SystemClock.elapsedRealtime()
         pause()
-        if (breatheActive || readingActive) ambient.stop()
+        if (breatheActive || readingActive || kegelActive) ambient.stop()
     }
 
     fun onAppForeground() {
@@ -815,7 +982,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         backgroundAt = 0L
         refreshPacing()
         refreshProgress()
-        if (breatheActive && _settings.value.breatheSound) {
+        if ((breatheActive || kegelActive) && _settings.value.breatheSound) {
             ambient.allowAgain()
             ambient.start()
         }

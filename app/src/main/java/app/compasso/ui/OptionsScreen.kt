@@ -1,5 +1,6 @@
 package app.compasso.ui
 
+import androidx.compose.material.icons.rounded.SelfImprovement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -95,6 +96,7 @@ class OptionsActions(
     val onBreatheTrack: (Track) -> Unit = {},
     val onReadingMusic: (Boolean) -> Unit = {},
     val onReadingTrack: (Track) -> Unit = {},
+    val onKegel: () -> Unit = {},
 )
 
 @Composable
@@ -359,6 +361,14 @@ fun OptionsScreen(
                 stringResource(R.string.settings_nudges), settings.readingNudges, { v -> onChange { it.copy(readingNudges = v) } },
                 subtitle = stringResource(R.string.settings_nudges_sub),
                 icon = RowIcon(Icons.AutoMirrored.Rounded.MenuBook, c.blue),
+            )
+            RowDivider(IconInset)
+            IosRow(
+                stringResource(R.string.settings_kegel),
+                subtitle = stringResource(R.string.settings_kegel_sub),
+                icon = RowIcon(Icons.Rounded.SelfImprovement, c.green),
+                chevron = true,
+                onClick = actions.onKegel,
             )
         }
 

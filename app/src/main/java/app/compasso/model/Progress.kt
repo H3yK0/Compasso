@@ -23,6 +23,7 @@ enum class PointKind(val base: Int, @StringRes val label: Int, val maxPerDay: In
     BREATHE(5, R.string.point_breathe, 3),
     GAME(3, R.string.point_game, 2),
     ARTICLE(5, R.string.point_article, 3),
+    KEGEL(5, R.string.point_kegel, Kegel.PER_DAY),
 }
 
 data class PointEntry(val at: Long, val kind: PointKind, val points: Int)
@@ -82,7 +83,8 @@ data class Records(
 )
 
 object Progress {
-    const val DAILY_CAP = 40
+    /** Teto diário. O Kegel (até 15 por dia) soma em vez de disputar com o resto. */
+    const val DAILY_CAP = 50
     const val WINDOW_DAYS = 28
     const val CLEAN_DAYS = 14
     const val STREAK_FOR_UNBEATEN = 14

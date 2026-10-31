@@ -75,6 +75,7 @@ import app.compasso.data.ThemeMode
 import app.compasso.games.GameKind
 import app.compasso.model.Outcome
 import app.compasso.model.PhaseType
+import app.compasso.model.Kegel
 import app.compasso.model.Tip
 import app.compasso.ui.components.AlertAction
 import app.compasso.ui.components.IosActionSheet
@@ -106,6 +107,8 @@ fun CompassoApp(vm: AppViewModel) {
     val banner by vm.banner.collectAsStateWithLifecycle()
     val prompt by vm.startPrompt.collectAsStateWithLifecycle()
     val nudge by vm.nudge.collectAsStateWithLifecycle()
+    val kegelNudge by vm.kegelNudge.collectAsStateWithLifecycle()
+    val kegelLog by vm.kegelLog.collectAsStateWithLifecycle()
     val articles by vm.articles.collectAsStateWithLifecycle()
 
     val dark = when (settings.theme) {
@@ -116,7 +119,7 @@ fun CompassoApp(vm: AppViewModel) {
 
     CompassoTheme(dark = dark, accent = effectiveAccent(settings.accent, level)) {
         val colored = !locked && (
-            screen == Screen.Session || screen == Screen.Breathe || screen == Screen.FocusPrep || screen == Screen.Welcome
+            screen == Screen.Session || screen == Screen.Breathe || screen == Screen.KegelRun || screen == Screen.FocusPrep || screen == Screen.Welcome
             )
         SystemBarsEffect(darkIcons = !dark && !colored)
         Box(Modifier.fillMaxSize().background(Ios.colors.bg)) {
@@ -150,6 +153,14 @@ fun CompassoApp(vm: AppViewModel) {
                     reason = n?.reason,
                     onRead = vm::openNudge,
                     onLater = vm::dismissNudge,
+                )
+                // "Hora do Kegel" ao abrir o app (tem prioridade sobre a leitura)
+                KegelNudge(
+                    visible = kegelNudge && screen == Screen.Root,
+                    today = Kegel.today(kegelLog, vm.now()),
+                    minutes = settings.kegelLength.minutes,
+                    onGo = vm::openKegelNudge,
+                    onLater = vm::dismissKegelNudge,
                 )
             }
         }
@@ -227,6 +238,57 @@ private fun ScreenContent(current: Screen, vm: AppViewModel) {
             track = settings.breatheTrack,
             onTrack = vm::setBreatheTrack,
         )
+
+        Screen.Kegel -> {
+            val log by vm.kegelLog.collectAsStateWithLifecycle()
+            val unlocked by vm.kegelUnlocked.collectAsStateWithLifecycle()
+            val now = vm.now()
+            KegelScreen(
+                ui = KegelUi(
+                    today = Kegel.today(log, now),
+                    week = Kegel.week(log, now),
+                    hold = settings.kegelHold,
+                    length = settings.kegelLength,
+                    unlocked = unlocked,
+                    toUnlock = Kegel.remainingToUnlock(unlocked, log),
+                    vibrate = settings.kegelVibrate,
+                    nudges = settings.kegelNudges,
+                    reminders = settings.kegelReminders,
+                    times = settings.kegelTimes,
+                ),
+                tip = tipFor(Tip.KEGEL),
+                onTipClose = vm::dismissTip,
+                onHold = vm::setKegelHold,
+                onLength = vm::setKegelLength,
+                onStart = vm::startKegel,
+                onRead = articles.firstOrNull { it.id == KEGEL_ARTICLE }?.let { { vm.go(Screen.Reader(KEGEL_ARTICLE)) } },
+                onVibrate = vm::setKegelVibrate,
+                onNudges = vm::setKegelNudges,
+                onReminders = vm::setKegelReminders,
+                onTime = vm::setKegelTime,
+                onBack = toRoot,
+                remindersAllowed = vm::remindersAllowed,
+            )
+        }
+
+        Screen.KegelRun -> {
+            val result by vm.kegelResult.collectAsStateWithLifecycle()
+            KegelRunScreen(
+                hold = settings.kegelHold,
+                length = settings.kegelLength,
+                sound = settings.breatheSound,
+                track = settings.breatheTrack,
+                result = result,
+                onBegin = vm::kegelBegin,
+                onLevel = vm::kegelLevel,
+                onCue = vm::kegelCue,
+                onDone = vm::onKegelDone,
+                onEnd = vm::kegelEnd,
+                onSound = vm::setBreatheSound,
+                onTrack = vm::setBreatheTrack,
+                onClose = vm::closeKegel,
+            )
+        }
 
         is Screen.Game -> {
             BackHandler(onBack = toRoot)
@@ -369,6 +431,8 @@ private fun RootTabs(vm: AppViewModel, tab: Tab, tipFor: (Tip) -> Tip?) {
     val settings by vm.settings.collectAsStateWithLifecycle()
     val levelAdvice by vm.levelAdvice.collectAsStateWithLifecycle()
     val readingAdvice by vm.readingAdvice.collectAsStateWithLifecycle()
+    val kegelLog by vm.kegelLog.collectAsStateWithLifecycle()
+    val kegelHint by vm.kegelHint.collectAsStateWithLifecycle()
 
     BackHandler(enabled = tab != Tab.TRAIN) { vm.selectTab(Tab.TRAIN) }
     Box(Modifier.fillMaxSize()) {
@@ -395,6 +459,9 @@ private fun RootTabs(vm: AppViewModel, tab: Tab, tipFor: (Tip) -> Tip?) {
                     readingTitle = readingAdvice?.let { a -> articles.firstOrNull { it.id == a.articleId }?.title },
                     readingReason = readingAdvice?.reason,
                     onOpenArticle = { readingAdvice?.let { vm.go(Screen.Reader(it.articleId)) } },
+                    kegel = KegelCardUi(Kegel.today(kegelLog, vm.now()), settings.kegelHold, settings.kegelLength, kegelHint),
+                    onKegel = vm::startKegel,
+                    onKegelInfo = { vm.go(Screen.Kegel) },
                 )
 
                 Tab.REFUGE -> RefugeScreen(
@@ -402,6 +469,9 @@ private fun RootTabs(vm: AppViewModel, tab: Tab, tipFor: (Tip) -> Tip?) {
                     tip = tipFor(Tip.REFUGE),
                     onTipClose = vm::dismissTip,
                     onBreathe = { vm.go(Screen.Breathe) },
+                    kegelToday = Kegel.today(kegelLog, vm.now()),
+                    onKegel = { vm.go(Screen.Kegel) },
+                    onKegelStart = vm::startKegel,
                     onGame = { vm.go(Screen.Game(it)) },
                     onQuickGame = { vm.go(Screen.Game(GameKind.entries.random())) },
                     onRead = { vm.selectTab(Tab.READ) },
@@ -475,6 +545,7 @@ private fun SettingsRoute(vm: AppViewModel, tip: Tip?, onBack: () -> Unit) {
             onBreatheTrack = vm::setBreatheTrack,
             onReadingMusic = vm::setReadingMusic,
             onReadingTrack = vm::setReadingTrack,
+            onKegel = { vm.go(Screen.Kegel) },
             onProfile = { vm.go(Screen.Profile) },
             onAbout = { vm.go(Screen.About) },
             onTipClose = vm::dismissTip,
