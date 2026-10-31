@@ -11,14 +11,17 @@ AutoName: Compasso
 
 RepoType: git
 Repo: https://github.com/H3yK0/Compasso.git
+Binaries: https://github.com/H3yK0/Compasso/releases/download/v%v/Compasso-%v.apk
 
 Builds:
   - versionName: 0.0.0.1
     versionCode: 1
-    commit: v0.0.0.1
+    commit: 0ef59622cdaa4e21b79a71b9ff610419b8ee6ac2
     subdir: app
     gradle:
       - yes
+
+AllowedAPKSigningKeys: c98ea9ad403d51fbb661afa0e7c1d936c497b1c3ebca76be9488b0f09113356c
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
