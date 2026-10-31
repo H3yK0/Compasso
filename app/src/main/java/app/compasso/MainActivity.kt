@@ -1,6 +1,7 @@
 package app.compasso
 
 import android.app.ActivityManager
+import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
@@ -16,6 +17,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import app.compasso.data.AppLanguage
+import app.compasso.data.Store
+import app.compasso.ui.AppLocale
 import app.compasso.ui.AppViewModel
 import app.compasso.ui.CompassoApp
 import app.compasso.ui.LockRequest
@@ -28,14 +32,24 @@ class MainActivity : ComponentActivity() {
     private val activityManager: ActivityManager? by lazy { getSystemService(ActivityManager::class.java) }
     private var appliedAttempt = -1
 
+    /** Idioma com que esta tela foi montada (trocar nos ajustes remonta a tela). */
+    private var appliedLanguage = AppLanguage.SYSTEM
+
+    override fun attachBaseContext(newBase: Context) {
+        appliedLanguage = Store(newBase).loadLanguage()
+        super.attachBaseContext(AppLocale.wrap(newBase, appliedLanguage))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         applyPrivacy(vm.settings.value.discreet, vm.hasPin.value)
+        vm.setLanguage(AppLocale.language(resources.configuration.locales[0]))
         setContent {
             val settings by vm.settings.collectAsStateWithLifecycle()
             val hasPin by vm.hasPin.collectAsStateWithLifecycle()
             LaunchedEffect(settings.discreet, hasPin) { applyPrivacy(settings.discreet, hasPin) }
+            LaunchedEffect(settings.language) { if (settings.language != appliedLanguage) recreate() }
             CompassoApp(vm)
         }
         lifecycleScope.launch {

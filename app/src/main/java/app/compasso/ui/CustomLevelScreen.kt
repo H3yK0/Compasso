@@ -22,7 +22,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import app.compasso.R
 import app.compasso.model.Level
 import app.compasso.model.ReleaseGate
 import app.compasso.model.ReleaseMode
@@ -72,9 +74,10 @@ fun CustomLevelScreen(
 
     Box(Modifier.fillMaxSize().background(c.bg)) {
         LargeTitleList(
-            title = "Personalizado",
+            title = stringResource(R.string.level_custom),
             onBack = onBack,
-            actions = { NavTextButton("Salvar", { onSave(level); onBack() }, bold = true) },
+            backLabel = stringResource(R.string.tab_today),
+            actions = { NavTextButton(stringResource(R.string.action_save), { onSave(level); onBack() }, bold = true) },
             bottomPadding = 84.dp,
         ) {
             item(key = "resumo") {
@@ -83,48 +86,46 @@ fun CustomLevelScreen(
                         IconSquare(RowIcon(Icons.Rounded.Tune, c.gray), size = 44.dp)
                         Spacer(Modifier.width(14.dp))
                         Column {
-                            Text("≈ ${level.estimatedMinutes} min", style = Ios.type.title2, color = c.label)
+                            Text(stringResource(R.string.today_fact_minutes, level.estimatedMinutes), style = Ios.type.title2, color = c.label)
                             Text(levelSummary(level, ReleaseGate.Off, withTime = false), style = Ios.type.footnote, color = c.secondary)
                         }
                     }
                 }
             }
-            section(header = "Rodadas", footer = "Quantas vezes o ritmo volta depois de cada pausa.", key = "rodadas") {
-                SliderBlock(if (level.rounds == 1) "1 rodada" else "${level.rounds} rodadas") {
+            section(header = { stringResource(R.string.summary_rounds) }, footer = { stringResource(R.string.custom_rounds_footer) }, key = "rodadas") {
+                SliderBlock(roundsText(level.rounds)) {
                     IosSlider(rounds, { rounds = it }, 1f..20f, steps = 18)
                 }
             }
-            section(header = "Tempo no ritmo", footer = "Cada rodada sorteia um tempo dentro desta faixa.", key = "ritmo") {
+            section(header = { stringResource(R.string.custom_go) }, footer = { stringResource(R.string.custom_go_footer) }, key = "ritmo") {
                 SliderBlock("${level.goMinSec}–${level.goMaxSec} s") {
                     IosRangeSlider(goMin..goMax, { goMin = it.start; goMax = it.endInclusive }, 10f..180f, steps = 33)
                 }
             }
-            section(header = "Tempo de pausa", footer = "Mãos fora e respiração guiada durante esse tempo.", key = "pausa") {
+            section(header = { stringResource(R.string.custom_stop) }, footer = { stringResource(R.string.custom_stop_footer) }, key = "pausa") {
                 SliderBlock("${level.stopMinSec}–${level.stopMaxSec} s") {
                     IosRangeSlider(stopMin..stopMax, { stopMin = it.start; stopMax = it.endInclusive }, 5f..90f, steps = 16)
                 }
             }
             section(
-                header = "Velocidade",
-                footer = "Começa na menor e sobe até a maior ao longo das rodadas. 60 bpm = uma batida por segundo.",
-                key = "velocidade",
-            ) {
+                header = { stringResource(R.string.custom_speed) },
+                footer = { stringResource(R.string.custom_speed_footer) },
+                key = "velocidade") {
                 SliderBlock("${level.bpmStart}–${level.bpmEnd} bpm") {
                     IosRangeSlider(bpmLow..bpmHigh, { bpmLow = it.start; bpmHigh = it.endInclusive }, 40f..200f, steps = 31)
                 }
             }
             section(
-                header = "No final",
-                footer = when (ReleaseMode.entries[release]) {
-                    ReleaseMode.ALWAYS -> "Depois da última rodada, a tela fica verde: liberado (se o controle inteligente permitir)."
-                    ReleaseMode.CHANCE -> "50% de chance de liberar. Você só descobre no fim."
-                    ReleaseMode.NEVER -> "A sessão termina sem liberação, como no Impossível."
-                },
-                key = "final",
-            ) {
+                header = { stringResource(R.string.custom_end) },
+                footer = { when (ReleaseMode.entries[release]) {
+                    ReleaseMode.ALWAYS -> stringResource(R.string.custom_end_always)
+                    ReleaseMode.CHANCE -> stringResource(R.string.custom_end_chance, level.releaseChance)
+                    ReleaseMode.NEVER -> stringResource(R.string.custom_end_never)
+                } },
+                key = "final") {
                 Box(Modifier.padding(12.dp)) {
                     IosSegmented(
-                        listOf("Libera", "Sorteio", "Não libera"),
+                        listOf(stringResource(R.string.custom_release), stringResource(R.string.custom_draw), stringResource(R.string.custom_no_release)),
                         RELEASE_ORDER.indexOf(ReleaseMode.entries[release]),
                         { release = RELEASE_ORDER[it].ordinal },
                     )
@@ -139,7 +140,7 @@ fun CustomLevelScreen(
                 .navigationBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
         ) {
-            PrimaryButton("Salvar e começar", { onSave(level); onStart(level) }, Modifier.fillMaxWidth())
+            PrimaryButton(stringResource(R.string.custom_save_start), { onSave(level); onStart(level) }, Modifier.fillMaxWidth())
         }
     }
 }

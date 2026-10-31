@@ -3,6 +3,7 @@ id: corpo
 titulo: "Sono e movimento: a base que segura a vontade"
 resumo: Cérebro cansado quer recompensa rápida. Dormir e se mexer são das defesas mais baratas que existem.
 categoria: Corpo e sexualidade
+tema: corpo
 minutos: 2
 ordem: 8
 ---

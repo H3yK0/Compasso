@@ -8,11 +8,12 @@ enum class ReleaseMode { ALWAYS, CHANCE, NEVER }
  * Um nível de treino: quantas rodadas de ritmo, quanto tempo cada rodada e cada pausa
  * duram (sorteado dentro da faixa), a velocidade (batidas por minuto, subindo do início
  * ao fim) e se a sessão libera no final.
+ *
+ * [name] é só um nome interno de reserva: a tela mostra o nome traduzido pelo [id].
  */
 data class Level(
     val id: String,
     val name: String,
-    val tagline: String,
     val difficulty: Int,
     val rounds: Int,
     val goMinSec: Int,
@@ -35,13 +36,6 @@ data class Level(
         }
 
     val estimatedMinutes: Int get() = ((estimatedSeconds + 30) / 60).coerceAtLeast(1)
-
-    val releaseLabel: String
-        get() = when (release) {
-            ReleaseMode.ALWAYS -> "Libera no fim"
-            ReleaseMode.NEVER -> "Sem liberação"
-            ReleaseMode.CHANCE -> "Sorteio $releaseChance%"
-        }
 
     /** Garante valores coerentes (mínimo ≤ máximo, faixas razoáveis). */
     fun sanitized(): Level {
@@ -68,7 +62,6 @@ object Levels {
     val EASY = Level(
         id = "facil",
         name = "Fácil",
-        tagline = "Poucas pausas e liberação rápida. Bom pra pegar o jeito.",
         difficulty = 1,
         rounds = 4,
         goMinSec = 25, goMaxSec = 40,
@@ -80,7 +73,6 @@ object Levels {
     val MEDIUM = Level(
         id = "medio",
         name = "Médio",
-        tagline = "Mais rodadas e ritmo subindo. Demora, mas libera.",
         difficulty = 2,
         rounds = 7,
         goMinSec = 35, goMaxSec = 60,
@@ -92,7 +84,6 @@ object Levels {
     val HARD = Level(
         id = "dificil",
         name = "Difícil",
-        tagline = "Sessão longa com ritmo forte no fim. Libera só no final.",
         difficulty = 3,
         rounds = 10,
         goMinSec = 45, goMaxSec = 90,
@@ -104,7 +95,6 @@ object Levels {
     val IMPOSSIBLE = Level(
         id = "impossivel",
         name = "Impossível",
-        tagline = "Ritmo alto e pausas curtas. Aqui não tem liberação.",
         difficulty = 4,
         rounds = 12,
         goMinSec = 60, goMaxSec = 100,
@@ -118,7 +108,6 @@ object Levels {
     val DEFAULT_CUSTOM = Level(
         id = Level.CUSTOM_ID,
         name = "Personalizado",
-        tagline = "Você decide rodadas, tempos, velocidade e se libera.",
         difficulty = 0,
         rounds = 6,
         goMinSec = 30, goMaxSec = 60,
@@ -129,9 +118,11 @@ object Levels {
     )
 }
 
-fun speedLabel(bpm: Int): String = when {
-    bpm < 75 -> "Lento"
-    bpm < 105 -> "Moderado"
-    bpm < 140 -> "Rápido"
-    else -> "Muito rápido"
+enum class Speed { SLOW, MODERATE, FAST, VERY_FAST }
+
+fun speedOf(bpm: Int): Speed = when {
+    bpm < 75 -> Speed.SLOW
+    bpm < 105 -> Speed.MODERATE
+    bpm < 140 -> Speed.FAST
+    else -> Speed.VERY_FAST
 }

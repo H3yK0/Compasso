@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import app.compasso.R
 import app.compasso.ui.components.NavTextButton
 import app.compasso.ui.theme.Ios
 import kotlinx.coroutines.delay
@@ -143,7 +145,7 @@ private fun Keypad(onDigit: (Char) -> Unit, onBackspace: () -> Unit, showDelete:
             Spacer(Modifier.size(78.dp))
             Key('0') { onDigit('0') }
             Box(Modifier.size(78.dp), contentAlignment = Alignment.Center) {
-                if (showDelete) NavTextButton("Apagar", onBackspace)
+                if (showDelete) NavTextButton(stringResource(R.string.pin_delete), onBackspace)
             }
         }
     }
@@ -184,7 +186,7 @@ private fun Key(ch: Char, onClick: () -> Unit) {
 fun PinUnlockScreen(
     onTry: (String) -> PinCheck,
     waitMs: () -> Long,
-    title: String = "Digite sua senha",
+    title: String = stringResource(R.string.pin_enter),
     subtitle: String? = null,
     onCancel: (() -> Unit)? = null,
 ) {
@@ -200,35 +202,37 @@ fun PinUnlockScreen(
         }
     }
     val waiting = remaining > 0L
+    val wrong = stringResource(R.string.pin_wrong)
     PinPad(
         title = title,
         subtitle = subtitle,
-        error = if (waiting) "Muitas tentativas. Tente de novo em ${formatWait(remaining)}." else error,
+        error = if (waiting) stringResource(R.string.pin_wait, formatWait(remaining)) else error,
         errorTick = errorTick,
         enabled = !waiting,
         onComplete = { pin ->
             when (onTry(pin)) {
                 PinCheck.OK -> error = null
                 PinCheck.WRONG -> {
-                    error = "Senha incorreta"
+                    error = wrong
                     errorTick++
                 }
                 PinCheck.WAIT -> errorTick++
             }
         },
-        bottom = { if (onCancel != null) NavTextButton("Cancelar", onCancel) },
+        bottom = { if (onCancel != null) NavTextButton(stringResource(R.string.action_cancel), onCancel) },
     )
 }
 
 /** "30 s", "2 min", "1 min 30 s". */
+@Composable
 private fun formatWait(ms: Long): String {
     val s = ((ms + 999) / 1000).toInt()
     val m = s / 60
     val r = s % 60
     return when {
-        m == 0 -> "$s s"
-        r == 0 -> "$m min"
-        else -> "$m min $r s"
+        m == 0 -> stringResource(R.string.duration_seconds, s)
+        r == 0 -> stringResource(R.string.duration_minutes, m)
+        else -> stringResource(R.string.duration_min_sec, m, r)
     }
 }
 
@@ -238,9 +242,10 @@ fun PinSetupScreen(firstRun: Boolean, onDone: (String) -> Unit, onSkip: () -> Un
     var error by remember { mutableStateOf<String?>(null) }
     var errorTick by remember { mutableIntStateOf(0) }
     val c = Ios.colors
+    val mismatch = stringResource(R.string.pin_mismatch)
     PinPad(
-        title = if (first == null) "Crie uma senha" else "Confirme a senha",
-        subtitle = if (first == null) "4 dígitos. O app vai pedir essa senha sempre que for aberto." else "Digite a mesma senha de novo.",
+        title = stringResource(if (first == null) R.string.pin_create else R.string.pin_confirm),
+        subtitle = stringResource(if (first == null) R.string.pin_create_text else R.string.pin_confirm_text),
         error = error,
         errorTick = errorTick,
         onComplete = { pin ->
@@ -253,17 +258,16 @@ fun PinSetupScreen(firstRun: Boolean, onDone: (String) -> Unit, onSkip: () -> Un
                 f == pin -> onDone(pin)
                 else -> {
                     first = null
-                    error = "As senhas não batem. Comece de novo."
+                    error = mismatch
                     errorTick++
                 }
             }
         },
         bottom = {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                NavTextButton(if (firstRun) "Agora não" else "Cancelar", onSkip)
+                NavTextButton(stringResource(if (firstRun) R.string.action_not_now else R.string.action_cancel), onSkip)
                 Text(
-                    if (firstRun) "Dá pra ativar depois em Ajustes. Se esquecer a senha, só apagando os dados do app."
-                    else "Se esquecer a senha, só apagando os dados do app.",
+                    stringResource(if (firstRun) R.string.pin_later_note else R.string.pin_forgot_note),
                     style = Ios.type.caption1,
                     color = c.secondary,
                     textAlign = TextAlign.Center,

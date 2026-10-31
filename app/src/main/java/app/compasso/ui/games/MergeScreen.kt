@@ -1,5 +1,8 @@
 package app.compasso.ui.games
 
+import androidx.compose.ui.res.stringResource
+import app.compasso.R
+
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
@@ -98,6 +101,7 @@ fun MergeScreen(
     var won by remember { mutableStateOf(false) }
     var showWon by remember { mutableStateOf(false) }
     val saveScore by rememberUpdatedState(onScore)
+    val boardLabel = stringResource(R.string.game_merge_board_cd)
     DisposableEffect(Unit) { onDispose { saveScore(game.score) } }
 
     fun move(dir: Dir) {
@@ -143,7 +147,7 @@ fun MergeScreen(
                             .size(side)
                             .clip(RoundedCornerShape(16.dp))
                             .background(c.card)
-                            .semantics { contentDescription = "Tabuleiro do Dobra. Deslize para mover." }
+                            .semantics { contentDescription = boardLabel }
                             .pointerInput(game) {
                                 var total = Offset.Zero
                                 detectDragGestures(
@@ -186,14 +190,14 @@ fun MergeScreen(
                 }
                 Spacer(Modifier.height(18.dp))
                 Text(
-                    if (showWon) "Você chegou a 2048! Dá pra continuar." else "Deslize para qualquer lado. Iguais se juntam.",
+                    stringResource(if (showWon) R.string.game_merge_won else R.string.game_merge_hint),
                     style = Ios.type.subhead,
                     color = if (showWon) c.green else c.secondary,
                 )
             }
             GameOverCard(
                 visible = over,
-                title = "Sem movimentos",
+                title = stringResource(R.string.game_merge_over),
                 score = score,
                 newRecord = score > best,
                 onAgain = ::restart,

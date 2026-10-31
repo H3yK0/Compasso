@@ -1,5 +1,8 @@
 package app.compasso.ui.components
 
+import androidx.compose.ui.res.stringResource
+import app.compasso.R
+
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
@@ -177,7 +180,7 @@ fun IosNavBar(
     title: String,
     collapsed: Float,
     onBack: (() -> Unit)? = null,
-    backLabel: String = "Hoje",
+    backLabel: String = stringResource(R.string.tab_today),
     actions: @Composable RowScope.() -> Unit = {},
     progress: Float? = null,
 ) {
@@ -221,7 +224,7 @@ fun LargeTitleList(
     title: String,
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
-    backLabel: String = "Hoje",
+    backLabel: String = stringResource(R.string.tab_today),
     actions: @Composable RowScope.() -> Unit = {},
     bottomPadding: Dp = 0.dp,
     state: LazyListState = rememberLazyListState(),
@@ -261,17 +264,18 @@ fun LargeTitleList(
 
 // ---------- Listas agrupadas ----------
 
+/** Grupo da lista. Cabeçalho e rodapé são calculados já na tela (podem usar textos traduzidos). */
 fun LazyListScope.section(
-    header: String? = null,
-    footer: String? = null,
+    header: (@Composable () -> String)? = null,
+    footer: (@Composable () -> String)? = null,
     key: Any? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     item(key = key) {
         Column(Modifier.fillMaxWidth()) {
-            if (header != null) GroupHeader(header) else Spacer(Modifier.height(24.dp))
+            if (header != null) GroupHeader(header()) else Spacer(Modifier.height(24.dp))
             GroupCard(content = content)
-            if (footer != null) GroupFooter(footer)
+            if (footer != null) GroupFooter(footer())
         }
     }
 }

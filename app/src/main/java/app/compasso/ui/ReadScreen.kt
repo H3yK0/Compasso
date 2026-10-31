@@ -57,13 +57,16 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
+import app.compasso.R
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import app.compasso.model.Article
 import app.compasso.model.Block
+import app.compasso.model.Theme
 import app.compasso.model.Tip
 import app.compasso.ui.components.IosNavBar
 import app.compasso.ui.components.IosRow
@@ -80,11 +83,11 @@ import kotlinx.coroutines.flow.first
 
 /** Capa de cada artigo: cores do tema e um desenho que lembra o assunto. */
 fun articleCover(a: Article): Pair<List<Color>, Motif> {
-    val colors = when (a.category) {
-        "Mente e hábitos" -> CoverColors.mind
-        "O que a ciência diz" -> CoverColors.science
-        "Corpo e sexualidade" -> CoverColors.body
-        else -> CoverColors.support
+    val colors = when (a.theme) {
+        Theme.MIND -> CoverColors.mind
+        Theme.SCIENCE -> CoverColors.science
+        Theme.BODY -> CoverColors.body
+        Theme.SUPPORT -> CoverColors.support
     }
     val motif = when (a.id) {
         "ondas", "corpo", "erecao" -> Motif.WAVES
@@ -117,16 +120,16 @@ fun ReadScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(top = top + 10.dp, bottom = bottomPadding + 16.dp),
         ) {
-            Text("Ler", style = Ios.type.display, color = c.label, modifier = Modifier.padding(horizontal = 22.dp))
+            Text(stringResource(R.string.tab_read), style = Ios.type.display, color = c.label, modifier = Modifier.padding(horizontal = 22.dp))
             Text(
-                if (articles.isEmpty()) "Leituras curtas, com fontes." else "$readCount de ${articles.size} lidos. Cada um leva 2 ou 3 minutos.",
+                if (articles.isEmpty()) stringResource(R.string.read_intro_empty) else stringResource(R.string.read_intro, readCount, articles.size),
                 style = Ios.type.callout,
                 color = c.secondary,
                 modifier = Modifier.padding(start = 22.dp, end = 22.dp, top = 2.dp),
             )
             if (tip != null) {
                 Spacer(Modifier.height(14.dp))
-                TipCard(tip.title, tip.message, Icons.AutoMirrored.Rounded.MenuBook, onClose = { onTipClose(tip) })
+                TipCard(stringResource(tip.title), stringResource(tip.message), Icons.AutoMirrored.Rounded.MenuBook, onClose = { onTipClose(tip) })
             }
             if (featured != null) {
                 Spacer(Modifier.height(18.dp))
@@ -142,7 +145,7 @@ fun ReadScreen(
                 }
             }
             Text(
-                "Textos do Compasso, revisados para não exagerar: cada um cita os estudos no final. Não substituem a orientação de um profissional de saúde. Licença CC BY-SA 4.0.",
+                stringResource(R.string.read_footer),
                 style = Ios.type.footnote,
                 color = c.tertiary,
                 modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 18.dp),
@@ -157,7 +160,7 @@ private fun FeaturedArticle(a: Article, isRead: Boolean, onClick: () -> Unit) {
     CoverCard(colors, motif, 236.dp, onClick, Modifier.padding(horizontal = 16.dp), seed = 3) {
         Column(Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.Bottom) {
             Text(
-                "Comece por aqui",
+                stringResource(R.string.read_start_here),
                 style = Ios.type.footnote.copy(fontWeight = FontWeight.SemiBold),
                 color = Color.White,
                 modifier = Modifier.clip(CircleShape).background(Color.White.copy(alpha = 0.18f)).padding(horizontal = 10.dp, vertical = 4.dp),
@@ -168,10 +171,10 @@ private fun FeaturedArticle(a: Article, isRead: Boolean, onClick: () -> Unit) {
             Text(a.summary, style = Ios.type.subhead, color = Color.White.copy(alpha = 0.85f), maxLines = 2, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(10.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("${a.minutes} min de leitura", style = Ios.type.footnote.copy(fontWeight = FontWeight.SemiBold), color = Color.White.copy(alpha = 0.9f))
+                Text(stringResource(R.string.read_minutes, a.minutes), style = Ios.type.footnote.copy(fontWeight = FontWeight.SemiBold), color = Color.White.copy(alpha = 0.9f))
                 if (isRead) {
                     Spacer(Modifier.width(8.dp))
-                    Icon(Icons.Rounded.CheckCircle, contentDescription = "Lido", tint = Color.White, modifier = Modifier.size(16.dp))
+                    Icon(Icons.Rounded.CheckCircle, contentDescription = stringResource(R.string.read_done), tint = Color.White, modifier = Modifier.size(16.dp))
                 }
             }
         }
@@ -197,7 +200,7 @@ private fun ArticleRow(a: Article, isRead: Boolean, onClick: () -> Unit) {
                     Modifier.align(Alignment.BottomEnd).padding(4.dp).size(18.dp).clip(CircleShape).background(Color.White),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Rounded.Check, contentDescription = "Lido", tint = colors.last(), modifier = Modifier.size(13.dp))
+                    Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.read_done), tint = colors.last(), modifier = Modifier.size(13.dp))
                 }
             }
         }
@@ -208,7 +211,7 @@ private fun ArticleRow(a: Article, isRead: Boolean, onClick: () -> Unit) {
             Text(a.summary, style = Ios.type.footnote, color = c.secondary, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(3.dp))
             Text(
-                if (isRead) "${a.minutes} min · lido" else "${a.minutes} min",
+                if (isRead) stringResource(R.string.read_minutes_done, a.minutes) else stringResource(R.string.duration_minutes, a.minutes),
                 style = Ios.type.caption1.copy(fontWeight = FontWeight.SemiBold),
                 color = if (isRead) c.green else c.tertiary,
             )
@@ -288,11 +291,11 @@ fun ReaderScreen(article: Article, isRead: Boolean, onRead: () -> Unit, onBack: 
                     Text(article.summary, style = Ios.type.callout.copy(lineHeight = 23.sp), color = c.secondary)
                     Spacer(Modifier.height(12.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("${article.minutes} min de leitura", style = Ios.type.footnote, color = c.secondary)
+                        Text(stringResource(R.string.read_minutes, article.minutes), style = Ios.type.footnote, color = c.secondary)
                         if (isRead) {
                             Text(" · ", style = Ios.type.footnote, color = c.secondary)
                             Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = c.green, modifier = Modifier.size(14.dp))
-                            Text(" Lido", style = Ios.type.footnote, color = c.green)
+                            Text(" " + stringResource(R.string.read_done), style = Ios.type.footnote, color = c.green)
                         }
                     }
                     Spacer(Modifier.height(18.dp))
@@ -345,7 +348,7 @@ fun ReaderScreen(article: Article, isRead: Boolean, onRead: () -> Unit, onBack: 
                     Column(Modifier.padding(start = 22.dp, end = 22.dp, top = 26.dp)) {
                         Box(Modifier.fillMaxWidth().height(0.5.dp).background(c.separator))
                         Spacer(Modifier.height(16.dp))
-                        Text("Fontes", style = Ios.type.headline, color = c.label)
+                        Text(stringResource(R.string.read_sources), style = Ios.type.headline, color = c.label)
                         Spacer(Modifier.height(6.dp))
                         article.sources.forEachIndexed { n, s ->
                             Row(Modifier.padding(vertical = 5.dp)) {
@@ -373,13 +376,13 @@ fun ReaderScreen(article: Article, isRead: Boolean, onRead: () -> Unit, onBack: 
             }
             item(key = "licenca") {
                 Text(
-                    "Este texto informa e não substitui avaliação profissional. Compasso · licença CC BY-SA 4.0.",
+                    stringResource(R.string.read_article_footer),
                     style = Ios.type.caption1,
                     color = c.tertiary,
                     modifier = Modifier.padding(start = 22.dp, end = 22.dp, top = 22.dp),
                 )
             }
         }
-        IosNavBar(article.title, collapsed, onBack = onBack, backLabel = "Ler", progress = progress)
+        IosNavBar(article.title, collapsed, onBack = onBack, backLabel = stringResource(R.string.tab_read), progress = progress)
     }
 }

@@ -42,7 +42,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import app.compasso.R
 import androidx.compose.ui.unit.dp
 import app.compasso.ui.components.ButtonKind
 import app.compasso.ui.components.GlassCircleButton
@@ -66,31 +68,31 @@ fun FocusPrepScreen(onPin: () -> Unit, onWithoutPin: () -> Unit, onCancel: () ->
         ) {
             Row(Modifier.fillMaxWidth()) {
                 Spacer(Modifier.weight(1f))
-                GlassCircleButton(Icons.Rounded.Close, "Cancelar", onCancel, size = 40.dp, iconSize = 20.dp)
+                GlassCircleButton(Icons.Rounded.Close, stringResource(R.string.action_cancel), onCancel, size = 40.dp, iconSize = 20.dp)
             }
             Spacer(Modifier.weight(1f))
             GlowOrb(Icons.Rounded.PhonelinkLock, c.lavender, size = 180.dp, pulse = pulse)
             Spacer(Modifier.height(6.dp))
-            Text("Modo foco", style = Ios.type.title1, color = c.label)
+            Text(stringResource(R.string.focus_title), style = Ios.type.title1, color = c.label)
             Spacer(Modifier.height(8.dp))
             Text(
-                "Para começar, fixe a tela. O Android vai perguntar se pode fixar o Compasso: confirme e a sessão começa sozinha.",
+                stringResource(R.string.focus_prep_text),
                 style = Ios.type.body,
                 color = c.secondary,
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(20.dp))
             GlassCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
-                FocusPoint(Icons.Rounded.Apps, "Outros apps, notificações e tela dividida ficam bloqueados.")
-                FocusPoint(Icons.Rounded.PictureInPictureAlt, "Vídeos e janelas flutuantes são fechados ou escondidos.")
-                FocusPoint(Icons.Rounded.LockOpen, "No fim da sessão, o app solta a tela sozinho.")
+                FocusPoint(Icons.Rounded.Apps, stringResource(R.string.focus_point_apps))
+                FocusPoint(Icons.Rounded.PictureInPictureAlt, stringResource(R.string.focus_point_videos))
+                FocusPoint(Icons.Rounded.LockOpen, stringResource(R.string.focus_point_unpin))
             }
             Spacer(Modifier.weight(1f))
-            PrimaryButton("Fixar a tela", onPin, Modifier.fillMaxWidth())
+            PrimaryButton(stringResource(R.string.focus_pin), onPin, Modifier.fillMaxWidth())
             Spacer(Modifier.height(4.dp))
-            NavTextButton("Começar sem fixar", onWithoutPin)
+            NavTextButton(stringResource(R.string.focus_without_pin), onWithoutPin)
             Text(
-                "Sem a tela fixada, a sessão vale como treino, mas não rende pontos.",
+                stringResource(R.string.focus_without_pin_note),
                 style = Ios.type.footnote,
                 color = c.tertiary,
                 textAlign = TextAlign.Center,

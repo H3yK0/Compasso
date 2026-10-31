@@ -41,7 +41,7 @@ import java.time.Duration
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [34], qualifiers = "w392dp-h850dp-xhdpi")
+@Config(sdk = [34], qualifiers = "pt-rBR-w392dp-h850dp-xhdpi")
 class FlowTest {
     @get:Rule
     val compose = createEmptyComposeRule()

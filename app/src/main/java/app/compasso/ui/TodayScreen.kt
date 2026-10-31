@@ -51,6 +51,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -58,6 +60,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import app.compasso.R
 import app.compasso.model.Codename
 import app.compasso.model.FocusSettings
 import app.compasso.model.Lapse
@@ -84,20 +87,19 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
-import java.util.Locale
 import kotlin.math.absoluteValue
 
-private val PT: Locale = Locale.forLanguageTag("pt-BR")
-private val dateFmt = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM", PT)
-
 /** Saudação pela hora do dia. */
+@Composable
 fun greeting(now: Long): String {
     val h = Instant.ofEpochMilli(now).atZone(ZoneId.systemDefault()).hour
-    return when (h) {
-        in 5..11 -> "Bom dia"
-        in 12..17 -> "Boa tarde"
-        else -> "Boa noite"
-    }
+    return stringResource(
+        when (h) {
+            in 5..11 -> R.string.greeting_morning
+            in 12..17 -> R.string.greeting_afternoon
+            else -> R.string.greeting_evening
+        },
+    )
 }
 
 /** Cor do astro conforme a liberação: aberta, só controle ou controle desligado. */
@@ -112,18 +114,21 @@ fun gateTint(gate: ReleaseGate): Color {
 }
 
 /** Os últimos 7 dias como estrelas (o último é hoje). */
+@Composable
 fun weekStars(points: List<PointEntry>, now: Long, zone: ZoneId = ZoneId.systemDefault()): List<DayStar> {
     val today = Progress.day(now, zone)
+    val locale = currentLocale()
+    val dateFmt = DateTimeFormatter.ofPattern(stringResource(R.string.fmt_short_date), locale)
     val byDay = points.groupBy { Progress.day(it.at, zone) }.mapValues { (_, l) -> l.sumOf { it.points } }
     return (6 downTo 0).map { i ->
         val d = today.minusDays(i.toLong())
         val pts = byDay[d] ?: 0
-        val name = d.dayOfWeek.getDisplayName(TextStyle.SHORT, PT).trimEnd('.').replaceFirstChar { it.uppercase() }
+        val name = d.dayOfWeek.getDisplayName(TextStyle.SHORT, locale).trimEnd('.').replaceFirstChar { it.uppercase(locale) }
         DayStar(
             label = name.take(3),
             fraction = (pts / Progress.DAILY_CAP.toFloat()).coerceIn(0f, 1f),
             isToday = i == 0,
-            description = "${d.dayOfMonth}/${d.monthValue}: $pts pontos",
+            description = stringResource(R.string.day_points, d.format(dateFmt), pluralStringResource(R.plurals.points_count, pts, pts)),
         )
     }
 }
@@ -161,11 +166,12 @@ fun TodayScreen(
     val scope = rememberCoroutineScope()
     val tint = gateTint(gate)
     val today = remember(points, now / 60_000) { Progress.pointsToday(points, now) }
-    val week = remember(points, now / 60_000) { weekStars(points, now) }
+    val week = weekStars(points, now)
     val streak = remember(points, lapses, now / 60_000) { Progress.streak(points, lapses, now) }
     val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val selected = levels[chosen]
     val screenH = LocalConfiguration.current.screenHeightDp
+    val settingsLabel = stringResource(R.string.today_settings_cd)
     val astroSize = (screenH * 0.30f - 20f).coerceIn(170f, 236f).dp
 
     SkyBackground(Modifier.fillMaxSize(), glow = tint) {
@@ -178,10 +184,13 @@ fun TodayScreen(
             // cabeçalho: saudação e o emblema (abre os ajustes)
             Row(Modifier.fillMaxWidth().padding(start = 22.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("${greeting(now)},", style = Ios.type.display.copy(lineHeight = Ios.type.display.fontSize), color = c.label)
-                    Text(codename.name.substringBefore(' '), style = Ios.type.display, color = c.label)
+                    Text(stringResource(R.string.greeting_comma, greeting(now)), style = Ios.type.display.copy(lineHeight = Ios.type.display.fontSize), color = c.label)
+                    Text(codenameShort(codename), style = Ios.type.display, color = c.label)
+                    val locale = currentLocale()
                     Text(
-                        Instant.ofEpochMilli(now).atZone(ZoneId.systemDefault()).format(dateFmt).replaceFirstChar { it.uppercase() },
+                        Instant.ofEpochMilli(now).atZone(ZoneId.systemDefault())
+                            .format(DateTimeFormatter.ofPattern(stringResource(R.string.fmt_today_header), locale))
+                            .replaceFirstChar { it.uppercase(locale) },
                         style = Ios.type.subhead,
                         color = c.secondary,
                     )
@@ -191,7 +200,7 @@ fun TodayScreen(
                         .size(52.dp)
                         .clip(CircleShape)
                         .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, role = Role.Button, onClick = onSettings)
-                        .semantics { contentDescription = "Ajustes e perfil" },
+                        .semantics { contentDescription = settingsLabel },
                     contentAlignment = Alignment.Center,
                 ) {
                     CodenameAvatar(codename.seed, 46.dp, ring = tierColor(level.tier))
@@ -224,7 +233,7 @@ fun TodayScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 2.dp),
             )
             Text(
-                "$today de ${Progress.DAILY_CAP} pontos hoje",
+                stringResource(R.string.today_points, today, Progress.DAILY_CAP),
                 style = Ios.type.footnote,
                 color = c.tertiary,
                 textAlign = TextAlign.Center,
@@ -258,7 +267,7 @@ fun TodayScreen(
             }
             Spacer(Modifier.height(18.dp))
             PrimaryButton(
-                "Começar ${selected.name}",
+                stringResource(R.string.today_start_level, levelName(selected)),
                 { onStart(selected) },
                 Modifier.fillMaxWidth().padding(horizontal = 22.dp),
                 icon = Icons.Rounded.PlayArrow,
@@ -277,9 +286,9 @@ fun TodayScreen(
                 Spacer(Modifier.width(6.dp))
                 Text(
                     when {
-                        focus.pendingOff -> "Modo foco ligado até ${formatUntil(focus.offAt, now)}"
-                        focus.enabled -> "Modo foco: a tela fica fixada durante a sessão"
-                        else -> "Modo foco desligado: sessões não valem pontos"
+                        focus.pendingOff -> stringResource(R.string.today_focus_until, formatUntil(focus.offAt, now))
+                        focus.enabled -> stringResource(R.string.today_focus_on)
+                        else -> stringResource(R.string.today_focus_off)
                     },
                     style = Ios.type.footnote,
                     color = c.secondary,
@@ -288,7 +297,7 @@ fun TodayScreen(
 
             if (tip != null) {
                 Spacer(Modifier.height(16.dp))
-                TipCard(tip.title, tip.message, Icons.Rounded.Air, onClose = { onTipClose(tip) })
+                TipCard(stringResource(tip.title), stringResource(tip.message), Icons.Rounded.Air, onClose = { onTipClose(tip) })
             }
 
             // socorro rápido
@@ -303,8 +312,8 @@ fun TodayScreen(
                     }
                     Spacer(Modifier.width(14.dp))
                     Column(Modifier.weight(1f)) {
-                        Text("Vontade apertou?", style = Ios.type.headline, color = c.label)
-                        Text("Respire 2 minutos comigo. Ela passa.", style = Ios.type.subhead, color = c.secondary)
+                        Text(stringResource(R.string.today_urge_title), style = Ios.type.headline, color = c.label)
+                        Text(stringResource(R.string.today_urge_text), style = Ios.type.subhead, color = c.secondary)
                     }
                     app.compasso.ui.components.Chevron(c.tertiary, Modifier.size(width = 8.dp, height = 13.dp))
                 }
@@ -314,13 +323,9 @@ fun TodayScreen(
             Spacer(Modifier.height(12.dp))
             GlassCard(Modifier.fillMaxWidth().padding(horizontal = 16.dp), onClick = onProgress, contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 12.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Sua semana", style = Ios.type.headline, color = c.label, modifier = Modifier.weight(1f))
+                    Text(stringResource(R.string.today_week), style = Ios.type.headline, color = c.label, modifier = Modifier.weight(1f))
                     Text(
-                        when (streak) {
-                            0 -> "Comece hoje"
-                            1 -> "1 dia seguido"
-                            else -> "$streak dias seguidos"
-                        },
+                        if (streak == 0) stringResource(R.string.today_streak_zero) else pluralStringResource(R.plurals.streak_days, streak, streak),
                         style = Ios.type.subhead,
                         color = c.secondary,
                     )
@@ -346,12 +351,9 @@ private fun LevelCard(
     val c = Ios.colors
     val tint = levelTint(level)
     val closed = gate is ReleaseGate.Closed
-    val ending = when (level.release) {
-        ReleaseMode.NEVER -> "Sem liberação"
-        ReleaseMode.ALWAYS -> if (closed) "Só controle agora" else "Libera no fim"
-        ReleaseMode.CHANCE -> if (closed) "Só controle agora" else "Sorteio de ${level.releaseChance}%"
-    }
+    val ending = levelEnding(level, gate).replaceFirstChar { it.uppercaseChar() }
     val shape = RoundedCornerShape(26.dp)
+    val editLabel = stringResource(R.string.today_edit_custom_cd)
     Column(
         modifier
             .fillMaxWidth()
@@ -362,7 +364,7 @@ private fun LevelCard(
             .padding(horizontal = 20.dp, vertical = 16.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(level.name, style = Ios.type.serifSection.copy(fontSize = Ios.type.serifSection.fontSize * 1.15f), color = c.label, modifier = Modifier.weight(1f))
+            Text(levelName(level), style = Ios.type.serifSection.copy(fontSize = Ios.type.serifSection.fontSize * 1.15f), color = c.label, modifier = Modifier.weight(1f))
             if (isCustom) {
                 Box(
                     Modifier
@@ -370,7 +372,7 @@ private fun LevelCard(
                         .clip(CircleShape)
                         .background(c.fill)
                         .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, role = Role.Button, onClick = onEdit)
-                        .semantics { contentDescription = "Ajustar o Personalizado" },
+                        .semantics { contentDescription = editLabel },
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(Icons.Rounded.Tune, contentDescription = null, tint = c.label, modifier = Modifier.size(18.dp))
@@ -381,8 +383,8 @@ private fun LevelCard(
         }
         Spacer(Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(18.dp)) {
-            Fact("≈ ${level.estimatedMinutes} min", "duração")
-            Fact("${level.rounds}", if (level.rounds == 1) "rodada" else "rodadas")
+            Fact(stringResource(R.string.today_fact_minutes, level.estimatedMinutes), stringResource(R.string.today_fact_duration))
+            Fact("${level.rounds}", pluralStringResource(R.plurals.rounds_word, level.rounds))
             Fact("${level.bpmStart}–${level.bpmEnd}", "bpm")
         }
         Spacer(Modifier.height(10.dp))
@@ -416,7 +418,8 @@ fun levelTint(level: Level): Color {
 @Composable
 fun DifficultyMeter(difficulty: Int, tint: Color) {
     val c = Ios.colors
-    Canvas(Modifier.size(width = 26.dp, height = 18.dp).semantics { contentDescription = "Dificuldade $difficulty de 4" }) {
+    val description = stringResource(R.string.today_difficulty_cd, difficulty)
+    Canvas(Modifier.size(width = 26.dp, height = 18.dp).semantics { contentDescription = description }) {
         val n = 4
         val gap = 3.dp.toPx()
         val w = (size.width - gap * (n - 1)) / n

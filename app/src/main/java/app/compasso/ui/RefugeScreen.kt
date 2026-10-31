@@ -39,7 +39,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import app.compasso.R
 import app.compasso.games.GameKind
 import app.compasso.model.Tip
 import app.compasso.ui.components.CoverArt
@@ -91,16 +93,16 @@ fun RefugeScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(top = top + 10.dp, bottom = bottomPadding + 16.dp),
         ) {
-            Text("Refúgio", style = Ios.type.display, color = c.label, modifier = Modifier.padding(horizontal = 22.dp))
+            Text(stringResource(R.string.tab_refuge), style = Ios.type.display, color = c.label, modifier = Modifier.padding(horizontal = 22.dp))
             Text(
-                "A vontade vem em ondas e passa. Escolha uma saída e fique aqui até ela baixar.",
+                stringResource(R.string.refuge_intro),
                 style = Ios.type.callout,
                 color = c.secondary,
                 modifier = Modifier.padding(start = 22.dp, end = 22.dp, top = 4.dp),
             )
             if (tip != null) {
                 Spacer(Modifier.height(14.dp))
-                TipCard(tip.title, tip.message, Icons.Rounded.Spa, onClose = { onTipClose(tip) })
+                TipCard(stringResource(tip.title), stringResource(tip.message), Icons.Rounded.Spa, onClose = { onTipClose(tip) })
             }
 
             // respirar: o cartão principal
@@ -114,15 +116,15 @@ fun RefugeScreen(
             ) {
                 Row(Modifier.fillMaxSize().padding(20.dp), verticalAlignment = Alignment.Bottom) {
                     Column(Modifier.weight(1f)) {
-                        Text("Respirar", style = Ios.type.title1, color = Color.White)
-                        Text("2 minutos com trilha calma", style = Ios.type.subhead, color = Color.White.copy(alpha = 0.85f))
+                        Text(stringResource(R.string.breathe_title), style = Ios.type.title1, color = Color.White)
+                        Text(stringResource(R.string.refuge_breathe_sub), style = Ios.type.subhead, color = Color.White.copy(alpha = 0.85f))
                     }
-                    RoundPlayButton(Icons.Rounded.PlayArrow, "Respirar agora", onBreathe, size = 60.dp, color = Color.White.copy(alpha = 0.95f))
+                    RoundPlayButton(Icons.Rounded.PlayArrow, stringResource(R.string.refuge_breathe_now), onBreathe, size = 60.dp, color = Color.White.copy(alpha = 0.95f))
                 }
             }
 
             // jogos
-            SectionTitle("Jogos", action = "Surpresa", onAction = onQuickGame)
+            SectionTitle(stringResource(R.string.refuge_games), action = stringResource(R.string.refuge_surprise), onAction = onQuickGame)
             Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 GameKind.entries.take(2).forEach { kind ->
                     GameCard(kind, best[kind] ?: 0, { onGame(kind) }, Modifier.weight(1f))
@@ -141,14 +143,14 @@ fun RefugeScreen(
                     seed = 7,
                 ) {
                     Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Bottom) {
-                        Text("Ler algo bom", style = Ios.type.headline, color = Color.White)
-                        Text("Artigos curtos, com fontes", style = Ios.type.footnote, color = Color.White.copy(alpha = 0.85f))
+                        Text(stringResource(R.string.refuge_read), style = Ios.type.headline, color = Color.White)
+                        Text(stringResource(R.string.refuge_read_sub), style = Ios.type.footnote, color = Color.White.copy(alpha = 0.85f))
                     }
                 }
             }
 
             Text(
-                "Num estudo de campo (Skorka-Brown e colegas, 2015), jogar Tetris por 3 minutos reduziu em média 13,9 pontos percentuais a força de vontades de comida, bebida, cigarro, café e também de sexo. Os jogos daqui seguem a mesma ideia: ocupar a cabeça com algo visual até a onda passar.",
+                stringResource(R.string.refuge_study),
                 style = Ios.type.footnote,
                 color = c.secondary,
                 modifier = Modifier.padding(start = 22.dp, end = 22.dp, top = 20.dp),
@@ -195,9 +197,9 @@ private fun GameCard(kind: GameKind, record: Int, onClick: () -> Unit, modifier:
     val (colors, motif) = gameCover(kind)
     CoverCard(colors, motif, 168.dp, onClick, modifier, seed = kind.ordinal) {
         Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Bottom) {
-            Text(kind.title, style = Ios.type.title3, color = Color.White)
+            Text(stringResource(kind.title), style = Ios.type.title3, color = Color.White)
             Text(
-                if (record > 0) "Recorde ${formatScore(record)}" else kind.subtitle,
+                if (record > 0) stringResource(R.string.game_record_value, formatScore(record)) else stringResource(kind.subtitle),
                 style = Ios.type.footnote,
                 color = Color.White.copy(alpha = 0.85f),
                 maxLines = 2,
@@ -206,5 +208,6 @@ private fun GameCard(kind: GameKind, record: Int, onClick: () -> Unit, modifier:
     }
 }
 
-/** Pontuação com separador de milhar ("12.480"). */
-fun formatScore(v: Int): String = String.format(java.util.Locale.forLanguageTag("pt-BR"), "%,d", v)
+/** Pontuação com separador de milhar no idioma do app ("12.480" / "12,480"). */
+@Composable
+fun formatScore(v: Int): String = String.format(currentLocale(), "%,d", v)

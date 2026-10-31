@@ -1,5 +1,9 @@
 package app.compasso.ui.components
 
+import androidx.compose.ui.res.stringResource
+import app.compasso.R
+import app.compasso.ui.currentLocale
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -43,10 +47,10 @@ import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.pow
 
-/** Número em pt-BR: 1 casa decimal quando não é inteiro e é menor que 100 ("4,5", "12,5"). */
-fun formatNumber(v: Float): String {
+/** Número no idioma do app: 1 casa decimal quando não é inteiro e é menor que 100 ("4,5" / "4.5"). */
+fun formatNumber(v: Float, locale: Locale = Locale.getDefault()): String {
     val r = Math.round(v * 10f) / 10f
-    return if (r != floor(r) && r < 100f) String.format(Locale.forLanguageTag("pt-BR"), "%.1f", r) else Math.round(v).toString()
+    return if (r != floor(r) && r < 100f) String.format(locale, "%.1f", r) else Math.round(v).toString()
 }
 
 /** Topo "redondo" do eixo (10, 20, 25, 40, 50…) para as linhas de grade caírem em números fáceis. */
@@ -77,6 +81,8 @@ fun BarChart(
 ) {
     val c = Ios.colors
     val measurer = rememberTextMeasurer()
+    val locale = currentLocale()
+    val noData = stringResource(R.string.chart_no_data)
     val hasData = bars.any { it.value > 0f }
     val lastWithData = bars.indexOfLast { it.value > 0f }.let { if (it < 0) bars.lastIndex else it }
     var selected by remember(bars) { mutableIntStateOf(lastWithData) }
@@ -91,7 +97,7 @@ fun BarChart(
         // valor em destaque
         Row(verticalAlignment = Alignment.Bottom) {
             Text(
-                if (hasData && sel != null) formatNumber(sel.value) else "—",
+                if (hasData && sel != null) formatNumber(sel.value, locale) else "—",
                 style = Ios.type.figure.copy(fontSize = 30.sp, lineHeight = 36.sp),
                 color = c.label,
             )
@@ -104,7 +110,7 @@ fun BarChart(
             color = c.secondary,
         )
         Spacer(Modifier.height(12.dp))
-        val description = if (bars.isEmpty()) emptyText else bars.joinToString { "${it.label}: ${formatNumber(it.value)} $unit" }
+        val description = if (bars.isEmpty()) emptyText else bars.joinToString { "${it.label}: ${formatNumber(it.value, locale)} $unit" }
         Canvas(
             Modifier
                 .fillMaxWidth()
@@ -153,7 +159,7 @@ fun BarChart(
                 val v = maxV * k / 2f
                 val y = plotH - plotH * (v / maxV)
                 drawLine(grid, Offset(0f, y), Offset(plotW, y), strokeWidth = 1f)
-                val t = measurer.measure(formatNumber(v), axisStyle)
+                val t = measurer.measure(formatNumber(v, locale), axisStyle)
                 drawText(t, topLeft = Offset(plotW + 6.dp.toPx(), (y - t.size.height / 2f).coerceIn(0f, plotH - t.size.height)))
             }
 
@@ -200,14 +206,14 @@ fun BarChart(
             }
 
             if (!hasData) {
-                val t = measurer.measure("Sem dados ainda", TextStyle(color = c.tertiary, fontSize = axisStyle.fontSize))
+                val t = measurer.measure(noData, TextStyle(color = c.tertiary, fontSize = axisStyle.fontSize))
                 drawText(t, topLeft = Offset((plotW - t.size.width) / 2f, (plotH - t.size.height) / 2f))
             }
         }
         if (showAverage && nonZero.size >= 2) {
             Spacer(Modifier.height(6.dp))
             Text(
-                "– – média dos períodos com registro: ${formatNumber(average)} $unit",
+                stringResource(R.string.chart_average, "${formatNumber(average, locale)} $unit"),
                 style = Ios.type.caption1,
                 color = c.secondary,
             )

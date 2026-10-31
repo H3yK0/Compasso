@@ -28,7 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import app.compasso.R
 import androidx.compose.ui.unit.dp
 import app.compasso.model.Accent
 import app.compasso.model.Codename
@@ -58,36 +60,37 @@ fun ProfileScreen(
     onNewCodename: () -> Unit,
     onAccent: (Accent) -> Unit,
     onBack: () -> Unit,
-    backLabel: String = "Voltar",
+    backLabel: String = stringResource(R.string.nav_back),
 ) {
     val c = Ios.colors
     val dark = c.dark
-    LargeTitleList("Perfil", onBack = onBack, backLabel = backLabel) {
+    LargeTitleList(stringResource(R.string.profile_title), onBack = onBack, backLabel = backLabel) {
         item(key = "cabecalho") {
             Column(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 CodenameAvatar(codename.seed, 116.dp, ring = tierColor(level.tier))
                 Spacer(Modifier.height(14.dp))
-                Text(codename.name, style = Ios.type.title2, color = c.label, textAlign = TextAlign.Center)
+                Text(codenameText(codename), style = Ios.type.title2, color = c.label, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     TierMedal(level.tier, 20.dp)
                     Spacer(Modifier.width(6.dp))
-                    Text("${level.tier.label} · ${level.windowPoints} pts em 28 dias", style = Ios.type.subhead, color = c.secondary)
+                    Text(
+                        stringResource(level.tier.label) + " · " + stringResource(R.string.progress_window_points, level.windowPoints),
+                        style = Ios.type.subhead,
+                        color = c.secondary,
+                    )
                 }
                 Spacer(Modifier.height(14.dp))
                 IosButton(
-                    "Sortear outro codinome", onNewCodename,
+                    stringResource(R.string.profile_new_codename), onNewCodename,
                     kind = ButtonKind.Tinted, height = 40.dp, shape = CircleShape, icon = Icons.Rounded.Shuffle,
                 )
-                GroupFooter(
-                    "O codinome e o emblema são criados pelo app e não identificam você. Ficam só neste celular.",
-                    Modifier.padding(top = 4.dp),
-                )
+                GroupFooter(stringResource(R.string.profile_codename_note), Modifier.padding(top = 4.dp))
             }
         }
         item(key = "cores") {
             Column {
-                GroupHeader("Cores de destaque")
+                GroupHeader(stringResource(R.string.profile_accents))
                 GroupCard {
                     val rows = Accent.entries.chunked(4)
                     Column(Modifier.padding(vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -117,13 +120,13 @@ fun ProfileScreen(
                                             contentAlignment = Alignment.Center,
                                         ) {
                                             when {
-                                                selected -> Icon(Icons.Rounded.Check, contentDescription = "Escolhida", tint = Color.White, modifier = Modifier.size(20.dp))
-                                                !unlocked -> Icon(Icons.Rounded.Lock, contentDescription = "Bloqueada", tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(16.dp))
+                                                selected -> Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.cd_chosen), tint = Color.White, modifier = Modifier.size(20.dp))
+                                                !unlocked -> Icon(Icons.Rounded.Lock, contentDescription = stringResource(R.string.cd_locked), tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(16.dp))
                                             }
                                         }
                                         Spacer(Modifier.height(6.dp))
-                                        Text(a.label, style = Ios.type.caption1, color = if (unlocked) c.label else c.tertiary)
-                                        Text(a.unlock.label, style = Ios.type.caption2, color = c.secondary)
+                                        Text(stringResource(a.label), style = Ios.type.caption1, color = if (unlocked) c.label else c.tertiary)
+                                        Text(stringResource(a.unlock.label), style = Ios.type.caption2, color = c.secondary)
                                     }
                                 }
                                 repeat(4 - row.size) { Spacer(Modifier.weight(1f)) }
@@ -131,9 +134,7 @@ fun ProfileScreen(
                         }
                     }
                 }
-                GroupFooter(
-                    "Cada nível libera uma cor enquanto você estiver nele. Se o nível cair, o app volta para a cor padrão até você subir de novo.",
-                )
+                GroupFooter(stringResource(R.string.profile_accents_note))
             }
         }
     }

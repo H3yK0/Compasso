@@ -1,5 +1,8 @@
 package app.compasso.ui.components
 
+import androidx.compose.ui.res.stringResource
+import app.compasso.R
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -86,7 +89,7 @@ fun TipCard(title: String, message: String, icon: ImageVector, onClose: () -> Un
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(Icons.Rounded.Close, contentDescription = "Dispensar dica", tint = c.tertiary, modifier = Modifier.size(18.dp))
+            Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.tip_dismiss), tint = c.tertiary, modifier = Modifier.size(18.dp))
         }
     }
 }
@@ -188,7 +191,7 @@ fun TierMedal(tier: Tier, size: Dp, modifier: Modifier = Modifier, locked: Boole
     ) {
         Icon(
             tierIcon(tier),
-            contentDescription = tier.label,
+            contentDescription = stringResource(tier.label),
             tint = if (locked) Ios.colors.tertiary else Color.White,
             modifier = Modifier.size(size * 0.58f),
         )

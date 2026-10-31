@@ -5,7 +5,9 @@ Um refúgio para quem quer sair da pornografia: treino de controle pelo método 
 inteligente, liberação no fim), um lugar seguro para quando a vontade apertar, leituras com fontes e
 evolução por constância. App Android, 100% offline: não pede acesso à internet.
 
-## O que tem (1.3)
+**Versão 0.0.0.1** (primeira versão). Em português, inglês e espanhol.
+
+## O que tem
 
 | Aba | O que faz |
 |---|---|
@@ -14,13 +16,25 @@ evolução por constância. App Android, 100% offline: não pede acesso à inter
 | **Evolução** | Nível pessoal (Iniciante → Invicto), check-in do dia, o céu do mês, gráficos, pódio das melhores semanas, recordes |
 | **Ler** | 9 artigos curtos (mente, corpo, sexualidade, apoio), cada um com as fontes no fim |
 
-Os **Ajustes** (controle inteligente, modo foco, sons e trilha, privacidade, visual Noite/Dia, ajuda,
-licença) abrem pelo emblema no alto da tela Hoje.
+Os **Ajustes** (controle inteligente, modo foco, sons e trilha, privacidade, visual Noite/Dia, idioma,
+ajuda, licença) abrem pelo emblema no alto da tela Hoje.
 
 Também: tela de boas-vindas e apresentação guiada, "Como usar" sempre disponível, dicas na primeira
 visita a cada parte ("ir descobrindo"), codinome anônimo com emblema gerado pelo app.
 
-## Visual "Noite" (1.3)
+## Idiomas
+
+O app segue o idioma do celular: **português**, **inglês** ou **espanhol** (outros idiomas caem no inglês).
+Também dá para escolher em Ajustes → Idioma. Traduzidos: todas as telas, os 9 artigos (com as mesmas fontes;
+no artigo de ajuda, os serviços do Brasil viram linhas de apoio de outros países), datas, horas e números.
+
+- Textos das telas: `app/src/main/res/values/strings.xml` (inglês, o padrão), `values-pt/` e `values-es/`.
+  As três listas precisam ter as mesmas chaves e os mesmos `%1$s`; o `LocalizationTest` confere.
+- Artigos: `app/src/main/assets/artigos/pt`, `en` e `es`, com o mesmo `id`, `ordem`, `tema` e `minutos`
+  em cada idioma (o `ContentTest` confere).
+- O codinome guarda só a posição das palavras: "Lobo Sereno 42" vira "Serene Wolf 42" em inglês.
+
+## Visual "Noite"
 
 Céu noturno com estrelas, cartões de vidro, barra de abas flutuante e o **astro**: a esfera com a rosa
 dos ventos que também é o ícone do app. Títulos na serifa Cormorant Garamond, textos e números na Inter.
@@ -64,6 +78,18 @@ bloqueia outros apps, notificações e tela dividida, e fecha vídeos em picture
 - sem a tela fixada a sessão continua, mas não vale pontos;
 - desligar o modo foco só vale 24 h depois.
 
+## Proteções contra burlar as regras
+
+- **Relógio confiável** (`model/Clock.kt`): atrasar a hora do celular não reabre a liberação, não devolve
+  pontos e não encurta esperas. O app guarda o último horário que viu e soma só o tempo que de fato passou.
+- **Lapsos**: "não segurei" e sessões interrompidas ficam registrados (só data e tipo) mesmo com o histórico
+  desligado ou apagado, porque contam para a sequência e para o Invicto.
+- **Senha**: tentativas erradas ficam gravadas (fechar o app não zera) e, da 5ª em diante, pedem uma espera
+  que cresce de 30 s até 15 min. Trocar ou remover a senha pede a senha atual. Com senha, a miniatura nos
+  recentes fica escondida (Android 13+).
+- **Sem backup e sem transferência**: `allowBackup="false"` e regras de extração de dados que excluem tudo
+  (no Android 12+ o `allowBackup` sozinho não bloqueia a transferência entre aparelhos).
+
 ## Pontos e níveis (`model/Progress.kt`)
 
 Premiam constância, não "fazer mais sessões". Teto de 40 pontos por dia.
@@ -105,7 +131,7 @@ com outra chave o Android obriga a desinstalar antes (e o histórico se perde).
 ## Licença
 
 - **Código:** GNU Affero General Public License v3.0 (`LICENSE`). Copyright (C) 2026 H3yK0 (`NOTICE`).
-- **Artigos** (`app/src/main/assets/artigos`): Creative Commons BY-SA 4.0.
+- **Artigos** (`app/src/main/assets/artigos`, nos três idiomas): Creative Commons BY-SA 4.0.
 - **Fonte Inter** (`app/src/main/res/font/inter.ttf`, recortada): SIL Open Font License 1.1
   (`app/src/main/assets/inter-ofl.txt`).
 - **Fonte Cormorant Garamond** (`app/src/main/res/font/cormorant_*.ttf`): SIL Open Font License 1.1

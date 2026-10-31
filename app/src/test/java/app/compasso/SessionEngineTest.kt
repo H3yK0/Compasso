@@ -29,7 +29,7 @@ class SessionEngineTest {
     }
 
     private fun simple(rounds: Int, goSec: Int, stopSec: Int, bpm: Int, release: ReleaseMode, chance: Int = 50) = Level(
-        id = "t", name = "Teste", tagline = "", difficulty = 1, rounds = rounds,
+        id = "t", name = "Teste", difficulty = 1, rounds = rounds,
         goMinSec = goSec, goMaxSec = goSec, stopMinSec = stopSec, stopMaxSec = stopSec,
         bpmStart = bpm, bpmEnd = bpm, release = release, releaseChance = chance,
     )

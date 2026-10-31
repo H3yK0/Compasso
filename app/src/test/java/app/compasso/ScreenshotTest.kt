@@ -55,6 +55,8 @@ import app.compasso.ui.RefugeScreen
 import app.compasso.ui.SessionScreen
 import app.compasso.ui.SessionUi
 import app.compasso.ui.SummaryScreen
+import app.compasso.ui.NoPointsReason
+import app.compasso.ui.SessionNotice
 import app.compasso.ui.SummaryUi
 import app.compasso.ui.Tab
 import app.compasso.ui.TodayScreen
@@ -85,7 +87,7 @@ import java.io.FileOutputStream
 /** Gera imagens das telas em app/build/shots para conferir o visual sem um celular. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [34], qualifiers = "w392dp-h850dp-xhdpi")
+@Config(sdk = [34], qualifiers = "pt-rBR-w392dp-h850dp-xhdpi")
 class ScreenshotTest {
     @get:Rule
     val compose = createComposeRule()
@@ -109,13 +111,13 @@ class ScreenshotTest {
     private fun WithTabs(tab: Tab, content: @Composable () -> Unit) {
         Box(Modifier.fillMaxSize()) {
             content()
-            FloatingTabBar(tabItems, tab.ordinal, {}, Modifier.align(Alignment.BottomCenter))
+            FloatingTabBar(tabItems(), tab.ordinal, {}, Modifier.align(Alignment.BottomCenter))
         }
     }
 
     private val open = ReleaseGate.Open(24, false)
     private val closed = ReleaseGate.Closed(now + 9 * hour + 20 * 60_000L, setOf(GateRule.INTERVAL), 24, false)
-    private val codename = Codename("Coruja Serena 214", 42L)
+    private val codename = Codename(noun = 17, adjective = 0, number = 214, seed = 42L) // Coruja Serena 214
 
     private fun ui(
         phase: PhaseType,
@@ -124,7 +126,7 @@ class ScreenshotTest {
         elapsedInPhase: Long = duration - remaining,
         paused: Boolean = false,
         controlOnly: Boolean = false,
-        notice: String? = null,
+        notice: SessionNotice? = null,
     ) = SessionUi(
         level = Levels.MEDIUM,
         phase = phase,
@@ -186,7 +188,7 @@ class ScreenshotTest {
     }
     private val level = Progress.level(points, records.mapNotNull { Lapse.from(it) }, now)
 
-    private val articles = File("src/main/assets/artigos").listFiles().orEmpty()
+    private val articles = File("src/main/assets/artigos/pt").listFiles().orEmpty()
         .filter { it.name.endsWith(".md") }
         .map { ArticleParser.parse(it.readText()) }
         .sortedBy { it.order }
@@ -214,7 +216,7 @@ class ScreenshotTest {
     @Test fun homeDark() = shot("01_hoje") { home(open, initialLevel = 1)() }
 
     @Test
-    @Config(qualifiers = "w392dp-h1500dp-xhdpi")
+    @Config(qualifiers = "pt-rBR-w392dp-h1500dp-xhdpi")
     fun homeFull() = shot("01a_hoje_inteiro") { home(closed, Tip.TRAIN)() }
 
     @Test fun homeLight() = shot("01b_hoje_dia", dark = false) { home(closed, Tip.TRAIN)() }
@@ -256,7 +258,7 @@ class ScreenshotTest {
         SessionScreen(
             ui(
                 PhaseType.GO, paused = true,
-                notice = "Você saiu do app. Com o modo foco, sair por mais de 10 s encerra a sessão. Restam 2 saídas.",
+                notice = SessionNotice.LeftApp(exitsLeft = 2),
             ),
             true, {}, {}, {}, {},
         )
@@ -277,7 +279,7 @@ class ScreenshotTest {
 
     @Test fun summaryInterrupted() = shot("09b_resumo_interrompida") {
         SummaryScreen(
-            SummaryUi(records[7], saved = true, gate = closed, noPoints = "Sessão interrompida não vale pontos e quebra a sequência de hoje."),
+            SummaryUi(records[7], saved = true, gate = closed, noPoints = NoPointsReason.INTERRUPTED),
             {}, {}, now,
         )
     }
@@ -332,7 +334,7 @@ class ScreenshotTest {
     // ---------- Evolução ----------
 
     @Test
-    @Config(qualifiers = "w392dp-h2600dp-xhdpi")
+    @Config(qualifiers = "pt-rBR-w392dp-h2600dp-xhdpi")
     fun progress() = shot("19_evolucao_completa", dark = false) {
         ProgressScreen(level, codename, points, records, Tip.PROGRESS, {}, {}, {}, {}, now = now)
     }
@@ -356,7 +358,7 @@ class ScreenshotTest {
     @Test fun reader() = shot("21_artigo") { ReaderScreen(articles.first(), isRead = false, onRead = {}, onBack = {}) }
 
     @Test
-    @Config(qualifiers = "w392dp-h3400dp-xhdpi")
+    @Config(qualifiers = "pt-rBR-w392dp-h3400dp-xhdpi")
     fun readerFull() = shot("21b_artigo_inteiro", dark = false) {
         ReaderScreen(articles.first { it.id == "precoce" }, isRead = true, onRead = {}, onBack = {})
     }
@@ -364,7 +366,7 @@ class ScreenshotTest {
     // ---------- Ajustes ----------
 
     @Test
-    @Config(qualifiers = "w392dp-h3000dp-xhdpi")
+    @Config(qualifiers = "pt-rBR-w392dp-h3000dp-xhdpi")
     fun options() = shot("11_ajustes_completo", dark = false) {
         OptionsScreen(Settings(), PacingSettings(PacingConfig(true, 24)), FocusSettings(), true, records.size, codename, level, null, OptionsActions(), now = now)
     }

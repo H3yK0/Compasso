@@ -52,10 +52,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.compasso.R
 import app.compasso.model.Accent
 import app.compasso.model.Codename
 import app.compasso.model.Lapse
@@ -90,7 +93,6 @@ import app.compasso.ui.theme.Ios
 import app.compasso.ui.theme.tierColor
 import java.time.format.DateTimeFormatter
 
-private val dayMonth = DateTimeFormatter.ofPattern("d/M")
 
 /** Aba Evolução: nível, constância, gráficos, pódio, ranking pessoal e recordes. */
 @Composable
@@ -115,15 +117,22 @@ fun ProgressScreen(
     val checkedIn = remember(points, now / 60_000) { Progress.doneToday(points, PointKind.CHECKIN, now) }
     val podium = remember(points) { Progress.podium(points) }
     val records = remember(points, history, lapses) { Progress.records(points, history, lapses) }
-    val control = remember(history, span, now / 60_000) { Progress.controlSeries(history, span, now) }
-    val pts = remember(points, span, now / 60_000) { Progress.pointsSeries(points, span, now) }
+    val locale = currentLocale()
+    val control = remember(history, span, now / 60_000, locale) { Progress.controlSeries(history, span, now, locale = locale) }
+    val pts = remember(points, span, now / 60_000, locale) { Progress.pointsSeries(points, span, now, locale = locale) }
 
-    val month = remember(points, now / 60_000) { monthSky(points, now) }
+    val month = remember(points, now / 60_000, locale) { monthSky(points, now, locale = locale) }
 
-    LargeTitleList("Evolução", bottomPadding = bottomPadding, rootTab = true, glow = c.lavender) {
+    val captionOf = spanCaptions(span)
+    val pointsCaptionOf = spanCaptions(if (span == Span.SESSIONS) Span.DAYS else span)
+    val bestTime = stringResource(R.string.progress_best_time)
+    val controlCaption: (app.compasso.model.Bar) -> String = { b -> "$bestTime · ${captionOf(b.label)}" }
+    val pointsCaption: (app.compasso.model.Bar) -> String = { b -> pointsCaptionOf(b.label) }
+
+    LargeTitleList(stringResource(R.string.tab_progress), bottomPadding = bottomPadding, rootTab = true, glow = c.lavender) {
         if (tip != null) {
             item(key = "dica") {
-                TipCard(tip.title, tip.message, Icons.Rounded.Insights, onClose = { onTipClose(tip) }, Modifier.padding(top = 6.dp, bottom = 4.dp))
+                TipCard(stringResource(tip.title), stringResource(tip.message), Icons.Rounded.Insights, onClose = { onTipClose(tip) }, Modifier.padding(top = 6.dp, bottom = 4.dp))
             }
         }
         item(key = "perfil") { LevelCard(level, codename, streak, today, onProfile) }
@@ -131,16 +140,12 @@ fun ProgressScreen(
 
         item(key = "mes") {
             Column {
-                SectionTitle("Seu céu do mês")
+                SectionTitle(stringResource(R.string.progress_month_sky))
                 GlassCard(Modifier.fillMaxWidth().padding(horizontal = 16.dp), contentPadding = PaddingValues(start = 10.dp, end = 10.dp, top = 14.dp, bottom = 10.dp)) {
                     Row(Modifier.padding(horizontal = 8.dp), verticalAlignment = Alignment.Bottom) {
                         Text(month.title, style = Ios.type.headline, color = c.label, modifier = Modifier.weight(1f))
                         Text(
-                            when (month.litDays) {
-                                0 -> "Nenhuma estrela ainda"
-                                1 -> "1 dia com pontos"
-                                else -> "${month.litDays} dias com pontos"
-                            },
+                            if (month.litDays == 0) stringResource(R.string.progress_no_stars) else pluralStringResource(R.plurals.progress_lit_days, month.litDays, month.litDays),
                             style = Ios.type.subhead,
                             color = c.secondary,
                         )
@@ -148,16 +153,21 @@ fun ProgressScreen(
                     Spacer(Modifier.height(10.dp))
                     MonthConstellation(month)
                 }
-                GroupFooter("Cada dia com pontos vira uma estrela, maior quanto mais perto dos ${Progress.DAILY_CAP}. Dias seguidos se ligam.")
+                GroupFooter(stringResource(R.string.progress_month_footer, Progress.DAILY_CAP))
             }
         }
 
         item(key = "graficos") {
             Column {
-                SectionTitle("Tempo de controle")
+                SectionTitle(stringResource(R.string.progress_control_time))
                 Box(Modifier.padding(horizontal = 16.dp)) {
                     IosSegmented(
-                        listOf("Sessões", "Dias", "Semanas", "Meses"),
+                        listOf(
+                            stringResource(R.string.span_sessions),
+                            stringResource(R.string.span_days),
+                            stringResource(R.string.span_weeks),
+                            stringResource(R.string.span_months),
+                        ),
                         Span.entries.indexOf(span),
                         { span = Span.entries[it] },
                     )
@@ -169,19 +179,19 @@ fun ProgressScreen(
                         // cores validadas para contraste (≥ 3:1) e croma no fundo claro e no escuro
                         color = if (c.dark) Color(0xFF1A98AE) else Color(0xFF0A7FA0),
                         unit = "min",
-                        caption = { b -> "Maior tempo de treino · ${spanCaption(span, b.label)}" },
-                        emptyText = "Seus tempos de treino aparecem aqui",
+                        caption = controlCaption,
+                        emptyText = stringResource(R.string.progress_control_empty),
                     )
                 }
-                GroupFooter("Quanto tempo você conseguiu treinar, parando e recomeçando, antes do fim ou da liberação. Sessões interrompidas ficam de fora.")
-                SectionTitle("Pontos de constância")
+                GroupFooter(stringResource(R.string.progress_control_footer))
+                SectionTitle(stringResource(R.string.tip_summary_title))
                 GroupCard {
                     BarChart(
                         bars = pts,
                         color = if (c.dark) Color(0xFFD77A12) else Color(0xFFD96C00),
-                        unit = "pts",
-                        caption = { b -> spanCaption(if (span == Span.SESSIONS) Span.DAYS else span, b.label) },
-                        emptyText = "Seus pontos aparecem aqui",
+                        unit = stringResource(R.string.pts_unit),
+                        caption = pointsCaption,
+                        emptyText = stringResource(R.string.progress_points_empty),
                     )
                 }
             }
@@ -189,89 +199,92 @@ fun ProgressScreen(
 
         item(key = "podio") {
             Column {
-                SectionTitle("Suas melhores semanas")
+                SectionTitle(stringResource(R.string.progress_best_weeks))
                 GroupCard { Podium(podium) }
-                GroupFooter("Você compete com você mesmo: as três semanas com mais pontos de constância ficam no pódio.")
+                GroupFooter(stringResource(R.string.progress_best_weeks_footer))
             }
         }
 
         section(
-            header = "Ranking pessoal",
-            footer = "O nível conta só os pontos dos últimos 28 dias: subir é difícil e, para ficar, é preciso manter. " +
-                "Invicto pede também 14 dias seguidos de constância e 14 dias sem “não segurei” nem sessão interrompida. " +
-                "Cada nível libera uma cor para o app, enquanto você estiver nele.",
-            key = "ranking",
-        ) {
+            header = { stringResource(R.string.progress_ranking) },
+            footer = { stringResource(R.string.progress_ranking_footer) },
+            key = "ranking") {
             Tier.entries.reversed().forEachIndexed { i, t ->
                 if (i > 0) RowDivider(IconInset)
                 val reached = t.ordinal <= level.tier.ordinal
                 val current = t == level.tier
                 val accent = Accent.entries.firstOrNull { it.unlock == t }
+                val base = if (t.minPoints == 0) stringResource(R.string.progress_tier_start) else stringResource(R.string.progress_tier_points, t.minPoints)
                 IosRow(
-                    title = t.label,
-                    subtitle = buildString {
-                        append(if (t.minPoints == 0) "Ponto de partida" else "${t.minPoints} pontos em 28 dias")
-                        if (accent != null && t != Tier.START) append(" · cor ${accent.label}")
-                    },
+                    title = stringResource(t.label),
+                    subtitle = if (accent != null && t != Tier.START) stringResource(R.string.progress_tier_color, base, stringResource(accent.label)) else base,
                     leading = { TierMedal(t, 30.dp, locked = !reached) },
                     titleStyle = if (current) Ios.type.headline else null,
                     trailing = {
                         when {
-                            current -> Text("Você", style = Ios.type.footnote.copy(fontWeight = FontWeight.SemiBold), color = Color.White,
+                            current -> Text(stringResource(R.string.progress_you), style = Ios.type.footnote.copy(fontWeight = FontWeight.SemiBold), color = Color.White,
                                 modifier = Modifier.clip(CircleShape).background(tierColor(t)).padding(horizontal = 9.dp, vertical = 3.dp))
-                            !reached -> Icon(Icons.Rounded.Lock, contentDescription = "Bloqueado", tint = c.tertiary, modifier = Modifier.size(16.dp))
-                            else -> Icon(Icons.Rounded.CheckCircle, contentDescription = "Alcançado", tint = c.green, modifier = Modifier.size(18.dp))
+                            !reached -> Icon(Icons.Rounded.Lock, contentDescription = stringResource(R.string.cd_locked), tint = c.tertiary, modifier = Modifier.size(16.dp))
+                            else -> Icon(Icons.Rounded.CheckCircle, contentDescription = stringResource(R.string.cd_reached), tint = c.green, modifier = Modifier.size(18.dp))
                         }
                     },
                 )
             }
         }
 
-        section(header = "Recordes", key = "recordes") {
-            IosRow("Maior tempo de controle", icon = RowIcon(Icons.Rounded.Timer, c.teal), value = if (records.bestControlMs > 0) formatDuration(records.bestControlMs) else "—")
+        section(header = { stringResource(R.string.progress_records) }, key = "recordes") {
+            IosRow(stringResource(R.string.progress_best_control), icon = RowIcon(Icons.Rounded.Timer, c.teal), value = if (records.bestControlMs > 0) formatDuration(records.bestControlMs) else "—")
             RowDivider(IconInset)
-            IosRow("Maior sequência", icon = RowIcon(Icons.Rounded.LocalFireDepartment, c.orange), value = if (records.bestStreak > 0) daysLabel(records.bestStreak) else "—")
+            IosRow(stringResource(R.string.progress_best_streak), icon = RowIcon(Icons.Rounded.LocalFireDepartment, c.orange), value = if (records.bestStreak > 0) daysText(records.bestStreak) else "—")
             RowDivider(IconInset)
-            IosRow("Melhor semana", icon = RowIcon(Icons.Rounded.EmojiEvents, c.yellow), value = if (records.bestWeekPoints > 0) "${records.bestWeekPoints} pts" else "—")
+            IosRow(stringResource(R.string.progress_best_week), icon = RowIcon(Icons.Rounded.EmojiEvents, c.yellow), value = if (records.bestWeekPoints > 0) stringResource(R.string.pts_value, records.bestWeekPoints) else "—")
             RowDivider(IconInset)
-            IosRow("Sessões concluídas", icon = RowIcon(Icons.Rounded.Verified, c.green), value = "${records.completedSessions}")
+            IosRow(stringResource(R.string.progress_completed), icon = RowIcon(Icons.Rounded.Verified, c.green), value = "${records.completedSessions}")
             RowDivider(IconInset)
-            IosRow("Sem liberação", icon = RowIcon(Icons.Rounded.Today, c.indigo), value = "${records.controlSessions}")
+            IosRow(stringResource(R.string.progress_no_release), icon = RowIcon(Icons.Rounded.Today, c.indigo), value = "${records.controlSessions}")
         }
 
         section(
-            header = "Como ganhar pontos",
-            footer = "No máximo ${Progress.DAILY_CAP} pontos por dia. Sessões só valem com o modo foco ligado e a tela fixada, e só a primeira do dia conta.",
-            key = "regras",
-        ) {
+            header = { stringResource(R.string.progress_how_points) },
+            footer = { stringResource(R.string.progress_how_points_footer, Progress.DAILY_CAP) },
+            key = "regras") {
             PointKind.entries.forEachIndexed { i, k ->
                 if (i > 0) RowDivider()
                 IosRow(
-                    title = k.label,
-                    value = "+${k.base}" + if (k.maxPerDay > 1) " · ${k.maxPerDay}×/dia" else " · 1×/dia",
+                    title = stringResource(k.label),
+                    value = stringResource(R.string.progress_point_rule, k.base, k.maxPerDay),
                 )
             }
         }
 
         section(key = "historico") {
-            IosRow("Histórico de sessões", icon = RowIcon(Icons.Rounded.History, c.blue), value = "${history.size}", chevron = true, onClick = onHistory)
+            IosRow(stringResource(R.string.progress_history), icon = RowIcon(Icons.Rounded.History, c.blue), value = "${history.size}", chevron = true, onClick = onHistory)
         }
     }
 }
 
-private fun spanCaption(span: Span, label: String): String = when (span) {
-    Span.SESSIONS -> "sessão do dia $label"
-    Span.DAYS -> "dia $label"
-    Span.WEEKS -> "semana de $label"
-    Span.MONTHS -> label
+@Composable
+private fun spanCaptions(span: Span): (String) -> String {
+    val session = stringResource(R.string.span_caption_session)
+    val day = stringResource(R.string.span_caption_day)
+    val week = stringResource(R.string.span_caption_week)
+    return { label ->
+        when (span) {
+            Span.SESSIONS -> session.format(label)
+            Span.DAYS -> day.format(label)
+            Span.WEEKS -> week.format(label)
+            Span.MONTHS -> label
+        }
+    }
 }
 
-private fun daysLabel(n: Int) = if (n == 1) "1 dia" else "$n dias"
-
-private fun needText(n: UnbeatenNeed): String = when (n) {
-    UnbeatenNeed.CLEAN_DAYS -> "14 dias sem “não segurei” nem sessão interrompida"
-    UnbeatenNeed.STREAK -> "14 dias seguidos de constância"
-}
+@Composable
+private fun needText(n: UnbeatenNeed): String = stringResource(
+    when (n) {
+        UnbeatenNeed.CLEAN_DAYS -> R.string.need_clean_days
+        UnbeatenNeed.STREAK -> R.string.need_streak
+    },
+)
 
 @Composable
 private fun LevelCard(level: LevelStatus, codename: Codename, streak: Int, today: Int, onProfile: () -> Unit) {
@@ -295,13 +308,13 @@ private fun LevelCard(level: LevelStatus, codename: Codename, streak: Int, today
             CodenameAvatar(codename.seed, 64.dp, ring = tc)
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
-                Text(codename.name, style = Ios.type.headline, color = c.label)
+                Text(codenameText(codename), style = Ios.type.headline, color = c.label)
                 Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     TierMedal(level.tier, 22.dp)
                     Spacer(Modifier.width(6.dp))
-                    Text(level.tier.label, style = Ios.type.subhead.copy(fontWeight = FontWeight.SemiBold), color = tc)
-                    Text(" · ${level.windowPoints} pts em 28 dias", style = Ios.type.subhead, color = c.secondary)
+                    Text(stringResource(level.tier.label), style = Ios.type.subhead.copy(fontWeight = FontWeight.SemiBold), color = tc)
+                    Text(" · " + stringResource(R.string.progress_window_points, level.windowPoints), style = Ios.type.subhead, color = c.secondary)
                 }
             }
         }
@@ -309,19 +322,23 @@ private fun LevelCard(level: LevelStatus, codename: Codename, streak: Int, today
         ProgressBar(level.progress, tc)
         Spacer(Modifier.height(6.dp))
         val next = level.next
+        val needs = level.missing.map { needText(it) }
         Text(
             when {
-                level.missing.isNotEmpty() -> "Pontos de Invicto alcançados. Falta: ${level.missing.joinToString(" e ") { needText(it) }}."
-                next == null -> "Você é Invicto. Para continuar, mantenha a constância."
-                else -> "Faltam ${level.toNext} pontos para ${next.label}"
+                needs.isNotEmpty() -> stringResource(
+                    R.string.progress_unbeaten_missing,
+                    if (needs.size == 1) needs[0] else stringResource(R.string.list_and, needs[0], needs[1]),
+                )
+                next == null -> stringResource(R.string.progress_unbeaten_now)
+                else -> pluralStringResource(R.plurals.progress_to_next, level.toNext, level.toNext, stringResource(next.label))
             },
             style = Ios.type.footnote,
             color = c.secondary,
         )
         Spacer(Modifier.height(14.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            MiniStat(Icons.Rounded.LocalFireDepartment, c.orange, if (streak == 1) "1 dia" else "$streak dias", "seguidos", Modifier.weight(1f))
-            MiniStat(Icons.Rounded.Today, c.accent, "$today de ${Progress.DAILY_CAP}", "pontos hoje", Modifier.weight(1f))
+            MiniStat(Icons.Rounded.LocalFireDepartment, c.orange, daysText(streak), stringResource(R.string.progress_in_a_row), Modifier.weight(1f))
+            MiniStat(Icons.Rounded.Today, c.accent, stringResource(R.string.summary_rounds_value, today, Progress.DAILY_CAP), stringResource(R.string.progress_points_today), Modifier.weight(1f))
         }
     }
 }
@@ -351,10 +368,10 @@ private fun CheckInCard(done: Boolean, onCheckIn: () -> Unit) {
             .fillMaxWidth(),
         contentPadding = PaddingValues(16.dp),
     ) {
-        Text("Check-in de hoje", style = Ios.type.headline, color = c.label)
+        Text(stringResource(R.string.checkin_title), style = Ios.type.headline, color = c.label)
         Spacer(Modifier.height(2.dp))
         Text(
-            if (done) "Feito. Um dia de cada vez." else "Até agora, hoje, você ficou longe da pornografia? Marque com honestidade: é só pra você.",
+            stringResource(if (done) R.string.checkin_done_text else R.string.checkin_question),
             style = Ios.type.subhead,
             color = c.secondary,
         )
@@ -363,10 +380,10 @@ private fun CheckInCard(done: Boolean, onCheckIn: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = c.green, modifier = Modifier.size(22.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Check-in feito hoje", style = Ios.type.subhead.copy(fontWeight = FontWeight.SemiBold), color = c.green)
+                Text(stringResource(R.string.checkin_done), style = Ios.type.subhead.copy(fontWeight = FontWeight.SemiBold), color = c.green)
             }
         } else {
-            PrimaryButton("Sim, fiquei longe · +10", onCheckIn, Modifier.fillMaxWidth(), height = 50.dp)
+            PrimaryButton(stringResource(R.string.checkin_yes, PointKind.CHECKIN.base), onCheckIn, Modifier.fillMaxWidth(), height = 50.dp)
         }
     }
 }
@@ -378,6 +395,7 @@ private fun Podium(weeks: List<WeekScore>) {
     val medal = listOf(Color(0xFFE2B33C), Color(0xFFA7B0BC), Color(0xFFC07A45))
     val heights = listOf(92.dp, 70.dp, 54.dp)
     val order = listOf(1, 0, 2)
+    val dayMonth = DateTimeFormatter.ofPattern(stringResource(R.string.fmt_week_short), currentLocale())
     Row(
         Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 18.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -387,12 +405,12 @@ private fun Podium(weeks: List<WeekScore>) {
             val w = weeks.getOrNull(rank)
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    if (w != null) "${w.points} pts" else "—",
+                    if (w != null) stringResource(R.string.pts_value, w.points) else "—",
                     style = Ios.type.headline,
                     color = if (w != null) c.label else c.tertiary,
                 )
                 Text(
-                    if (w != null) "semana de ${w.start.format(dayMonth)}" else "a conquistar",
+                    if (w != null) stringResource(R.string.span_caption_week, w.start.format(dayMonth)) else stringResource(R.string.progress_to_win),
                     style = Ios.type.caption1,
                     color = c.secondary,
                     textAlign = TextAlign.Center,
@@ -411,7 +429,7 @@ private fun Podium(weeks: List<WeekScore>) {
                     contentAlignment = Alignment.TopCenter,
                 ) {
                     Text(
-                        "${rank + 1}º",
+                        stringResource(R.string.progress_rank, rank + 1),
                         style = Ios.type.title2,
                         color = Color.White.copy(alpha = if (w != null) 1f else 0.6f),
                         modifier = Modifier.padding(top = 8.dp),
@@ -428,7 +446,12 @@ data class MonthDay(val day: Int, val points: Int, val fraction: Float, val isTo
 data class MonthSky(val title: String, val cells: List<MonthDay?>, val litDays: Int)
 
 /** O mês atual em semanas (domingo a sábado), com os pontos de cada dia. */
-fun monthSky(points: List<PointEntry>, now: Long, zone: java.time.ZoneId = java.time.ZoneId.systemDefault()): MonthSky {
+fun monthSky(
+    points: List<PointEntry>,
+    now: Long,
+    zone: java.time.ZoneId = java.time.ZoneId.systemDefault(),
+    locale: java.util.Locale = java.util.Locale.getDefault(),
+): MonthSky {
     val today = Progress.day(now, zone)
     val first = today.withDayOfMonth(1)
     val byDay = points.groupBy { Progress.day(it.at, zone) }.mapValues { (_, l) -> l.sumOf { it.points } }
@@ -442,20 +465,22 @@ fun monthSky(points: List<PointEntry>, now: Long, zone: java.time.ZoneId = java.
         }
         while (size % 7 != 0) add(null)
     }
-    val name = today.month.getDisplayName(java.time.format.TextStyle.FULL_STANDALONE, java.util.Locale.forLanguageTag("pt-BR"))
-        .replaceFirstChar { it.uppercase() }
+    val name = today.month.getDisplayName(java.time.format.TextStyle.FULL_STANDALONE, locale)
+        .replaceFirstChar { it.uppercase(locale) }
     return MonthSky(name, cells, cells.count { it != null && it.points > 0 })
 }
 
-private val WEEK_INITIALS = listOf("D", "S", "T", "Q", "Q", "S", "S")
 
 /** O mês como constelação: estrelas nos dias com pontos, ligadas quando seguidas. */
 @Composable
 private fun MonthConstellation(month: MonthSky) {
     val c = Ios.colors
+    // iniciais de domingo a sábado no idioma do app ("D S T Q Q S S", "S M T W T F S", "D L M X J V S")
+    val initials = stringResource(R.string.week_initials).split(' ')
+    val dayLabel = stringResource(R.string.month_day_cd)
     Column(Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth()) {
-            WEEK_INITIALS.forEach {
+            initials.forEach {
                 Text(it, style = Ios.type.caption1.copy(fontWeight = FontWeight.SemiBold), color = c.tertiary, textAlign = TextAlign.Center, modifier = Modifier.weight(1f))
             }
         }
@@ -478,7 +503,7 @@ private fun MonthConstellation(month: MonthSky) {
                     week.forEach { d ->
                         Column(
                             Modifier.weight(1f).fillMaxHeight().semantics(mergeDescendants = true) {
-                                if (d != null) contentDescription = "Dia ${d.day}: ${d.points} pontos"
+                                if (d != null) contentDescription = dayLabel.format(d.day, d.points)
                             },
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {

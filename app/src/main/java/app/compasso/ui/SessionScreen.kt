@@ -59,14 +59,16 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import app.compasso.R
 import app.compasso.model.Breath
 import app.compasso.model.PhaseType
 import app.compasso.model.ReleaseMode
-import app.compasso.model.speedLabel
 import app.compasso.ui.components.ButtonKind
 import app.compasso.ui.components.GlassCircleButton
 import app.compasso.ui.components.IosButton
@@ -157,19 +159,19 @@ fun SessionScreen(
 private fun SessionTopBar(ui: SessionUi, onRequestEnd: () -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
-            Text(ui.level.name, style = Ios.type.headline)
+            Text(levelName(ui.level), style = Ios.type.headline)
             val base = when (ui.phase) {
-                PhaseType.COUNTDOWN -> "${ui.totalRounds} rodadas pela frente"
-                PhaseType.RELEASE, PhaseType.DENIED -> "Tempo de treino ${formatClock(ui.elapsedMs)}"
-                else -> "Rodada ${ui.round} de ${ui.totalRounds} · ${formatClock(ui.elapsedMs)}"
+                PhaseType.COUNTDOWN -> pluralStringResource(R.plurals.session_rounds_ahead, ui.totalRounds, ui.totalRounds)
+                PhaseType.RELEASE, PhaseType.DENIED -> stringResource(R.string.session_training_time, formatClock(ui.elapsedMs))
+                else -> stringResource(R.string.session_round_of, ui.round, ui.totalRounds, formatClock(ui.elapsedMs))
             }
             Text(
-                if (ui.controlOnly) "$base · só controle" else base,
+                if (ui.controlOnly) stringResource(R.string.session_control_only_suffix, base) else base,
                 style = Ios.type.subhead,
                 color = LocalContentColor.current.copy(alpha = 0.75f),
             )
         }
-        GlassCircleButton(Icons.Rounded.Close, "Encerrar sessão", onRequestEnd, size = 36.dp, iconSize = 18.dp)
+        GlassCircleButton(Icons.Rounded.Close, stringResource(R.string.session_end_cd), onRequestEnd, size = 36.dp, iconSize = 18.dp)
     }
 }
 
@@ -240,7 +242,7 @@ private fun PhaseDial(ui: SessionUi, modifier: Modifier = Modifier) {
             )
             if (timed) {
                 Text("${ceilSeconds(ui.phaseRemainingMs)}", style = Ios.type.timer)
-                Text("segundos", style = Ios.type.footnote, color = LocalContentColor.current.copy(alpha = 0.7f))
+                Text(stringResource(R.string.session_seconds), style = Ios.type.footnote, color = LocalContentColor.current.copy(alpha = 0.7f))
             } else {
                 Spacer(Modifier.height(12.dp))
                 Icon(
@@ -253,37 +255,44 @@ private fun PhaseDial(ui: SessionUi, modifier: Modifier = Modifier) {
     }
 }
 
-private fun phaseWord(phase: PhaseType): String = when (phase) {
-    PhaseType.COUNTDOWN -> "Começa em"
-    PhaseType.GO -> "Ritmo"
-    PhaseType.STOP -> "Pare"
-    PhaseType.RELEASE -> "Liberado"
-    PhaseType.DENIED -> "Fim"
-}
+@Composable
+private fun phaseWord(phase: PhaseType): String = stringResource(
+    when (phase) {
+        PhaseType.COUNTDOWN -> R.string.phase_countdown
+        PhaseType.GO -> R.string.phase_go
+        PhaseType.STOP -> R.string.phase_stop
+        PhaseType.RELEASE -> R.string.phase_release
+        PhaseType.DENIED -> R.string.phase_denied
+    },
+)
 
 @Composable
 private fun PhaseHint(ui: SessionUi, breathing: Boolean) {
     val (main, sub) = when (ui.phase) {
         PhaseType.COUNTDOWN -> if (ui.controlOnly) {
-            "Sessão só de controle" to "Hoje vai até o fim sem liberação."
+            stringResource(R.string.hint_control_title) to stringResource(R.string.hint_control_text)
         } else {
-            "Prepare-se" to "Deixe o celular onde dê pra ver a tela."
+            stringResource(R.string.hint_ready_title) to stringResource(R.string.hint_ready_text)
         }
-        PhaseType.GO -> "${speedLabel(ui.bpm)} · ${ui.bpm} bpm" to "Siga a batida."
+        PhaseType.GO -> stringResource(R.string.hint_go_title, speedName(ui.bpm), ui.bpm) to stringResource(R.string.hint_go_text)
         PhaseType.STOP -> {
-            val after = ui.nextBpm?.let { "Depois: ${speedLabel(it)} · $it bpm" } ?: "Depois: final"
+            val next = ui.nextBpm
+            val after = if (next != null) stringResource(R.string.hint_after, speedName(next), next) else stringResource(R.string.hint_after_final)
             if (breathing) {
-                (if (Breath.isInhale(ui.phaseElapsedMs)) "Inspire" else "Solte o ar") to "Mãos fora. $after"
+                stringResource(if (Breath.isInhale(ui.phaseElapsedMs)) R.string.breath_in else R.string.breath_out) to
+                    stringResource(R.string.hint_hands_off_after, after)
             } else {
-                "Mãos fora. Respire." to after
+                stringResource(R.string.hint_hands_off) to after
             }
         }
-        PhaseType.RELEASE -> "No seu ritmo" to "Quando terminar, toque em Concluir."
-        PhaseType.DENIED -> when {
-            ui.controlOnly -> "Treino de controle concluído" to "Você foi até o fim. Isso é controle."
-            ui.level.release == ReleaseMode.CHANCE -> "O sorteio não liberou" to "Você foi até o fim. Isso é controle."
-            else -> "Sem liberação neste nível" to "Você foi até o fim. Isso é controle."
-        }
+        PhaseType.RELEASE -> stringResource(R.string.hint_release_title) to stringResource(R.string.hint_release_text)
+        PhaseType.DENIED -> stringResource(
+            when {
+                ui.controlOnly -> R.string.outcome_denied_control_title
+                ui.level.release == ReleaseMode.CHANCE -> R.string.hint_denied_chance
+                else -> R.string.hint_denied_level
+            },
+        ) to stringResource(R.string.hint_denied_text)
     }
     AnimatedContent(
         targetState = main,
@@ -311,7 +320,7 @@ private fun RoundDots(ui: SessionUi) {
         PhaseType.GO -> ui.round - 1
     }
     if (n > 24) {
-        Text("$done de $n rodadas", style = Ios.type.footnote)
+        Text(stringResource(R.string.session_rounds_done, done, n), style = Ios.type.footnote)
         return
     }
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -338,12 +347,12 @@ private fun SessionControls(
 ) {
     when (ui.phase) {
         PhaseType.RELEASE, PhaseType.DENIED -> IosButton(
-            "Concluir", onFinish, Modifier.fillMaxWidth(),
+            stringResource(R.string.action_finish), onFinish, Modifier.fillMaxWidth(),
             kind = ButtonKind.White, contentColor = accent, height = 58.dp, shape = CircleShape,
         )
         else -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             IosButton(
-                if (ui.phase == PhaseType.STOP) "Ainda perto · +10 s" else "Estou perto",
+                stringResource(if (ui.phase == PhaseType.STOP) R.string.session_still_close else R.string.session_close),
                 onClose,
                 Modifier.weight(1f),
                 kind = ButtonKind.White,
@@ -354,7 +363,7 @@ private fun SessionControls(
             )
             GlassCircleButton(
                 if (ui.paused) Icons.Rounded.PlayArrow else Icons.Rounded.Pause,
-                if (ui.paused) "Continuar" else "Pausar",
+                stringResource(if (ui.paused) R.string.action_continue else R.string.session_pause),
                 onTogglePause,
                 size = 60.dp,
                 iconSize = 26.dp,
@@ -364,7 +373,7 @@ private fun SessionControls(
 }
 
 @Composable
-private fun PausedOverlay(blurred: Boolean, notice: String?, blocked: Boolean, onResume: () -> Unit, onEnd: () -> Unit) {
+private fun PausedOverlay(blurred: Boolean, notice: SessionNotice?, blocked: Boolean, onResume: () -> Unit, onEnd: () -> Unit) {
     Box(
         Modifier
             .fillMaxSize()
@@ -375,13 +384,13 @@ private fun PausedOverlay(blurred: Boolean, notice: String?, blocked: Boolean, o
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(Icons.Rounded.Pause, contentDescription = null, tint = Color.White, modifier = Modifier.size(52.dp))
             Spacer(Modifier.height(8.dp))
-            Text("Pausado", style = Ios.type.title1, color = Color.White)
+            Text(stringResource(R.string.session_paused), style = Ios.type.title1, color = Color.White)
             Spacer(Modifier.height(4.dp))
-            Text("O tempo está parado.", style = Ios.type.body, color = Color.White.copy(alpha = 0.8f))
+            Text(stringResource(R.string.session_paused_text), style = Ios.type.body, color = Color.White.copy(alpha = 0.8f))
             if (notice != null) {
                 Spacer(Modifier.height(14.dp))
                 Text(
-                    notice,
+                    noticeText(notice),
                     style = Ios.type.subhead,
                     color = Color.White,
                     textAlign = TextAlign.Center,
@@ -394,12 +403,20 @@ private fun PausedOverlay(blurred: Boolean, notice: String?, blocked: Boolean, o
             }
             Spacer(Modifier.height(24.dp))
             IosButton(
-                if (blocked) "Volte para a tela cheia" else "Continuar", onResume, Modifier.width(240.dp),
+                stringResource(if (blocked) R.string.session_back_fullscreen else R.string.action_continue), onResume, Modifier.width(240.dp),
                 kind = ButtonKind.White, contentColor = Color(0xFF0B1234), height = 52.dp, shape = CircleShape,
                 enabled = !blocked,
             )
             Spacer(Modifier.height(6.dp))
-            IosButton("Encerrar sessão", onEnd, kind = ButtonKind.Plain, color = Color.White, height = 44.dp)
+            IosButton(stringResource(R.string.session_end_cd), onEnd, kind = ButtonKind.Plain, color = Color.White, height = 44.dp)
         }
     }
+}
+
+@Composable
+private fun noticeText(n: SessionNotice): String = when (n) {
+    is SessionNotice.LeftApp -> stringResource(R.string.notice_left_app) + " " +
+        if (n.exitsLeft == 1) stringResource(R.string.notice_last_exit) else pluralStringResource(R.plurals.notice_exits_left, n.exitsLeft, n.exitsLeft)
+    SessionNotice.SplitScreen -> stringResource(R.string.notice_split)
+    SessionNotice.Unpinned -> stringResource(R.string.notice_unpinned)
 }

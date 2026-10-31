@@ -3,6 +3,7 @@ id: ondas
 titulo: A vontade vem em ondas
 resumo: Por que ela parece crescer sem fim, por que não cresce, e um plano de 10 minutos para atravessar.
 categoria: Mente e hábitos
+tema: mente
 minutos: 2
 ordem: 1
 ---

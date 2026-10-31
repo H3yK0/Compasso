@@ -1,20 +1,11 @@
 package app.compasso.games
 
+import androidx.annotation.StringRes
+import app.compasso.R
+
 /** Os jogos do Refúgio. Originais do Compasso (nenhum usa marca ou arte de outro jogo). */
-enum class GameKind(val title: String, val subtitle: String, val howTo: String) {
-    BLOCKS(
-        "Encaixe",
-        "Arraste as peças e complete linhas",
-        "Arraste cada peça para o tabuleiro. Linha ou coluna completa some e vale pontos. O jogo acaba quando nenhuma peça cabe mais.",
-    ),
-    MERGE(
-        "Dobra",
-        "Deslize e junte números iguais",
-        "Deslize para qualquer lado. Peças iguais que se encontram viram uma só, com o dobro do valor. Tente chegar a 2048.",
-    ),
-    ECHO(
-        "Eco",
-        "Repita a sequência de luzes",
-        "Observe a sequência de luzes e sons e repita na mesma ordem. A cada rodada ela ganha um passo e fica um pouco mais rápida.",
-    ),
+enum class GameKind(@StringRes val title: Int, @StringRes val subtitle: Int, @StringRes val howTo: Int) {
+    BLOCKS(R.string.game_blocks, R.string.game_blocks_sub, R.string.game_blocks_howto),
+    MERGE(R.string.game_merge, R.string.game_merge_sub, R.string.game_merge_howto),
+    ECHO(R.string.game_echo, R.string.game_echo_sub, R.string.game_echo_howto),
 }

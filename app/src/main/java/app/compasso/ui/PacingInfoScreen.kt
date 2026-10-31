@@ -30,7 +30,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import app.compasso.R
 import app.compasso.model.GateRule
 import app.compasso.model.Pacing
 import app.compasso.model.PacingSettings
@@ -66,8 +68,8 @@ fun PacingInfoScreen(
     Column(Modifier.fillMaxSize().background(c.bg)) {
         Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
         Box(Modifier.fillMaxWidth().height(52.dp)) {
-            Text("Controle inteligente", style = Ios.type.headline, color = c.label, modifier = Modifier.align(Alignment.Center))
-            Box(Modifier.align(Alignment.CenterEnd).padding(end = 6.dp)) { NavTextButton("OK", onDone, bold = true) }
+            Text(stringResource(R.string.smart_control), style = Ios.type.headline, color = c.label, modifier = Modifier.align(Alignment.Center))
+            Box(Modifier.align(Alignment.CenterEnd).padding(end = 6.dp)) { NavTextButton(stringResource(R.string.action_ok), onDone, bold = true) }
         }
         LazyColumn(
             Modifier.fillMaxSize(),
@@ -91,41 +93,40 @@ fun PacingInfoScreen(
                     }
                 }
             }
-            section(header = "Agora", key = "agora") {
-                IosRow("Última liberação", value = snapshot.lastRelease?.let { formatPast(it, now) } ?: "nenhuma recente")
+            section(header = { stringResource(R.string.pacing_now) }, key = "agora") {
+                IosRow(stringResource(R.string.pacing_last_release), value = snapshot.lastRelease?.let { formatPast(it, now) } ?: stringResource(R.string.pacing_none_recent))
                 RowDivider()
-                IosRow("Sessões em 7 dias", value = "${snapshot.sessionsThisWeek}")
+                IosRow(stringResource(R.string.pacing_week_sessions), value = "${snapshot.sessionsThisWeek}")
                 RowDivider()
                 IosRow(
-                    "Intervalo atual",
-                    value = if (gate == ReleaseGate.Off) "desligado" else if (busy) "${hours * 2} h" else "$hours h",
+                    stringResource(R.string.pacing_current_interval),
+                    value = if (gate == ReleaseGate.Off) stringResource(R.string.pacing_off) else if (busy) "${hours * 2} h" else "$hours h",
                 )
             }
             section(
-                header = "As regras",
-                footer = "As regras são fixas e sempre visíveis, pra você saber o que esperar. A sessão nunca é cancelada: com a liberação fechada, ela vira treino de controle.",
-                key = "regras",
-            ) {
+                header = { stringResource(R.string.pacing_rules) },
+                footer = { stringResource(R.string.pacing_rules_footer) },
+                key = "regras") {
                 RuleRow(
-                    RowIcon(Icons.Rounded.HourglassTop, c.orange), "Intervalo",
-                    "Depois de liberar (ou de um “não segurei”, ou de uma sessão interrompida), a próxima liberação só vem depois de $hours h.",
+                    RowIcon(Icons.Rounded.HourglassTop, c.orange), stringResource(R.string.pacing_rule_interval),
+                    stringResource(R.string.pacing_rule_interval_text, hours),
                     active = GateRule.INTERVAL in rules,
                 )
                 RowDivider(IconInset)
                 RuleRow(
-                    RowIcon(Icons.Rounded.Bolt, c.pink), "Sem pressa",
-                    "Sessão começada menos de 2 h depois da anterior é só de controle.",
+                    RowIcon(Icons.Rounded.Bolt, c.pink), stringResource(R.string.pacing_rule_rush),
+                    stringResource(R.string.pacing_rule_rush_text),
                     active = GateRule.RUSH in rules,
                 )
                 RowDivider(IconInset)
                 RuleRow(
-                    RowIcon(Icons.Rounded.CalendarMonth, c.blue), "Semana cheia",
-                    "Com ${Pacing.BUSY_WEEK_SESSIONS} sessões ou mais em 7 dias, o intervalo dobra.",
+                    RowIcon(Icons.Rounded.CalendarMonth, c.blue), stringResource(R.string.pacing_rule_busy),
+                    stringResource(R.string.pacing_rule_busy_text, Pacing.BUSY_WEEK_SESSIONS),
                     active = busy,
                 )
             }
             section(key = "ajustar") {
-                IosRow("Ajustar o controle", titleColor = c.accent, chevron = true, onClick = onSettings)
+                IosRow(stringResource(R.string.pacing_adjust), titleColor = c.accent, chevron = true, onClick = onSettings)
             }
         }
     }
@@ -141,7 +142,7 @@ private fun RuleRow(icon: RowIcon, title: String, text: String, active: Boolean)
         trailing = if (active) {
             {
                 Text(
-                    "Ativa",
+                    stringResource(R.string.pacing_active),
                     style = Ios.type.caption1.copy(fontWeight = FontWeight.SemiBold),
                     color = c.orange,
                     modifier = Modifier

@@ -47,7 +47,9 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
+import app.compasso.R
 import app.compasso.model.Breath
 import app.compasso.model.Codename
 import app.compasso.ui.components.Astro
@@ -121,23 +123,23 @@ fun WelcomeScreen(onStart: () -> Unit) {
             Spacer(Modifier.height(18.dp))
             Text("Compasso", style = Ios.type.display.copy(fontSize = 54.sp, lineHeight = 60.sp), color = c.label)
             Text(
-                "Um refúgio para retomar o controle",
+                stringResource(R.string.welcome_tagline),
                 style = Ios.type.poetic.copy(fontSize = 22.sp, lineHeight = 28.sp),
                 color = c.label.copy(alpha = 0.9f),
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(14.dp))
             Text(
-                "Treino de controle, respiração e um lugar seguro para quando a vontade apertar. Longe da pornografia, no seu ritmo.",
+                stringResource(R.string.welcome_text),
                 style = Ios.type.callout,
                 color = c.secondary,
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.weight(1.1f))
-            PrimaryButton("Começar", onStart, Modifier.fillMaxWidth())
+            PrimaryButton(stringResource(R.string.action_start), onStart, Modifier.fillMaxWidth())
             Spacer(Modifier.height(14.dp))
             Text(
-                "Sem conta e sem internet. Tudo fica só neste celular.",
+                stringResource(R.string.welcome_privacy),
                 style = Ios.type.footnote,
                 color = c.tertiary,
                 textAlign = TextAlign.Center,
@@ -152,22 +154,10 @@ private data class IntroPage(val icon: ImageVector, val tint: Color, val title: 
 private fun introPages(): List<IntroPage> {
     val c = Ios.colors
     return listOf(
-        IntroPage(
-            Icons.Rounded.Spa, c.accent, "Um refúgio, não uma prisão",
-            "O Compasso ajuda quem quer sair da pornografia, sem culpa. Em vez de vídeos: um treino de controle com pausas, respiração e um lugar seguro para quando a vontade apertar.",
-        ),
-        IntroPage(
-            Icons.Rounded.GraphicEq, Color(0xFFFF8FA3), "Para e recomeça",
-            "Siga a batida. Quando a tela ficar vermelha, mãos fora e respire com as ondas. Sentiu que vai passar do ponto? Toque em “Estou perto”. Com o tempo, você percebe o corpo antes e dura mais.",
-        ),
-        IntroPage(
-            Icons.Rounded.PhonelinkLock, c.amber, "Controle e foco",
-            "O controle inteligente espaça as liberações (24 h por padrão). O modo foco fixa a tela durante a sessão: nada de outros apps, vídeos flutuantes ou tela dividida.",
-        ),
-        IntroPage(
-            Icons.Rounded.Air, c.lavender, "Quando a vontade apertar",
-            "No Refúgio você respira com uma trilha calma, joga 3 minutos ou lê algo que ajuda. A vontade vem em ondas: sobe, chega no pico e passa.",
-        ),
+        IntroPage(Icons.Rounded.Spa, c.accent, stringResource(R.string.intro_1_title), stringResource(R.string.intro_1_text)),
+        IntroPage(Icons.Rounded.GraphicEq, Color(0xFFFF8FA3), stringResource(R.string.intro_2_title), stringResource(R.string.intro_2_text)),
+        IntroPage(Icons.Rounded.PhonelinkLock, c.amber, stringResource(R.string.intro_3_title), stringResource(R.string.intro_3_text)),
+        IntroPage(Icons.Rounded.Air, c.lavender, stringResource(R.string.intro_4_title), stringResource(R.string.intro_4_text)),
     )
 }
 
@@ -194,7 +184,7 @@ fun IntroScreen(
         Column(Modifier.fillMaxSize().safeDrawingPadding()) {
             Row(Modifier.fillMaxWidth().height(44.dp).padding(horizontal = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Spacer(Modifier.weight(1f))
-                if (!last) NavTextButton(if (replay) "Fechar" else "Pular", onDone)
+                if (!last) NavTextButton(stringResource(if (replay) R.string.action_close else R.string.intro_skip), onDone)
             }
             HorizontalPager(state = pager, modifier = Modifier.weight(1f)) { page ->
                 Column(
@@ -220,20 +210,20 @@ fun IntroScreen(
                             CodenameAvatar(codename.seed, 112.dp)
                         }
                         Spacer(Modifier.height(18.dp))
-                        Text("Constância vale mais", style = Ios.type.title1, color = c.label, textAlign = TextAlign.Center)
+                        Text(stringResource(R.string.intro_5_title), style = Ios.type.title1, color = c.label, textAlign = TextAlign.Center)
                         Spacer(Modifier.height(12.dp))
                         Text(
-                            "Os pontos premiam aparecer todo dia, não fazer mais sessões. Para preservar sua privacidade, você ganhou um codinome:",
+                            stringResource(R.string.intro_5_text),
                             style = Ios.type.body.copy(lineHeight = 25.sp),
                             color = c.secondary,
                             textAlign = TextAlign.Center,
                         )
                         Spacer(Modifier.height(14.dp))
-                        Text(codename.name, style = Ios.type.title2, color = c.accent, textAlign = TextAlign.Center)
-                        NavTextButton("Sortear outro", onNewCodename)
+                        Text(codenameText(codename), style = Ios.type.title2, color = c.accent, textAlign = TextAlign.Center)
+                        NavTextButton(stringResource(R.string.intro_new_codename), onNewCodename)
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            "Sem nome real e sem foto. Nada sai do seu celular.",
+                            stringResource(R.string.intro_5_note),
                             style = Ios.type.footnote,
                             color = c.tertiary,
                             textAlign = TextAlign.Center,
@@ -243,7 +233,7 @@ fun IntroScreen(
             }
             PageDots(total, pager.currentPage, Modifier.fillMaxWidth().padding(vertical = 16.dp))
             PrimaryButton(
-                if (last) (if (replay) "Concluir" else "Começar") else "Continuar",
+                stringResource(if (last) (if (replay) R.string.action_finish else R.string.action_start) else R.string.action_continue),
                 { if (last) onDone() else scope.launch { pager.animateScrollToPage(pager.currentPage + 1) } },
                 Modifier.fillMaxWidth().padding(horizontal = 22.dp),
             )

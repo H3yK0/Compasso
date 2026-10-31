@@ -2,8 +2,10 @@ package app.compasso.ui
 
 import android.app.Application
 import android.os.SystemClock
+import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import app.compasso.R
 import app.compasso.audio.AmbientPlayer
 import app.compasso.audio.Feedback
 import app.compasso.audio.GameSound
@@ -24,6 +26,7 @@ import app.compasso.model.Focus
 import app.compasso.model.FocusSettings
 import app.compasso.model.Lapse
 import app.compasso.model.Level
+import app.compasso.model.NoPoints
 import app.compasso.model.LevelStatus
 import app.compasso.model.Outcome
 import app.compasso.model.Pacing
@@ -52,11 +55,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /** Abas da tela principal. */
-enum class Tab(val label: String) {
-    TRAIN("Hoje"),
-    REFUGE("Refúgio"),
-    PROGRESS("Evolução"),
-    READ("Ler"),
+enum class Tab(@StringRes val label: Int) {
+    TRAIN(R.string.tab_today),
+    REFUGE(R.string.tab_refuge),
+    PROGRESS(R.string.tab_progress),
+    READ(R.string.tab_read),
 }
 
 sealed interface Screen {
@@ -181,19 +184,38 @@ data class SessionUi(
     val paused: Boolean,
     val controlOnly: Boolean = false,
     /** Aviso mostrado na tela de pausa (saiu do app, tela solta, tela dividida…). */
-    val notice: String? = null,
+    val notice: SessionNotice? = null,
     /** Sessão em modo foco com a tela fixada (vale pontos). */
     val focused: Boolean = false,
     /** Tela dividida aberta: só dá para continuar em tela cheia. */
     val blocked: Boolean = false,
 )
 
+/** Aviso na tela de pausa da sessão. */
+sealed interface SessionNotice {
+    /** Saiu do app com o modo foco ligado; [exitsLeft] saídas antes de encerrar. */
+    data class LeftApp(val exitsLeft: Int) : SessionNotice
+
+    data object SplitScreen : SessionNotice
+
+    data object Unpinned : SessionNotice
+}
+
+/** Por que a sessão não rendeu pontos. */
+enum class NoPointsReason { INTERRUPTED, FOCUS_OFF, NOT_PINNED, DAILY_CAP, KIND_LIMIT, SESSION_LIMIT }
+
+fun NoPoints.asReason(): NoPointsReason = when (this) {
+    NoPoints.DAILY_CAP -> NoPointsReason.DAILY_CAP
+    NoPoints.KIND_LIMIT -> NoPointsReason.KIND_LIMIT
+    NoPoints.SESSION_LIMIT -> NoPointsReason.SESSION_LIMIT
+}
+
 data class SummaryUi(
     val record: SessionRecord,
     val saved: Boolean,
     val gate: ReleaseGate,
     val points: PointEntry? = null,
-    val noPoints: String? = null,
+    val noPoints: NoPointsReason? = null,
 )
 
 /** Pedido de começar um nível enquanto a liberação está fechada (o app pergunta antes). */
@@ -202,8 +224,8 @@ data class StartPrompt(val level: Level, val gate: ReleaseGate.Closed)
 /** O que o app pede para a Activity: fixar a tela ou soltar. [attempt] muda a cada novo pedido. */
 data class LockRequest(val wanted: Boolean = false, val attempt: Int = 0)
 
-/** Aviso rápido no topo da tela (ex.: pontos ganhos). */
-data class Banner(val title: String, val subtitle: String? = null, val id: Long = System.nanoTime())
+/** Aviso rápido no topo da tela: pontos ganhos e com o quê. */
+data class Banner(val points: Int, val kind: PointKind, val id: Long = System.nanoTime())
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val store = Store(app)
@@ -281,6 +303,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     private val _articles = MutableStateFlow<List<Article>>(emptyList())
     val articles: StateFlow<List<Article>> = _articles.asStateFlow()
+    private var articlesLanguage: String? = null
 
     private val _read = MutableStateFlow(store.loadRead())
     val read: StateFlow<Set<String>> = _read.asStateFlow()
@@ -305,7 +328,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private var pendingStart: Pair<Level, Boolean>? = null
     private var sessionFocusMode = false
     private var sessionPinned = false
-    private var notice: String? = null
+    private var notice: SessionNotice? = null
     private var leftAt = 0L
     private var leftWall = 0L
     private var exits = 0
@@ -321,10 +344,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         refreshPacing()
         refreshProgress()
         _screen.value = if (store.seenVersion >= CURRENT_VERSION) Screen.Root else Screen.Welcome
-        viewModelScope.launch {
-            val list = withContext(Dispatchers.IO) { ArticleRepo.load(getApplication()) }
-            _articles.value = list
-        }
         // Atualiza prazos de tempos em tempos (podem vencer com o app aberto).
         viewModelScope.launch {
             while (isActive) {
@@ -332,6 +351,18 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 refreshPacing()
                 refreshProgress()
             }
+        }
+    }
+
+    // ---------- Idioma ----------
+
+    /** A Activity informa o idioma em uso ("pt", "en", "es"): os artigos vêm nele. */
+    fun setLanguage(language: String) {
+        if (language == articlesLanguage) return
+        articlesLanguage = language
+        viewModelScope.launch {
+            val list = withContext(Dispatchers.IO) { ArticleRepo.load(getApplication(), language) }
+            if (articlesLanguage == language) _articles.value = list
         }
     }
 
@@ -464,7 +495,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** Tenta ganhar pontos; devolve a entrada nova ou o motivo de não ter rendido. */
-    private fun award(kind: PointKind, banner: Boolean): Pair<PointEntry?, String?> {
+    private fun award(kind: PointKind, banner: Boolean): Pair<PointEntry?, NoPoints?> {
         val now = clock.now()
         val result = Progress.award(_points.value, kind, now)
         val entry = result.entry
@@ -473,9 +504,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             _points.value = list
             store.savePoints(list)
             refreshProgress()
-            if (banner) showBanner(Banner("+${entry.points} pontos", kind.label))
+            if (banner) showBanner(Banner(entry.points, kind))
         }
-        return entry to result.reason?.message
+        return entry to result.reason
     }
 
     fun checkIn() {
@@ -707,9 +738,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         awayJob = null
         val e = engine ?: return
         if (e.isFinal || !sessionFocusMode) return
-        val left = Focus.MAX_EXITS - exits
-        notice = "Você saiu do app. Com o modo foco, sair por mais de 10 s encerra a sessão. " +
-            if (left == 1) "Mais uma saída e ela será encerrada." else "Restam $left saídas."
+        notice = SessionNotice.LeftApp(Focus.MAX_EXITS - exits)
         publish()
     }
 
@@ -720,7 +749,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (active) {
             onLeave()
             if (engine != null) {
-                notice = "Tela dividida não é permitida durante a sessão. Volte para a tela cheia para continuar."
+                notice = SessionNotice.SplitScreen
                 publish()
             }
         } else {
@@ -806,7 +835,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             if (sessionPinned && !e.isFinal) {
                 sessionPinned = false
                 pause()
-                notice = "A tela foi solta. A sessão pode continuar, mas não vale mais pontos."
+                notice = SessionNotice.Unpinned
                 publish()
             }
         }
@@ -927,15 +956,15 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
         val kind = Progress.kindFor(record)
         var entry: PointEntry? = null
-        val why: String? = when {
-            outcome == Outcome.INTERRUPTED -> "Sessão interrompida não vale pontos e quebra a sequência de hoje."
+        val why: NoPointsReason? = when {
+            outcome == Outcome.INTERRUPTED -> NoPointsReason.INTERRUPTED
             outcome == Outcome.STOPPED -> null
-            !sessionFocusMode -> "Sessões só valem pontos com o modo foco ligado."
-            !sessionPinned -> "Sem a tela fixada, a sessão não vale pontos."
+            !sessionFocusMode -> NoPointsReason.FOCUS_OFF
+            !sessionPinned -> NoPointsReason.NOT_PINNED
             kind == null -> null
             else -> award(kind, banner = false).let { (en, reason) ->
                 entry = en
-                reason
+                reason?.asReason()
             }
         }
         refreshPacing()

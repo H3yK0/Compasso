@@ -1,5 +1,8 @@
 package app.compasso.ui.games
 
+import androidx.compose.ui.res.stringResource
+import app.compasso.R
+
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -91,6 +94,7 @@ fun BlocksScreen(
     val slotCoords = remember { arrayOfNulls<LayoutCoordinates>(3) }
     val liftPx = with(density) { 56.dp.toPx() }
     val saveScore by rememberUpdatedState(onScore)
+    val boardLabel = stringResource(R.string.game_blocks_board_cd)
 
     DisposableEffect(Unit) { onDispose { saveScore(game.score) } }
 
@@ -176,7 +180,7 @@ fun BlocksScreen(
                             modifier = Modifier
                                 .size(side)
                                 .onGloballyPositioned { boardCoords = it }
-                                .semantics { contentDescription = "Tabuleiro do Encaixe" },
+                                .semantics { contentDescription = boardLabel },
                         )
                         val g = gain
                         if (g != null && gainAnim.value > 0f) {
@@ -250,7 +254,7 @@ fun BlocksScreen(
 
             GameOverCard(
                 visible = over,
-                title = "Sem espaço",
+                title = stringResource(R.string.game_blocks_over),
                 score = game.score,
                 newRecord = game.score > best,
                 onAgain = ::restart,

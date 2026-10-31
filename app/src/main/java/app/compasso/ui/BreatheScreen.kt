@@ -15,7 +15,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
+import app.compasso.R
 import app.compasso.ui.components.Astro
 import app.compasso.ui.components.GlassButton
 import app.compasso.ui.components.PrimaryButton
@@ -150,18 +152,18 @@ fun BreatheContent(
         ) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("Respirar", style = Ios.type.headline, color = c.label)
-                    Text("Inspire 4 s, solte o ar 6 s", style = Ios.type.subhead, color = c.secondary)
+                    Text(stringResource(R.string.breathe_title), style = Ios.type.headline, color = c.label)
+                    Text(stringResource(R.string.breathe_pattern), style = Ios.type.subhead, color = c.secondary)
                 }
                 GlassCircleButton(
                     if (sound) Icons.AutoMirrored.Rounded.VolumeUp else Icons.AutoMirrored.Rounded.VolumeOff,
-                    if (sound) "Desligar trilha" else "Ligar trilha",
+                    stringResource(if (sound) R.string.breathe_sound_off else R.string.breathe_sound_on),
                     { onSound(!sound) },
                     size = 40.dp,
                     iconSize = 20.dp,
                 )
                 Spacer(Modifier.width(10.dp))
-                GlassCircleButton(Icons.Rounded.Close, "Fechar", onClose, size = 40.dp, iconSize = 20.dp)
+                GlassCircleButton(Icons.Rounded.Close, stringResource(R.string.action_close), onClose, size = 40.dp, iconSize = 20.dp)
             }
             Spacer(Modifier.weight(1f))
             // o astro respira junto: cresce na inspiração e o anel mostra o tempo do bloco
@@ -185,18 +187,20 @@ fun BreatheContent(
             }
             Spacer(Modifier.height(18.dp))
             AnimatedContent(
-                targetState = when {
-                    done -> "Pronto"
-                    Breath.isInhale(elapsedMs) -> "Inspire"
-                    else -> "Solte o ar"
-                },
+                targetState = stringResource(
+                    when {
+                        done -> R.string.breathe_done
+                        Breath.isInhale(elapsedMs) -> R.string.breath_in
+                        else -> R.string.breath_out
+                    },
+                ),
                 transitionSpec = { fadeIn(tween(500)) togetherWith fadeOut(tween(500)) },
                 label = "dica",
             ) { cue ->
                 Text(cue, style = Ios.type.display.copy(fontSize = 42.sp, lineHeight = 48.sp), color = c.label)
             }
             Text(
-                if (done) "Você atravessou essa onda." else "A vontade vem em ondas. Respire com ela até passar.",
+                stringResource(if (done) R.string.breathe_done_text else R.string.breathe_text),
                 style = Ios.type.callout,
                 color = c.secondary,
                 textAlign = TextAlign.Center,
@@ -226,11 +230,11 @@ fun BreatheContent(
                     Text("−" + formatClock(durationMs - elapsedMs + 999), style = Ios.type.caption1.copy(fontFeatureSettings = "tnum"), color = c.secondary)
                 }
                 Spacer(Modifier.height(18.dp))
-                GlassButton("Encerrar", onClose, Modifier.fillMaxWidth(), height = 56.dp)
+                GlassButton(stringResource(R.string.action_end), onClose, Modifier.fillMaxWidth(), height = 56.dp)
             } else {
-                PrimaryButton("Mais 2 min", onMore, Modifier.fillMaxWidth(), color = tint)
+                PrimaryButton(stringResource(R.string.breathe_more), onMore, Modifier.fillMaxWidth(), color = tint)
                 Spacer(Modifier.height(10.dp))
-                GlassButton("Voltar", onClose, Modifier.fillMaxWidth(), height = 56.dp)
+                GlassButton(stringResource(R.string.nav_back), onClose, Modifier.fillMaxWidth(), height = 56.dp)
             }
         }
     }

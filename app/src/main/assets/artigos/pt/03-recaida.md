@@ -3,6 +3,7 @@ id: recaida
 titulo: Recaída não apaga o caminho
 resumo: Um deslize não é voltar à estaca zero. O que você pensa logo depois dele é o que decide o resto.
 categoria: Mente e hábitos
+tema: mente
 minutos: 2
 ordem: 3
 ---

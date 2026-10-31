@@ -64,10 +64,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.compasso.R
 import app.compasso.data.ThemeMode
 import app.compasso.games.GameKind
 import app.compasso.model.Outcome
@@ -86,11 +89,12 @@ import app.compasso.ui.theme.CompassoTheme
 import app.compasso.ui.theme.Ios
 import app.compasso.ui.theme.PhaseColors
 
-internal val tabItems = listOf(
-    TabItem(Tab.TRAIN.label, Icons.Outlined.Explore, Icons.Rounded.Explore),
-    TabItem(Tab.REFUGE.label, Icons.Outlined.Spa, Icons.Rounded.Spa),
-    TabItem(Tab.PROGRESS.label, Icons.Outlined.Insights, Icons.Rounded.Insights),
-    TabItem(Tab.READ.label, Icons.AutoMirrored.Outlined.MenuBook, Icons.AutoMirrored.Rounded.MenuBook),
+@Composable
+internal fun tabItems(): List<TabItem> = listOf(
+    TabItem(stringResource(Tab.TRAIN.label), Icons.Outlined.Explore, Icons.Rounded.Explore),
+    TabItem(stringResource(Tab.REFUGE.label), Icons.Outlined.Spa, Icons.Rounded.Spa),
+    TabItem(stringResource(Tab.PROGRESS.label), Icons.Outlined.Insights, Icons.Rounded.Insights),
+    TabItem(stringResource(Tab.READ.label), Icons.AutoMirrored.Outlined.MenuBook, Icons.AutoMirrored.Rounded.MenuBook),
 )
 
 @Composable
@@ -125,13 +129,12 @@ fun CompassoApp(vm: AppViewModel) {
 
                 prompt?.let { p ->
                     IosAlert(
-                        title = "Sessão só de controle",
-                        message = "A liberação volta ${formatUntil(p.gate.until)}. ${gateReason(p.gate)} " +
-                            "Esta sessão vai até o fim sem liberação.",
+                        title = stringResource(R.string.prompt_control_title),
+                        message = stringResource(R.string.prompt_control_text, formatUntil(p.gate.until), gateReason(p.gate)),
                         actions = listOf(
-                            AlertAction("Começar treino", vm::confirmPrompt, bold = true),
-                            AlertAction("Respirar 2 min", vm::breatheFromPrompt),
-                            AlertAction("Cancelar", vm::dismissPrompt),
+                            AlertAction(stringResource(R.string.prompt_start_training), vm::confirmPrompt, bold = true),
+                            AlertAction(stringResource(R.string.prompt_breathe), vm::breatheFromPrompt),
+                            AlertAction(stringResource(R.string.action_cancel), vm::dismissPrompt),
                         ),
                         onDismiss = vm::dismissPrompt,
                     )
@@ -226,7 +229,7 @@ private fun ScreenContent(current: Screen, vm: AppViewModel) {
 
         Screen.History -> {
             BackHandler(onBack = toRoot)
-            HistoryScreen(records = history, onBack = toRoot, backLabel = tab.label)
+            HistoryScreen(records = history, onBack = toRoot, backLabel = stringResource(tab.label))
         }
 
         Screen.Custom -> {
@@ -237,7 +240,7 @@ private fun ScreenContent(current: Screen, vm: AppViewModel) {
         Screen.Guide -> {
             val back: () -> Unit = { vm.go(Screen.Settings) }
             BackHandler(onBack = back)
-            GuideScreen(onReplayIntro = { vm.go(Screen.Intro(back = Screen.Guide)) }, onBack = back, backLabel = "Ajustes")
+            GuideScreen(onReplayIntro = { vm.go(Screen.Intro(back = Screen.Guide)) }, onBack = back, backLabel = stringResource(R.string.nav_settings))
         }
 
         Screen.Profile -> {
@@ -250,7 +253,7 @@ private fun ScreenContent(current: Screen, vm: AppViewModel) {
                 onNewCodename = vm::newCodename,
                 onAccent = { a -> vm.updateSettings { it.copy(accent = a) } },
                 onBack = back,
-                backLabel = "Ajustes",
+                backLabel = stringResource(R.string.nav_settings),
             )
         }
 
@@ -306,11 +309,13 @@ private fun ScreenContent(current: Screen, vm: AppViewModel) {
             PinUnlockScreen(
                 onTry = { vm.verifyPin(it, current.action) },
                 waitMs = vm::pinWaitMs,
-                title = "Digite a senha atual",
-                subtitle = when (current.action) {
-                    PinAction.CHANGE -> "Para trocar a senha, confirme a atual."
-                    PinAction.REMOVE -> "Para remover a senha, confirme a atual."
-                },
+                title = stringResource(R.string.pin_current_title),
+                subtitle = stringResource(
+                    when (current.action) {
+                        PinAction.CHANGE -> R.string.pin_current_change
+                        PinAction.REMOVE -> R.string.pin_current_remove
+                    },
+                ),
                 onCancel = back,
             )
         }
@@ -392,7 +397,7 @@ private fun RootTabs(vm: AppViewModel, tab: Tab, tipFor: (Tip) -> Tip?) {
                 )
             }
         }
-        FloatingTabBar(tabItems, selected = tab.ordinal, onSelect = { vm.selectTab(Tab.entries[it]) }, modifier = Modifier.align(Alignment.BottomCenter))
+        FloatingTabBar(tabItems(), selected = tab.ordinal, onSelect = { vm.selectTab(Tab.entries[it]) }, modifier = Modifier.align(Alignment.BottomCenter))
     }
 }
 
@@ -465,19 +470,19 @@ private fun SessionRoute(ui: SessionUi, vm: AppViewModel, breathGuide: Boolean) 
 
     if (askEnd) {
         IosActionSheet(
-            title = "Encerrar a sessão?",
-            message = "Se não deu pra segurar até o fim, marque abaixo. Isso conta no seu progresso.",
+            title = stringResource(R.string.end_title),
+            message = stringResource(R.string.end_text),
             actions = listOf(
-                AlertAction("Não segurei", {
+                AlertAction(stringResource(R.string.end_lost), {
                     askEnd = false
                     vm.finishSession(Outcome.LOST_CONTROL)
                 }),
-                AlertAction("Só encerrar", {
+                AlertAction(stringResource(R.string.end_stop), {
                     askEnd = false
                     vm.finishSession(Outcome.STOPPED)
                 }, destructive = true),
             ),
-            cancel = AlertAction("Continuar sessão", {
+            cancel = AlertAction(stringResource(R.string.end_continue), {
                 askEnd = false
                 vm.resume()
             }),
@@ -517,8 +522,8 @@ private fun PointsBanner(banner: Banner?, onDismiss: () -> Unit) {
                 }
                 Spacer(Modifier.width(10.dp))
                 Column {
-                    Text(b.title, style = Ios.type.headline, color = c.label)
-                    b.subtitle?.let { Text(it, style = Ios.type.footnote, color = c.secondary) }
+                    Text(pluralStringResource(R.plurals.points_gained, b.points, b.points), style = Ios.type.headline, color = c.label)
+                    Text(stringResource(b.kind.label), style = Ios.type.footnote, color = c.secondary)
                 }
             }
         }

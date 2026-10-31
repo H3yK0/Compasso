@@ -4,6 +4,7 @@ import android.content.Context
 import app.compasso.games.GameKind
 import app.compasso.model.Accent
 import app.compasso.model.Codename
+import app.compasso.model.Codenames
 import app.compasso.model.FocusSettings
 import app.compasso.model.Lapse
 import app.compasso.model.Level
@@ -27,6 +28,14 @@ import java.util.Base64
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
+/** Idioma do app. [SYSTEM] segue o celular (português, inglês ou espanhol; os outros caem no inglês). */
+enum class AppLanguage(val tag: String?) {
+    SYSTEM(null),
+    PT("pt-BR"),
+    EN("en"),
+    ES("es"),
+}
+
 data class Settings(
     val beatSound: Boolean = true,
     val phaseSound: Boolean = true,
@@ -49,6 +58,7 @@ data class Settings(
     val showTips: Boolean = true,
     /** Cor de destaque escolhida (as especiais dependem do nível atual). */
     val accent: Accent = Accent.TEAL,
+    val language: AppLanguage = AppLanguage.SYSTEM,
 )
 
 /** Sessão em andamento gravada no celular: se o app for fechado no meio, ela não some sem registro. */
@@ -91,6 +101,7 @@ class Store(context: Context) {
             ambientVolume = prefs.getFloat("ambientVolume", d.ambientVolume).coerceIn(0f, 1f),
             showTips = prefs.getBoolean("showTips", d.showTips),
             accent = runCatching { Accent.valueOf(prefs.getString("accent", null) ?: d.accent.name) }.getOrDefault(d.accent),
+            language = loadLanguage(),
         )
     }
 
@@ -112,8 +123,13 @@ class Store(context: Context) {
             .putFloat("ambientVolume", s.ambientVolume)
             .putBoolean("showTips", s.showTips)
             .putString("accent", s.accent.name)
+            .putString("language", s.language.name)
             .apply()
     }
+
+    /** Lido também antes de a tela abrir (para montar o app já no idioma certo). */
+    fun loadLanguage(): AppLanguage =
+        runCatching { AppLanguage.valueOf(prefs.getString("language", null) ?: AppLanguage.SYSTEM.name) }.getOrDefault(AppLanguage.SYSTEM)
 
     // ---------- Nível personalizado ----------
 
@@ -308,12 +324,22 @@ class Store(context: Context) {
     // ---------- Codinome ----------
 
     fun loadCodename(): Codename? {
-        val name = prefs.getString("cn_name", null) ?: return null
-        return Codename(name, prefs.getLong("cn_seed", 0L))
+        if (!prefs.contains("cn_noun")) return null
+        return Codename(
+            noun = prefs.getInt("cn_noun", 0).coerceIn(0, Codenames.nounCount - 1),
+            adjective = prefs.getInt("cn_adj", 0).coerceIn(0, Codenames.adjectiveCount - 1),
+            number = prefs.getInt("cn_num", 10),
+            seed = prefs.getLong("cn_seed", 0L),
+        )
     }
 
     fun saveCodename(c: Codename) {
-        prefs.edit().putString("cn_name", c.name).putLong("cn_seed", c.seed).apply()
+        prefs.edit()
+            .putInt("cn_noun", c.noun)
+            .putInt("cn_adj", c.adjective)
+            .putInt("cn_num", c.number)
+            .putLong("cn_seed", c.seed)
+            .apply()
     }
 
     // ---------- Modo foco ----------

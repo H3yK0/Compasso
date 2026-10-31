@@ -1,5 +1,8 @@
 package app.compasso.model
 
+import androidx.annotation.StringRes
+import app.compasso.R
+import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -12,37 +15,37 @@ import java.util.Locale
  * Pontos de constância. Premiam aparecer e respeitar o treino, não "durar mais" nem fazer
  * mais sessões: só a primeira sessão do dia vale pontos e existe um teto diário.
  */
-enum class PointKind(val base: Int, val label: String, val maxPerDay: Int, val isSession: Boolean = false) {
-    SESSION(10, "Sessão concluída com liberação", 1, isSession = true),
-    CONTROL_SESSION(15, "Sessão concluída sem liberação", 1, isSession = true),
-    HONEST(3, "“Não segurei” marcado com honestidade", 1, isSession = true),
-    CHECKIN(10, "Check-in: um dia longe da pornografia", 1),
-    BREATHE(5, "Respirar até o fim", 3),
-    GAME(3, "Jogar pelo menos 3 minutos", 2),
-    ARTICLE(5, "Ler um artigo até o fim", 3),
+enum class PointKind(val base: Int, @StringRes val label: Int, val maxPerDay: Int, val isSession: Boolean = false) {
+    SESSION(10, R.string.point_session, 1, isSession = true),
+    CONTROL_SESSION(15, R.string.point_control_session, 1, isSession = true),
+    HONEST(3, R.string.point_honest, 1, isSession = true),
+    CHECKIN(10, R.string.point_checkin, 1),
+    BREATHE(5, R.string.point_breathe, 3),
+    GAME(3, R.string.point_game, 2),
+    ARTICLE(5, R.string.point_article, 3),
 }
 
 data class PointEntry(val at: Long, val kind: PointKind, val points: Int)
 
 /** Por que uma ação não rendeu pontos. */
-enum class NoPoints(val message: String) {
-    DAILY_CAP("Você já fez os 40 pontos de hoje. Amanhã tem mais."),
-    KIND_LIMIT("Isso já rendeu o máximo de pontos hoje."),
-    SESSION_LIMIT("Só a primeira sessão do dia vale pontos."),
+enum class NoPoints {
+    DAILY_CAP,
+    KIND_LIMIT,
+    SESSION_LIMIT,
 }
 
 /** Resultado de tentar ganhar pontos: ou a entrada nova, ou o motivo de não ter rendido. */
 data class Award(val entry: PointEntry?, val reason: NoPoints?)
 
 /** Degraus do ranking pessoal. Contam os pontos dos últimos 28 dias: precisa manter para continuar. */
-enum class Tier(val label: String, val minPoints: Int) {
-    START("Iniciante", 0),
-    BRONZE("Bronze", 60),
-    SILVER("Prata", 180),
-    GOLD("Ouro", 360),
-    PLATINUM("Platina", 540),
-    DIAMOND("Diamante", 720),
-    UNBEATEN("Invicto", 900),
+enum class Tier(@StringRes val label: Int, val minPoints: Int) {
+    START(R.string.tier_start, 0),
+    BRONZE(R.string.tier_bronze, 60),
+    SILVER(R.string.tier_silver, 180),
+    GOLD(R.string.tier_gold, 360),
+    PLATINUM(R.string.tier_platinum, 540),
+    DIAMOND(R.string.tier_diamond, 720),
+    UNBEATEN(R.string.tier_unbeaten, 900),
 }
 
 /** Exigências do Invicto além dos pontos. */
@@ -84,7 +87,9 @@ object Progress {
     const val CLEAN_DAYS = 14
     const val STREAK_FOR_UNBEATEN = 14
     private const val DAY = 24 * 3_600_000L
-    private val PT_BR: Locale = Locale.forLanguageTag("pt-BR")
+
+    /** Semanas de domingo a sábado (o pódio e os gráficos agrupam assim em qualquer idioma). */
+    private val WEEK: WeekFields = WeekFields.of(DayOfWeek.SUNDAY, 1)
 
     /** Que tipo de ponto uma sessão rende (nenhum se encerrada antes ou interrompida). */
     fun kindFor(outcome: Outcome): PointKind? = when (outcome) {
@@ -208,27 +213,41 @@ object Progress {
     // ---------- Séries para os gráficos ----------
 
     /** Maior tempo de controle (minutos) em cada período. Sessões interrompidas ficam de fora. */
-    fun controlSeries(history: List<SessionRecord>, span: Span, now: Long, zone: ZoneId = ZoneId.systemDefault()): List<Bar> {
+    fun controlSeries(
+        history: List<SessionRecord>,
+        span: Span,
+        now: Long,
+        zone: ZoneId = ZoneId.systemDefault(),
+        locale: Locale = Locale.getDefault(),
+    ): List<Bar> {
         val valid = history.filter { it.outcome != Outcome.INTERRUPTED }
         fun minutes(list: List<SessionRecord>) = (list.maxOfOrNull { it.durationMs } ?: 0L) / 60_000f
         return when (span) {
             Span.SESSIONS -> valid.sortedBy { it.startedAt }.takeLast(12).map { r ->
                 Bar(day(r.startedAt, zone).dayOfMonth.toString(), r.durationMs / 60_000f)
             }
-            else -> buckets(span, now, zone).map { (label, range) ->
+            else -> buckets(span, now, zone, locale).map { (label, range) ->
                 Bar(label, minutes(valid.filter { day(it.startedAt, zone) in range }))
             }
         }
     }
 
     /** Soma de pontos em cada período. */
-    fun pointsSeries(log: List<PointEntry>, span: Span, now: Long, zone: ZoneId = ZoneId.systemDefault()): List<Bar> =
-        buckets(if (span == Span.SESSIONS) Span.DAYS else span, now, zone).map { (label, range) ->
+    fun pointsSeries(
+        log: List<PointEntry>,
+        span: Span,
+        now: Long,
+        zone: ZoneId = ZoneId.systemDefault(),
+        locale: Locale = Locale.getDefault(),
+    ): List<Bar> =
+        buckets(if (span == Span.SESSIONS) Span.DAYS else span, now, zone, locale).map { (label, range) ->
             Bar(label, log.filter { day(it.at, zone) in range }.sumOf { it.points }.toFloat())
         }
 
-    private fun buckets(span: Span, now: Long, zone: ZoneId): List<Pair<String, ClosedRange<LocalDate>>> {
+    private fun buckets(span: Span, now: Long, zone: ZoneId, locale: Locale): List<Pair<String, ClosedRange<LocalDate>>> {
         val today = day(now, zone)
+        // dia/mês na ordem do idioma ("3/10" em português e espanhol, "10/3" em inglês)
+        val monthFirst = locale.language == "en"
         return when (span) {
             Span.DAYS -> (13 downTo 0).map { i ->
                 val d = today.minusDays(i.toLong())
@@ -236,11 +255,12 @@ object Progress {
             }
             Span.WEEKS -> (7 downTo 0).map { i ->
                 val start = weekStart(today).minusWeeks(i.toLong())
-                "${start.dayOfMonth}/${start.monthValue}" to (start..start.plusDays(6))
+                (if (monthFirst) "${start.monthValue}/${start.dayOfMonth}" else "${start.dayOfMonth}/${start.monthValue}") to
+                    (start..start.plusDays(6))
             }
             Span.MONTHS -> (5 downTo 0).map { i ->
                 val start = today.withDayOfMonth(1).minusMonths(i.toLong())
-                start.month.getDisplayName(TextStyle.SHORT, PT_BR).trimEnd('.') to (start..start.plusMonths(1).minusDays(1))
+                start.month.getDisplayName(TextStyle.SHORT, locale).trimEnd('.') to (start..start.plusMonths(1).minusDays(1))
             }
             Span.SESSIONS -> emptyList()
         }
@@ -248,7 +268,7 @@ object Progress {
 
     fun day(at: Long, zone: ZoneId): LocalDate = Instant.ofEpochMilli(at).atZone(zone).toLocalDate()
 
-    fun weekStart(d: LocalDate): LocalDate = d.with(WeekFields.of(PT_BR).dayOfWeek(), 1L)
+    fun weekStart(d: LocalDate): LocalDate = d.with(WEEK.dayOfWeek(), 1L)
 
     fun daysBetween(a: LocalDate, b: LocalDate): Long = ChronoUnit.DAYS.between(a, b)
 }

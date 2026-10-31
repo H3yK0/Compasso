@@ -3,6 +3,7 @@ id: gatilhos
 titulo: "Gatilhos: mapear para desarmar"
 resumo: A maioria das recaídas acontece em situações previsíveis. Um plano "se… então…" muda isso.
 categoria: Mente e hábitos
+tema: mente
 minutos: 2
 ordem: 2
 ---

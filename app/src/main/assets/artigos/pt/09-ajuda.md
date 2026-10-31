@@ -3,6 +3,7 @@ id: ajuda
 titulo: Quando e onde procurar ajuda
 resumo: Sinais de que vale buscar um profissional, quais tratamentos têm evidência e onde encontrar apoio no Brasil.
 categoria: Apoio
+tema: apoio
 minutos: 2
 ordem: 9
 ---

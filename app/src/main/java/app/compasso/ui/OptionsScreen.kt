@@ -12,6 +12,7 @@ import androidx.compose.material.icons.automirrored.rounded.VolumeMute
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.Air
 import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Gavel
 import androidx.compose.material.icons.rounded.Lightbulb
 import androidx.compose.material.icons.rounded.Palette
@@ -39,9 +40,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.compasso.BuildConfig
+import app.compasso.R
+import app.compasso.data.AppLanguage
 import app.compasso.data.Settings
 import app.compasso.data.ThemeMode
 import app.compasso.model.Codename
@@ -113,25 +118,25 @@ fun OptionsScreen(
     val onRemovePin = actions.onRemovePin
     val onClearHistory = actions.onClearHistory
 
-    LargeTitleList("Ajustes", bottomPadding = bottomPadding, onBack = onBack, backLabel = "Hoje") {
+    LargeTitleList(stringResource(R.string.nav_settings), bottomPadding = bottomPadding, onBack = onBack, backLabel = stringResource(R.string.tab_today)) {
         if (tip != null) {
             item(key = "dica") {
-                TipCard(tip.title, tip.message, Icons.Rounded.Settings, onClose = { actions.onTipClose(tip) }, Modifier.padding(top = 6.dp, bottom = 4.dp))
+                TipCard(stringResource(tip.title), stringResource(tip.message), Icons.Rounded.Settings, onClose = { actions.onTipClose(tip) }, Modifier.padding(top = 6.dp, bottom = 4.dp))
             }
         }
         section(key = "perfil") {
             IosRow(
-                title = codename.name,
-                subtitle = "${level.tier.label} · codinome anônimo e cores",
+                title = codenameText(codename),
+                subtitle = stringResource(R.string.settings_profile_sub, stringResource(level.tier.label)),
                 titleStyle = Ios.type.headline,
                 leading = { CodenameAvatar(codename.seed, 46.dp, ring = tierColor(level.tier)) },
                 chevron = true,
                 onClick = actions.onProfile,
             )
         }
-        section(header = "Controle inteligente", footer = pacingFooter(pacing, now), key = "controle") {
+        section(header = { stringResource(R.string.smart_control) }, footer = { pacingFooter(pacing, now) }, key = "controle") {
             SwitchRow(
-                "Controle inteligente",
+                stringResource(R.string.smart_control),
                 req.enabled,
                 { onPacing(req.copy(enabled = it)) },
                 icon = RowIcon(Icons.Rounded.HourglassTop, c.orange),
@@ -139,7 +144,7 @@ fun OptionsScreen(
             if (req.enabled) {
                 RowDivider(IconInset)
                 Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 14.dp)) {
-                    Text("Intervalo entre liberações", style = Ios.type.body, color = c.label)
+                    Text(stringResource(R.string.settings_interval), style = Ios.type.body, color = c.label)
                     Spacer(Modifier.height(10.dp))
                     IosSegmented(
                         Pacing.INTERVAL_OPTIONS.map { "$it h" },
@@ -150,84 +155,83 @@ fun OptionsScreen(
             }
             if (pacing.pending != null) {
                 RowDivider()
-                IosRow("Cancelar mudança agendada", titleColor = c.accent, onClick = onCancelPending)
+                IosRow(stringResource(R.string.settings_cancel_pending), titleColor = c.accent, onClick = onCancelPending)
             }
         }
 
-        section(header = "Modo foco", footer = focusFooter(focus, now), key = "foco") {
+        section(header = { stringResource(R.string.focus_title) }, footer = { focusFooter(focus, now) }, key = "foco") {
             SwitchRow(
-                "Modo foco",
+                stringResource(R.string.focus_title),
                 focus.requested,
                 { on -> if (on) actions.onFocus(true) else confirmFocusOff = true },
-                subtitle = "Tela fixada e sem saídas durante a sessão",
+                subtitle = stringResource(R.string.settings_focus_sub),
                 icon = RowIcon(Icons.Rounded.PhonelinkLock, c.indigo),
             )
             if (focus.pendingOff) {
                 RowDivider()
-                IosRow("Cancelar desligamento", titleColor = c.accent, onClick = { actions.onFocus(true) })
+                IosRow(stringResource(R.string.settings_cancel_off), titleColor = c.accent, onClick = { actions.onFocus(true) })
             }
         }
 
-        section(header = "Durante a sessão", key = "sessao") {
+        section(header = { stringResource(R.string.settings_during) }, key = "sessao") {
             SwitchRow(
-                "Respiração guiada", settings.breathGuide, { v -> onChange { it.copy(breathGuide = v) } },
-                subtitle = "Ondas e texto para respirar nas pausas",
+                stringResource(R.string.settings_breath_guide), settings.breathGuide, { v -> onChange { it.copy(breathGuide = v) } },
+                subtitle = stringResource(R.string.settings_breath_guide_sub),
                 icon = RowIcon(Icons.Rounded.Air, c.indigo),
             )
             RowDivider(IconInset)
             SwitchRow(
-                "Vibrar na respiração", settings.vibrateBreath, { v -> onChange { it.copy(vibrateBreath = v) } },
-                subtitle = "Toque leve ao inspirar e ao soltar o ar",
+                stringResource(R.string.settings_vibrate_breath), settings.vibrateBreath, { v -> onChange { it.copy(vibrateBreath = v) } },
+                subtitle = stringResource(R.string.settings_vibrate_breath_sub),
                 icon = RowIcon(Icons.Rounded.Vibration, c.purple),
                 enabled = settings.breathGuide,
             )
             RowDivider(IconInset)
             SwitchRow(
-                "Trilha nas pausas", settings.pauseSound, { v -> onChange { it.copy(pauseSound = v) } },
-                subtitle = "Som calmo que entra quando a tela manda parar",
+                stringResource(R.string.settings_pause_sound), settings.pauseSound, { v -> onChange { it.copy(pauseSound = v) } },
+                subtitle = stringResource(R.string.settings_pause_sound_sub),
                 icon = RowIcon(Icons.Rounded.Spa, c.teal),
             )
             RowDivider(IconInset)
             SwitchRow(
-                "Contagem inicial", settings.countdown, { v -> onChange { it.copy(countdown = v) } },
-                subtitle = "3 segundos antes da primeira rodada",
+                stringResource(R.string.settings_countdown), settings.countdown, { v -> onChange { it.copy(countdown = v) } },
+                subtitle = stringResource(R.string.settings_countdown_sub),
                 icon = RowIcon(Icons.Rounded.Timer, c.blue),
             )
         }
 
-        section(header = "Sons e vibração", key = "sons") {
+        section(header = { stringResource(R.string.settings_sounds) }, key = "sons") {
             SwitchRow(
-                "Som da batida", settings.beatSound, { v -> onChange { it.copy(beatSound = v) } },
-                subtitle = "Um “tic” a cada batida do ritmo",
+                stringResource(R.string.settings_beat_sound), settings.beatSound, { v -> onChange { it.copy(beatSound = v) } },
+                subtitle = stringResource(R.string.settings_beat_sound_sub),
                 icon = RowIcon(Icons.Rounded.MusicNote, c.pink),
             )
             RowDivider(IconInset)
             SwitchRow(
-                "Som nas trocas", settings.phaseSound, { v -> onChange { it.copy(phaseSound = v) } },
-                subtitle = "Aviso ao parar, ao voltar e no final",
+                stringResource(R.string.settings_phase_sound), settings.phaseSound, { v -> onChange { it.copy(phaseSound = v) } },
+                subtitle = stringResource(R.string.settings_phase_sound_sub),
                 icon = RowIcon(Icons.Rounded.NotificationsActive, c.red),
             )
             RowDivider(IconInset)
             VolumeRow(settings.volume, onVolume = { v -> onChange { it.copy(volume = v) } }, onTest = onTestSound)
             RowDivider(IconInset)
             SwitchRow(
-                "Vibrar nas trocas", settings.vibratePhase, { v -> onChange { it.copy(vibratePhase = v) } },
+                stringResource(R.string.settings_vibrate_phase), settings.vibratePhase, { v -> onChange { it.copy(vibratePhase = v) } },
                 icon = RowIcon(Icons.Rounded.Vibration, c.purple),
             )
             RowDivider(IconInset)
             SwitchRow(
-                "Vibrar na batida", settings.vibrateBeat, { v -> onChange { it.copy(vibrateBeat = v) } },
+                stringResource(R.string.settings_vibrate_beat), settings.vibrateBeat, { v -> onChange { it.copy(vibrateBeat = v) } },
                 icon = RowIcon(Icons.Rounded.GraphicEq, c.teal),
             )
         }
 
         section(
-            header = "Trilha sonora",
-            footer = "A trilha é gerada pelo próprio app, ao vivo: acordes lentos, um mar suave que cresce quando você inspira e sinos raros. Usa o volume de mídia do celular.",
-            key = "trilha",
-        ) {
+            header = { stringResource(R.string.settings_soundtrack) },
+            footer = { stringResource(R.string.settings_soundtrack_footer) },
+            key = "trilha") {
             SwitchRow(
-                "Trilha no Respirar", settings.breatheSound, { v -> onChange { it.copy(breatheSound = v) } },
+                stringResource(R.string.settings_breathe_sound), settings.breatheSound, { v -> onChange { it.copy(breatheSound = v) } },
                 icon = RowIcon(Icons.Rounded.Air, c.indigo),
             )
             RowDivider(IconInset)
@@ -235,30 +239,27 @@ fun OptionsScreen(
         }
 
         section(
-            header = "Privacidade",
-            footer = "Mesmo com o histórico desligado ou apagado, o app guarda, só neste celular, a data e o tipo das sessões dos " +
-                "últimos 8 dias (para o controle inteligente) e a data dos “não segurei” e das sessões interrompidas " +
-                "(para a sequência e o nível Invicto).",
-            key = "privacidade",
-        ) {
+            header = { stringResource(R.string.settings_privacy) },
+            footer = { stringResource(R.string.settings_privacy_footer) },
+            key = "privacidade") {
             SwitchRow(
-                "Senha ao abrir", hasPin, { on -> if (on) onSetPin() else onRemovePin() },
-                subtitle = if (hasPin) "Pede a senha ao abrir e ao voltar depois de 30 s" else null,
+                stringResource(R.string.settings_pin), hasPin, { on -> if (on) onSetPin() else onRemovePin() },
+                subtitle = if (hasPin) stringResource(R.string.settings_pin_sub) else null,
                 icon = RowIcon(Icons.Rounded.Lock, c.gray),
             )
             if (hasPin) {
                 RowDivider(IconInset)
-                IosRow("Trocar senha", icon = RowIcon(Icons.Rounded.Key, c.gray), chevron = true, onClick = onSetPin)
+                IosRow(stringResource(R.string.settings_change_pin), icon = RowIcon(Icons.Rounded.Key, c.gray), chevron = true, onClick = onSetPin)
             }
             RowDivider(IconInset)
             SwitchRow(
-                "Modo discreto", settings.discreet, { v -> onChange { it.copy(discreet = v) } },
-                subtitle = "Esconde o app nos recentes e bloqueia prints",
+                stringResource(R.string.settings_discreet), settings.discreet, { v -> onChange { it.copy(discreet = v) } },
+                subtitle = stringResource(R.string.settings_discreet_sub),
                 icon = RowIcon(Icons.Rounded.VisibilityOff, c.indigo),
             )
             RowDivider(IconInset)
             SwitchRow(
-                "Guardar histórico", settings.keepHistory, { v -> onChange { it.copy(keepHistory = v) } },
+                stringResource(R.string.settings_keep_history), settings.keepHistory, { v -> onChange { it.copy(keepHistory = v) } },
                 icon = RowIcon(Icons.Rounded.History, c.blue),
             )
         }
@@ -266,101 +267,130 @@ fun OptionsScreen(
         if (historyCount > 0) {
             section(key = "apagar") {
                 IosRow(
-                    "Apagar histórico",
+                    stringResource(R.string.settings_clear_history),
                     titleColor = c.red,
-                    value = if (historyCount == 1) "1 sessão" else "$historyCount sessões",
+                    value = pluralStringResource(R.plurals.sessions_count, historyCount, historyCount),
                     onClick = { confirmClear = true },
                 )
             }
         }
 
-        section(header = "Aparência", key = "aparencia") {
+        section(header = { stringResource(R.string.settings_appearance) }, key = "aparencia") {
             Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 14.dp)) {
-                Text("Visual", style = Ios.type.body, color = c.label)
+                Text(stringResource(R.string.settings_look), style = Ios.type.body, color = c.label)
                 Spacer(Modifier.height(10.dp))
                 IosSegmented(
-                    listOf("Automático", "Dia", "Noite"),
+                    listOf(stringResource(R.string.settings_look_auto), stringResource(R.string.settings_look_day), stringResource(R.string.settings_look_night)),
                     ThemeMode.entries.indexOf(settings.theme),
                     { i -> onChange { it.copy(theme = ThemeMode.entries[i]) } },
                 )
             }
             RowDivider()
             IosRow(
-                "Cor de destaque",
+                stringResource(R.string.settings_accent),
                 icon = RowIcon(Icons.Rounded.Palette, c.accent),
-                value = settings.accent.label,
+                value = stringResource(settings.accent.label),
                 chevron = true,
                 onClick = actions.onProfile,
             )
         }
 
-        section(header = "Ajuda", key = "ajuda") {
-            IosRow("Como usar o Compasso", icon = RowIcon(Icons.AutoMirrored.Rounded.HelpOutline, c.blue), chevron = true, onClick = actions.onGuide)
+        section(header = { stringResource(R.string.settings_language) }, footer = { stringResource(R.string.settings_language_footer) }, key = "idioma") {
+            AppLanguage.entries.forEachIndexed { i, lang ->
+                if (i > 0) RowDivider()
+                IosRow(
+                    languageName(lang),
+                    trailing = if (settings.language == lang) {
+                        { Icon(Icons.Rounded.Check, contentDescription = null, tint = c.accent, modifier = Modifier.size(20.dp)) }
+                    } else {
+                        null
+                    },
+                    onClick = { onChange { it.copy(language = lang) } },
+                )
+            }
+        }
+
+        section(header = { stringResource(R.string.settings_help) }, key = "ajuda") {
+            IosRow(stringResource(R.string.settings_guide), icon = RowIcon(Icons.AutoMirrored.Rounded.HelpOutline, c.blue), chevron = true, onClick = actions.onGuide)
             RowDivider(IconInset)
-            IosRow("Rever a apresentação", icon = RowIcon(Icons.Rounded.PlayCircle, c.teal), chevron = true, onClick = actions.onReplayIntro)
+            IosRow(stringResource(R.string.settings_replay_intro), icon = RowIcon(Icons.Rounded.PlayCircle, c.teal), chevron = true, onClick = actions.onReplayIntro)
             RowDivider(IconInset)
             SwitchRow(
-                "Dicas pelo caminho", settings.showTips, { v -> onChange { it.copy(showTips = v) } },
-                subtitle = "Mostra uma dica na primeira visita a cada parte",
+                stringResource(R.string.settings_tips), settings.showTips, { v -> onChange { it.copy(showTips = v) } },
+                subtitle = stringResource(R.string.settings_tips_sub),
                 icon = RowIcon(Icons.Rounded.Lightbulb, c.yellow),
             )
             RowDivider(IconInset)
-            IosRow("Mostrar as dicas de novo", icon = RowIcon(Icons.Rounded.AutoAwesome, c.orange), onClick = actions.onResetTips)
+            IosRow(stringResource(R.string.settings_reset_tips), icon = RowIcon(Icons.Rounded.AutoAwesome, c.orange), onClick = actions.onResetTips)
         }
 
         section(
-            header = "Sobre",
-            footer = "O app não tem acesso à internet. Tudo fica guardado só neste celular.",
-            key = "sobre",
-        ) {
-            IosRow("Versão", value = BuildConfig.VERSION_NAME)
+            header = { stringResource(R.string.settings_about) },
+            footer = { stringResource(R.string.settings_about_footer) },
+            key = "sobre") {
+            IosRow(stringResource(R.string.settings_version), value = BuildConfig.VERSION_NAME)
             RowDivider()
-            IosRow("Licença e créditos", icon = RowIcon(Icons.Rounded.Gavel, c.gray), chevron = true, onClick = actions.onAbout)
+            IosRow(stringResource(R.string.about_title), icon = RowIcon(Icons.Rounded.Gavel, c.gray), chevron = true, onClick = actions.onAbout)
         }
     }
 
     if (confirmClear) {
         IosAlert(
-            title = "Apagar histórico?",
-            message = "As sessões salvas serão apagadas. Continuam guardadas só a data das sessões dos últimos 8 dias (controle inteligente) " +
-                "e a dos “não segurei” e sessões interrompidas (sequência e Invicto).",
+            title = stringResource(R.string.clear_title),
+            message = stringResource(R.string.clear_text),
             actions = listOf(
-                AlertAction("Cancelar", { confirmClear = false }),
-                AlertAction("Apagar", { confirmClear = false; onClearHistory() }, destructive = true),
+                AlertAction(stringResource(R.string.action_cancel), { confirmClear = false }),
+                AlertAction(stringResource(R.string.clear_confirm), { confirmClear = false; onClearHistory() }, destructive = true),
             ),
             onDismiss = { confirmClear = false },
         )
     }
     if (confirmFocusOff) {
         IosAlert(
-            title = "Desligar o modo foco?",
-            message = "Ele desliga só daqui a 24 h, pra uma vontade do momento não desfazer o que você decidiu com calma. Sem ele, as sessões não valem pontos.",
+            title = stringResource(R.string.focus_off_title),
+            message = stringResource(R.string.focus_off_text),
             actions = listOf(
-                AlertAction("Manter ligado", { confirmFocusOff = false }, bold = true),
-                AlertAction("Desligar em 24 h", { confirmFocusOff = false; actions.onFocus(false) }, destructive = true),
+                AlertAction(stringResource(R.string.focus_off_keep), { confirmFocusOff = false }, bold = true),
+                AlertAction(stringResource(R.string.focus_off_confirm), { confirmFocusOff = false; actions.onFocus(false) }, destructive = true),
             ),
             onDismiss = { confirmFocusOff = false },
         )
     }
 }
 
+@Composable
 private fun focusFooter(f: FocusSettings, now: Long): String = when {
-    f.pendingOff -> "O modo foco desliga ${formatUntil(f.offAt, now)}. Até lá, continua valendo."
-    f.enabled -> "Antes de cada sessão o app pede para fixar a tela (recurso do Android): não dá para abrir outro app, a tela dividida e as notificações ficam bloqueadas e vídeos flutuantes são fechados. Janelas de outros apps somem. Sair por mais de 10 s, ou 3 vezes, encerra a sessão como interrompida."
-    else -> "Desligado: a sessão só pausa quando você sai do app, e as sessões não valem pontos."
+    f.pendingOff -> stringResource(R.string.focus_footer_pending, formatUntil(f.offAt, now))
+    f.enabled -> stringResource(R.string.focus_footer_on)
+    else -> stringResource(R.string.focus_footer_off)
 }
 
+@Composable
 private fun pacingFooter(p: PacingSettings, now: Long): String {
-    val rule = "Deixar o controle mais leve só vale 24 h depois, pra uma vontade do momento não desfazer o que você decidiu com calma. Mais firme vale na hora."
+    val rule = stringResource(R.string.pacing_footer_rule)
     val pending = p.pending
     return when {
         pending != null -> {
-            val what = if (!pending.target.enabled) "O controle desliga" else "O intervalo passa para ${pending.target.intervalHours} h"
-            "$what ${formatUntil(pending.effectiveAt, now)}. Até lá, vale o intervalo de ${p.config.intervalHours} h. $rule"
+            val `when` = formatUntil(pending.effectiveAt, now)
+            val what = if (!pending.target.enabled) {
+                stringResource(R.string.pacing_footer_off_at, `when`)
+            } else {
+                stringResource(R.string.pacing_footer_interval_at, pending.target.intervalHours, `when`)
+            }
+            stringResource(R.string.pacing_footer_pending, what, p.config.intervalHours, rule)
         }
-        p.config.enabled -> "Liberação no máximo a cada ${p.config.intervalHours} h, com regras extras para sessões seguidas e semana cheia. $rule"
-        else -> "Desligado: cada sessão segue o nível escolhido."
+        p.config.enabled -> stringResource(R.string.pacing_footer_on, p.config.intervalHours, rule)
+        else -> stringResource(R.string.gate_off_text) + "."
     }
+}
+
+@Composable
+fun languageName(lang: AppLanguage): String = when (lang) {
+    AppLanguage.SYSTEM -> stringResource(R.string.language_system)
+    // cada idioma aparece no próprio nome, para quem não lê o idioma atual achar o seu
+    AppLanguage.PT -> "Português"
+    AppLanguage.EN -> "English"
+    AppLanguage.ES -> "Español"
 }
 
 @Composable
@@ -368,7 +398,7 @@ private fun AmbientVolumeRow(volume: Float, onVolume: (Float) -> Unit) {
     val c = Ios.colors
     var v by remember(volume) { mutableFloatStateOf(volume) }
     Column(Modifier.padding(start = 16.dp, end = 8.dp, top = 10.dp, bottom = 4.dp)) {
-        Text("Volume da trilha", style = Ios.type.body, color = c.label)
+        Text(stringResource(R.string.settings_ambient_volume), style = Ios.type.body, color = c.label)
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 8.dp)) {
             Icon(Icons.AutoMirrored.Rounded.VolumeMute, contentDescription = null, tint = c.secondary, modifier = Modifier.size(18.dp))
             IosSlider(
@@ -389,8 +419,8 @@ private fun VolumeRow(volume: Float, onVolume: (Float) -> Unit, onTest: () -> Un
     var v by remember(volume) { mutableFloatStateOf(volume) }
     Column(Modifier.padding(start = 16.dp, end = 8.dp, top = 6.dp, bottom = 4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Volume dos sons", style = Ios.type.body, color = c.label, modifier = Modifier.weight(1f))
-            NavTextButton("Testar", onTest)
+            Text(stringResource(R.string.settings_volume), style = Ios.type.body, color = c.label, modifier = Modifier.weight(1f))
+            NavTextButton(stringResource(R.string.settings_test), onTest)
         }
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 8.dp)) {
             Icon(Icons.AutoMirrored.Rounded.VolumeMute, contentDescription = null, tint = c.secondary, modifier = Modifier.size(18.dp))

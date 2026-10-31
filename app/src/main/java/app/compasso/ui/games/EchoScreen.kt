@@ -1,5 +1,8 @@
 package app.compasso.ui.games
 
+import androidx.compose.ui.res.stringResource
+import app.compasso.R
+
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -129,17 +132,19 @@ fun EchoScreen(
             Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    when (phase) {
-                        EchoPhase.READY -> "Pronto para começar"
-                        EchoPhase.SHOWING -> "Observe…"
-                        EchoPhase.INPUT -> "Sua vez"
-                        EchoPhase.OVER -> "Fim da partida"
-                    },
+                    stringResource(
+                        when (phase) {
+                            EchoPhase.READY -> R.string.game_echo_ready
+                            EchoPhase.SHOWING -> R.string.game_echo_watch
+                            EchoPhase.INPUT -> R.string.game_echo_your_turn
+                            EchoPhase.OVER -> R.string.game_over
+                        },
+                    ),
                     style = Ios.type.title3,
                     color = c.label,
                 )
                 Text(
-                    if (game.round > 0) "Rodada ${game.round}" else "A sequência cresce a cada rodada",
+                    if (game.round > 0) stringResource(R.string.game_echo_round, game.round) else stringResource(R.string.game_echo_grows),
                     style = Ios.type.subhead,
                     color = c.secondary,
                 )
@@ -155,7 +160,7 @@ fun EchoScreen(
                                         color = padColors[pad],
                                         lit = lit == pad,
                                         enabled = phase == EchoPhase.INPUT,
-                                        label = "Botão ${pad + 1}",
+                                        label = stringResource(R.string.game_echo_pad_cd, pad + 1),
                                         modifier = Modifier.weight(1f),
                                         onPress = { press(pad) },
                                     )
@@ -166,10 +171,10 @@ fun EchoScreen(
                 }
                 Spacer(Modifier.weight(1f))
                 if (phase == EchoPhase.READY) {
-                    PrimaryButton("Começar", ::start, Modifier.fillMaxWidth().padding(horizontal = 16.dp))
+                    PrimaryButton(stringResource(R.string.action_start), ::start, Modifier.fillMaxWidth().padding(horizontal = 16.dp))
                 } else {
                     Text(
-                        "Repita a ordem das luzes. Um erro encerra a partida.",
+                        stringResource(R.string.game_echo_rule),
                         style = Ios.type.footnote,
                         color = c.secondary,
                         textAlign = TextAlign.Center,
@@ -180,7 +185,7 @@ fun EchoScreen(
             }
             GameOverCard(
                 visible = phase == EchoPhase.OVER,
-                title = "Fim da partida",
+                title = stringResource(R.string.game_over),
                 score = score,
                 newRecord = score > best,
                 onAgain = ::start,

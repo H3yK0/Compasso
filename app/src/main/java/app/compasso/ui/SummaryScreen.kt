@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import app.compasso.R
 import app.compasso.ui.components.GlassCard
 import app.compasso.ui.components.GlowOrb
 import app.compasso.ui.components.NavTextButton
@@ -73,7 +75,7 @@ fun SummaryScreen(
             Spacer(Modifier.height(20.dp))
             GlowOrb(look.icon, look.color, Modifier.semantics { contentDescription = look.short }, size = 170.dp)
             Text(
-                r.levelName,
+                levelName(r.levelId, r.levelName),
                 style = Ios.type.footnote.copy(fontWeight = FontWeight.SemiBold),
                 color = c.label,
                 modifier = Modifier.clip(CircleShape).background(c.fill).padding(horizontal = 12.dp, vertical = 4.dp),
@@ -86,51 +88,63 @@ fun SummaryScreen(
             // os números da sessão em quatro quadros
             Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    StatTile("Tempo de treino", formatClock(r.durationMs), Modifier.weight(1f))
-                    StatTile("Rodadas", "${r.roundsDone} de ${r.roundsTotal}", Modifier.weight(1f))
+                    StatTile(stringResource(R.string.summary_training_time), formatClock(r.durationMs), Modifier.weight(1f))
+                    StatTile(stringResource(R.string.summary_rounds), stringResource(R.string.summary_rounds_value, r.roundsDone, r.roundsTotal), Modifier.weight(1f))
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    StatTile("Chegou perto", "${r.closeCount}×", Modifier.weight(1f))
-                    StatTile("Ritmo máximo", if (r.maxBpm > 0) "${r.maxBpm} bpm" else "—", Modifier.weight(1f))
+                    StatTile(stringResource(R.string.summary_close), "${r.closeCount}×", Modifier.weight(1f))
+                    StatTile(stringResource(R.string.summary_max_bpm), if (r.maxBpm > 0) "${r.maxBpm} bpm" else "—", Modifier.weight(1f))
                 }
             }
             when (val g = summary.gate) {
                 is ReleaseGate.Open -> {
                     Spacer(Modifier.height(14.dp))
-                    GroupCard { IosRow("Próxima liberação", icon = RowIcon(Icons.Rounded.CheckCircle, c.green), value = "Disponível") }
+                    GroupCard { IosRow(stringResource(R.string.summary_next_release), icon = RowIcon(Icons.Rounded.CheckCircle, c.green), value = stringResource(R.string.summary_available)) }
                 }
                 is ReleaseGate.Closed -> {
                     Spacer(Modifier.height(14.dp))
-                    GroupCard { IosRow("Próxima liberação", icon = RowIcon(Icons.Rounded.HourglassTop, c.amber), value = formatUntil(g.until, now)) }
+                    GroupCard { IosRow(stringResource(R.string.summary_next_release), icon = RowIcon(Icons.Rounded.HourglassTop, c.amber), value = formatUntil(g.until, now)) }
                 }
                 ReleaseGate.Off -> Unit
             }
-            if (summary.saved) GroupFooter("Salvo no histórico")
+            if (summary.saved) GroupFooter(stringResource(R.string.summary_saved))
             val pts = summary.points
             if (pts != null || summary.noPoints != null) {
                 Spacer(Modifier.height(14.dp))
                 GroupCard {
                     IosRow(
-                        "Pontos de constância",
+                        stringResource(R.string.tip_summary_title),
                         icon = RowIcon(Icons.Rounded.Insights, if (pts != null) c.amber else c.gray),
                         value = if (pts != null) "+${pts.points}" else "0",
                     )
                 }
-                summary.noPoints?.let { GroupFooter(it) }
+                summary.noPoints?.let { GroupFooter(noPointsText(it)) }
             }
             if (tip != null) {
                 Spacer(Modifier.height(16.dp))
-                TipCard(tip.title, tip.message, Icons.Rounded.Insights, onClose = { onTipClose(tip) })
+                TipCard(stringResource(tip.title), stringResource(tip.message), Icons.Rounded.Insights, onClose = { onTipClose(tip) })
             }
             Spacer(Modifier.height(24.dp))
             Column(Modifier.fillMaxWidth().padding(horizontal = 22.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                PrimaryButton("Concluído", onHome, Modifier.fillMaxWidth())
+                PrimaryButton(stringResource(R.string.action_done), onHome, Modifier.fillMaxWidth())
                 Spacer(Modifier.height(6.dp))
-                NavTextButton("Repetir este nível", onRepeat)
+                NavTextButton(stringResource(R.string.summary_repeat), onRepeat)
             }
         }
     }
 }
+
+@Composable
+fun noPointsText(r: NoPointsReason): String = stringResource(
+    when (r) {
+        NoPointsReason.INTERRUPTED -> R.string.nopoints_interrupted
+        NoPointsReason.FOCUS_OFF -> R.string.nopoints_focus_off
+        NoPointsReason.NOT_PINNED -> R.string.nopoints_not_pinned
+        NoPointsReason.DAILY_CAP -> R.string.nopoints_daily_cap
+        NoPointsReason.KIND_LIMIT -> R.string.nopoints_kind_limit
+        NoPointsReason.SESSION_LIMIT -> R.string.nopoints_session_limit
+    },
+)
 
 /** Um número da sessão num quadro de vidro. */
 @Composable

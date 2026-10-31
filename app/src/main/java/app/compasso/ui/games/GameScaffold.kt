@@ -1,5 +1,8 @@
 package app.compasso.ui.games
 
+import androidx.compose.ui.res.stringResource
+import app.compasso.R
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -95,19 +98,19 @@ fun GameScaffold(
     SkyBackground(Modifier.fillMaxSize(), glow = gameCover(kind).first.first(), glowStrength = 0.8f) {
         Column(Modifier.fillMaxSize().safeDrawingPadding()) {
             Box(Modifier.fillMaxWidth().height(44.dp)) {
-                Box(Modifier.align(Alignment.CenterStart).padding(start = 6.dp)) { NavTextButton("Fechar", onClose) }
-                Text(kind.title, style = Ios.type.headline, color = c.label, modifier = Modifier.align(Alignment.Center))
+                Box(Modifier.align(Alignment.CenterStart).padding(start = 6.dp)) { NavTextButton(stringResource(R.string.action_close), onClose) }
+                Text(stringResource(kind.title), style = Ios.type.headline, color = c.label, modifier = Modifier.align(Alignment.Center))
                 Row(Modifier.align(Alignment.CenterEnd).padding(end = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                     PlayRing(played)
-                    NavIconButton(Icons.AutoMirrored.Rounded.HelpOutline, "Como jogar", { help++ })
+                    NavIconButton(Icons.AutoMirrored.Rounded.HelpOutline, stringResource(R.string.game_how_to), { help++ })
                 }
             }
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                ScoreTile("Pontos", formatScore(score), Modifier.weight(1f))
-                ScoreTile("Recorde", formatScore(maxOf(best, score)), Modifier.weight(1f), highlight = score > best && best > 0)
+                ScoreTile(stringResource(R.string.game_score), formatScore(score), Modifier.weight(1f))
+                ScoreTile(stringResource(R.string.game_best), formatScore(maxOf(best, score)), Modifier.weight(1f), highlight = score > best && best > 0)
             }
             content()
         }
@@ -137,7 +140,7 @@ private fun PlayRing(seconds: Int) {
                 style = Stroke(stroke, cap = StrokeCap.Round),
             )
         }
-        if (p >= 1f) Icon(Icons.Rounded.Check, contentDescription = "3 minutos jogados", tint = c.green, modifier = Modifier.size(14.dp))
+        if (p >= 1f) Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.game_played_cd), tint = c.green, modifier = Modifier.size(14.dp))
     }
 }
 
@@ -177,18 +180,18 @@ private fun HelpOverlay(kind: GameKind, onClose: () -> Unit) {
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text("Como jogar", style = Ios.type.headline, color = c.label)
+            Text(stringResource(R.string.game_how_to), style = Ios.type.headline, color = c.label)
             Spacer(Modifier.height(8.dp))
-            Text(kind.howTo, style = Ios.type.subhead, color = c.label, textAlign = TextAlign.Center)
+            Text(stringResource(kind.howTo), style = Ios.type.subhead, color = c.label, textAlign = TextAlign.Center)
             Spacer(Modifier.height(8.dp))
             Text(
-                "Jogue pelo menos 3 minutos: é o tempo do anel verde no alto, e rende pontos.",
+                stringResource(R.string.game_play_goal),
                 style = Ios.type.footnote,
                 color = c.secondary,
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(14.dp))
-            PrimaryButton("Entendi", onClose, Modifier.fillMaxWidth(), height = 48.dp)
+            PrimaryButton(stringResource(R.string.action_got_it), onClose, Modifier.fillMaxWidth(), height = 48.dp)
         }
     }
 }
@@ -217,14 +220,14 @@ fun BoxScope.GameOverCard(visible: Boolean, title: String, score: Int, newRecord
             Text(title, style = Ios.type.title1, color = c.label)
             Spacer(Modifier.height(4.dp))
             Text(
-                if (newRecord) "Novo recorde: ${formatScore(score)}" else "${formatScore(score)} pontos",
+                if (newRecord) stringResource(R.string.game_new_record, formatScore(score)) else stringResource(R.string.game_final_score, formatScore(score)),
                 style = Ios.type.body,
                 color = if (newRecord) c.amber else c.secondary,
             )
             Spacer(Modifier.height(16.dp))
-            PrimaryButton("Jogar de novo", onAgain, Modifier.fillMaxWidth(), height = 50.dp)
+            PrimaryButton(stringResource(R.string.game_again), onAgain, Modifier.fillMaxWidth(), height = 50.dp)
             Spacer(Modifier.height(4.dp))
-            NavTextButton("Fechar", onClose)
+            NavTextButton(stringResource(R.string.action_close), onClose)
         }
     }
 }

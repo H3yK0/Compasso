@@ -3,6 +3,7 @@ id: cerebro
 titulo: "Pornografia e cérebro: o que se sabe"
 resumo: Nem "não faz nada", nem "destrói o cérebro". O que os estudos mostram, e o que ainda não dá para afirmar.
 categoria: O que a ciência diz
+tema: ciencia
 minutos: 3
 ordem: 5
 ---

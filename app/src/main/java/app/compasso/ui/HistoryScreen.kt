@@ -20,7 +20,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import app.compasso.R
 import androidx.compose.ui.unit.dp
 import app.compasso.model.Outcome
 import app.compasso.model.SessionRecord
@@ -61,12 +63,12 @@ fun HistoryScreen(
     records: List<SessionRecord>,
     onBack: () -> Unit,
     now: Long = System.currentTimeMillis(),
-    backLabel: String = "Evolução",
+    backLabel: String = stringResource(R.string.tab_progress),
 ) {
     val c = Ios.colors
     val stats = remember(records) { HistoryStats.from(records) }
     val days = remember(records) { records.groupBy { localDate(it.startedAt) } }
-    LargeTitleList("Histórico", onBack = onBack, backLabel = backLabel) {
+    LargeTitleList(stringResource(R.string.history_title), onBack = onBack, backLabel = backLabel) {
         if (records.isEmpty()) {
             item(key = "vazio") {
                 Column(
@@ -75,10 +77,10 @@ fun HistoryScreen(
                 ) {
                     Icon(Icons.Rounded.History, contentDescription = null, tint = c.tertiary, modifier = Modifier.size(52.dp))
                     Spacer(Modifier.height(12.dp))
-                    Text("Nenhuma sessão ainda", style = Ios.type.title3, color = c.label)
+                    Text(stringResource(R.string.history_empty_title), style = Ios.type.title3, color = c.label)
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "Quando você concluir ou encerrar uma sessão, ela aparece aqui.",
+                        stringResource(R.string.history_empty_text),
                         style = Ios.type.subhead,
                         color = c.secondary,
                         textAlign = TextAlign.Center,
@@ -91,19 +93,16 @@ fun HistoryScreen(
                     Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    StatTile("Sessões", "${stats.total}", c.accent, Modifier.weight(1f))
-                    StatTile("Segurou", stats.holdRateLabel, c.green, Modifier.weight(1f))
-                    StatTile("Sequência", "${stats.streak}", c.orange, Modifier.weight(1f))
+                    StatTile(stringResource(R.string.span_sessions), "${stats.total}", c.accent, Modifier.weight(1f))
+                    StatTile(stringResource(R.string.history_held), stats.holdRateLabel, c.green, Modifier.weight(1f))
+                    StatTile(stringResource(R.string.history_streak), "${stats.streak}", c.orange, Modifier.weight(1f))
                 }
             }
             item(key = "nota") {
-                GroupFooter(
-                    "“Segurou” compara as sessões concluídas com as marcadas como “não segurei”. " +
-                        "A sequência conta as concluídas seguidas, das mais recentes pra trás."
-                )
+                GroupFooter(stringResource(R.string.history_note))
             }
             days.forEach { (date, list) ->
-                section(header = dayHeader(date, now), key = "dia-$date") {
+                section(header = { dayHeader(date, now) }, key = "dia-$date") {
                     list.forEachIndexed { i, r ->
                         if (i > 0) RowDivider(IconInset)
                         HistoryRow(r)
@@ -126,9 +125,10 @@ private fun StatTile(label: String, value: String, color: Color, modifier: Modif
 @Composable
 private fun HistoryRow(r: SessionRecord) {
     val look = outcomeLook(r.outcome, r.controlOnly)
+    val name = levelName(r.levelId, r.levelName)
     IosRow(
-        title = if (r.controlOnly) "${r.levelName} · só controle" else r.levelName,
-        subtitle = "${timeOfDay(r.startedAt)} · ${formatDuration(r.durationMs)} · perto ${r.closeCount}×",
+        title = if (r.controlOnly) stringResource(R.string.session_control_only_suffix, name) else name,
+        subtitle = stringResource(R.string.history_row, timeOfDay(r.startedAt), formatDuration(r.durationMs), r.closeCount),
         icon = RowIcon(look.icon, look.color),
         value = look.short,
     )

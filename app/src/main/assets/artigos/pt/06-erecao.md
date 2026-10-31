@@ -3,6 +3,7 @@ id: erecao
 titulo: "Pornografia e ereção: o que dizem os estudos"
 resumo: Assistir, por si só, não parece "quebrar" a ereção. Mas o uso compulsivo e a dependência de tela contam.
 categoria: O que a ciência diz
+tema: ciencia
 minutos: 2
 ordem: 6
 ---

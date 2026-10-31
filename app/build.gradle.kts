@@ -21,8 +21,10 @@ android {
         applicationId = "app.compasso"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.3"
+        versionCode = 1
+        versionName = "0.0.0.1"
+        // O app tem textos em inglês (padrão), português e espanhol: as bibliotecas não trazem outros idiomas.
+        resourceConfigurations += listOf("en", "pt", "es")
     }
 
     signingConfigs {

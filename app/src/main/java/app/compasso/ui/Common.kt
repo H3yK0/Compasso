@@ -19,20 +19,27 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import app.compasso.R
+import app.compasso.model.Codename
+import app.compasso.model.Codenames
 import app.compasso.model.GateRule
 import app.compasso.model.Level
+import app.compasso.model.Levels
 import app.compasso.model.Outcome
 import app.compasso.model.ReleaseGate
 import app.compasso.model.ReleaseMode
+import app.compasso.model.Speed
+import app.compasso.model.speedOf
 import app.compasso.ui.theme.Ios
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
-
-private val PT_BR: Locale = Locale.forLanguageTag("pt-BR")
 
 // ---------- Resultado das sessões ----------
 
@@ -43,28 +50,66 @@ fun outcomeLook(outcome: Outcome, controlOnly: Boolean = false): OutcomeLook {
     val c = Ios.colors
     return when (outcome) {
         Outcome.RELEASED -> OutcomeLook(
-            Icons.Rounded.Check, c.green, "Sessão concluída",
-            "Você respeitou todas as pausas até a liberação.", "Liberado",
+            Icons.Rounded.Check, c.green, stringResource(R.string.outcome_released_title),
+            stringResource(R.string.outcome_released_text), stringResource(R.string.outcome_released_short),
         )
         Outcome.DENIED -> OutcomeLook(
             Icons.Rounded.EmojiEvents, c.indigo,
-            if (controlOnly) "Treino de controle concluído" else "Você foi até o fim",
-            "Você chegou ao fim sem liberação. Isso é controle de verdade.", "Segurou",
+            stringResource(if (controlOnly) R.string.outcome_denied_control_title else R.string.outcome_denied_title),
+            stringResource(R.string.outcome_denied_text), stringResource(R.string.outcome_denied_short),
         )
         Outcome.LOST_CONTROL -> OutcomeLook(
-            Icons.Rounded.Replay, c.orange, "Não foi dessa vez",
-            "Faz parte do treino. Toque em “Estou perto” mais cedo ou tente um nível abaixo.", "Não segurou",
+            Icons.Rounded.Replay, c.orange, stringResource(R.string.outcome_lost_title),
+            stringResource(R.string.outcome_lost_text), stringResource(R.string.outcome_lost_short),
         )
         Outcome.STOPPED -> OutcomeLook(
-            Icons.Rounded.Pause, c.gray, "Sessão encerrada",
-            "Tudo bem parar no meio. Volte quando quiser.", "Encerrada",
+            Icons.Rounded.Pause, c.gray, stringResource(R.string.outcome_stopped_title),
+            stringResource(R.string.outcome_stopped_text), stringResource(R.string.outcome_stopped_short),
         )
         Outcome.INTERRUPTED -> OutcomeLook(
-            Icons.Rounded.DoNotDisturbOn, c.red, "Sessão interrompida",
-            "Você saiu do app no meio da sessão com o modo foco ligado. Ela fica registrada, sem pontos.", "Interrompida",
+            Icons.Rounded.DoNotDisturbOn, c.red, stringResource(R.string.outcome_interrupted_title),
+            stringResource(R.string.outcome_interrupted_text), stringResource(R.string.outcome_interrupted_short),
         )
     }
 }
+
+// ---------- Nomes traduzidos ----------
+
+/** Nome do nível no idioma do app (os gravados no histórico usam o id; outros mostram o nome salvo). */
+@Composable
+fun levelName(id: String, fallback: String): String = when (id) {
+    Levels.EASY.id -> stringResource(R.string.level_easy)
+    Levels.MEDIUM.id -> stringResource(R.string.level_medium)
+    Levels.HARD.id -> stringResource(R.string.level_hard)
+    Levels.IMPOSSIBLE.id -> stringResource(R.string.level_impossible)
+    Level.CUSTOM_ID -> stringResource(R.string.level_custom)
+    else -> fallback
+}
+
+@Composable
+fun levelName(level: Level): String = levelName(level.id, level.name)
+
+@Composable
+fun speedName(bpm: Int): String = stringResource(
+    when (speedOf(bpm)) {
+        Speed.SLOW -> R.string.speed_slow
+        Speed.MODERATE -> R.string.speed_moderate
+        Speed.FAST -> R.string.speed_fast
+        Speed.VERY_FAST -> R.string.speed_very_fast
+    },
+)
+
+@Composable
+fun codenameText(c: Codename): String = Codenames.full(c, currentLanguage())
+
+@Composable
+fun codenameShort(c: Codename): String = Codenames.short(c, currentLanguage())
+
+@Composable
+fun roundsText(n: Int): String = pluralStringResource(R.plurals.rounds_count, n, n)
+
+@Composable
+fun daysText(n: Int): String = pluralStringResource(R.plurals.days_count, n, n)
 
 // ---------- Controle inteligente ----------
 
@@ -75,48 +120,53 @@ fun gateLook(gate: ReleaseGate, now: Long): GateLook {
     val c = Ios.colors
     return when (gate) {
         is ReleaseGate.Open -> GateLook(
-            Icons.Rounded.CheckCircle, c.green, "Liberação disponível",
-            "Controle inteligente · intervalo de ${gate.intervalHours} h",
+            Icons.Rounded.CheckCircle, c.green, stringResource(R.string.gate_open_title),
+            stringResource(R.string.gate_open_text, gate.intervalHours),
         )
         is ReleaseGate.Closed -> GateLook(
-            Icons.Rounded.HourglassTop, c.orange, "Só treino de controle",
-            "A liberação volta ${formatUntil(gate.until, now)}",
+            Icons.Rounded.HourglassTop, c.orange, stringResource(R.string.gate_closed_title),
+            stringResource(R.string.gate_closed_text, formatUntil(gate.until, now)),
         )
         ReleaseGate.Off -> GateLook(
-            Icons.Rounded.Shield, c.gray, "Controle inteligente desligado",
-            "Cada sessão segue o nível escolhido",
+            Icons.Rounded.Shield, c.gray, stringResource(R.string.gate_off_title),
+            stringResource(R.string.gate_off_text),
         )
     }
 }
 
 /** Frase com o motivo de a liberação estar fechada. */
+@Composable
 fun gateReason(gate: ReleaseGate.Closed): String {
     val interval = GateRule.INTERVAL in gate.rules
     val rush = GateRule.RUSH in gate.rules
     val intervalText = if (gate.busyWeek) {
-        "semana cheia: o intervalo dobrou para ${gate.intervalHours} h"
+        stringResource(R.string.gate_reason_busy, gate.intervalHours)
     } else {
-        "ainda não passaram ${gate.intervalHours} h desde a última liberação"
+        stringResource(R.string.gate_reason_interval, gate.intervalHours)
     }
-    val rushText = "faz menos de 2 h desde a última sessão"
+    val rushText = stringResource(R.string.gate_reason_rush)
     val text = when {
-        interval && rush -> "$intervalText, e $rushText"
+        interval && rush -> stringResource(R.string.gate_reason_both, intervalText, rushText)
         interval -> intervalText
         else -> rushText
     }
     return text.replaceFirstChar { it.uppercaseChar() } + "."
 }
 
-fun levelSummary(level: Level, gate: ReleaseGate, withTime: Boolean = true): String {
+@Composable
+fun levelEnding(level: Level, gate: ReleaseGate): String {
     val closed = gate is ReleaseGate.Closed
-    val end = when (level.release) {
-        ReleaseMode.NEVER -> "sem liberação"
-        ReleaseMode.ALWAYS -> if (closed) "só controle agora" else "libera no fim"
-        ReleaseMode.CHANCE -> if (closed) "só controle agora" else "sorteio ${level.releaseChance}%"
+    return when (level.release) {
+        ReleaseMode.NEVER -> stringResource(R.string.level_end_never)
+        ReleaseMode.ALWAYS -> stringResource(if (closed) R.string.level_end_control_now else R.string.level_end_release)
+        ReleaseMode.CHANCE -> if (closed) stringResource(R.string.level_end_control_now) else stringResource(R.string.level_end_chance, level.releaseChance)
     }
-    val rounds = if (level.rounds == 1) "1 rodada" else "${level.rounds} rodadas"
-    val time = if (withTime) "≈ ${level.estimatedMinutes} min · " else ""
-    return "$time$rounds · ${level.bpmStart}–${level.bpmEnd} bpm · $end"
+}
+
+@Composable
+fun levelSummary(level: Level, gate: ReleaseGate, withTime: Boolean = true): String {
+    val time = if (withTime) stringResource(R.string.level_summary_time, level.estimatedMinutes) else ""
+    return time + stringResource(R.string.level_summary, roundsText(level.rounds), level.bpmStart, level.bpmEnd, levelEnding(level, gate))
 }
 
 // ---------- Formatação ----------
@@ -132,60 +182,68 @@ fun formatClock(ms: Long): String {
 fun ceilSeconds(ms: Long): Int = ((ms + 999) / 1000).toInt()
 
 /** Duração curta para listas: "45 s", "8 min", "1 h 05". */
+@Composable
 fun formatDuration(ms: Long): String {
-    val s = (ms / 1000).coerceAtLeast(0)
+    val s = (ms / 1000).coerceAtLeast(0).toInt()
     return when {
-        s < 60 -> "$s s"
-        s < 3600 -> "${s / 60} min"
-        else -> String.format(Locale.ROOT, "%d h %02d", s / 3600, (s % 3600) / 60)
+        s < 60 -> stringResource(R.string.duration_seconds, s)
+        s < 3600 -> stringResource(R.string.duration_minutes, s / 60)
+        else -> stringResource(R.string.duration_hours, s / 3600, (s % 3600) / 60)
     }
 }
-
-private val timeFmt = DateTimeFormatter.ofPattern("HH:mm")
-private val shortDateFmt = DateTimeFormatter.ofPattern("dd/MM")
-private val dayHeaderFmt = DateTimeFormatter.ofPattern("EEE, d 'de' MMM", PT_BR)
 
 private fun zoned(epochMs: Long) = Instant.ofEpochMilli(epochMs).atZone(ZoneId.systemDefault())
 
 fun localDate(epochMs: Long): LocalDate = zoned(epochMs).toLocalDate()
 
-fun timeOfDay(epochMs: Long): String = zoned(epochMs).format(timeFmt)
+/** Hora no formato do idioma ("21:40" em português e espanhol, "9:40 PM" em inglês). */
+@Composable
+fun timeOfDay(epochMs: Long): String =
+    zoned(epochMs).format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(currentLocale()))
+
+@Composable
+private fun shortDate(epochMs: Long): String =
+    zoned(epochMs).format(DateTimeFormatter.ofPattern(stringResource(R.string.fmt_short_date), currentLocale()))
+
+@Composable
+private fun weekdayName(date: LocalDate): String = date.dayOfWeek.getDisplayName(TextStyle.FULL, currentLocale())
 
 /** Momento futuro: "hoje às 21:40", "amanhã às 08:10", "quarta-feira às 08:10". */
+@Composable
 fun formatUntil(at: Long, now: Long = System.currentTimeMillis()): String {
-    val dt = zoned(at)
     val today = localDate(now)
-    val day = dt.toLocalDate()
-    val time = dt.format(timeFmt)
+    val day = localDate(at)
+    val time = timeOfDay(at)
     return when {
-        day == today -> "hoje às $time"
-        day == today.plusDays(1) -> "amanhã às $time"
-        day.isBefore(today.plusDays(7)) -> "${day.dayOfWeek.getDisplayName(TextStyle.FULL, PT_BR)} às $time"
-        else -> "${dt.format(shortDateFmt)} às $time"
+        day == today -> stringResource(R.string.when_today_at, time)
+        day == today.plusDays(1) -> stringResource(R.string.when_tomorrow_at, time)
+        day.isBefore(today.plusDays(7)) -> stringResource(R.string.when_day_at, weekdayName(day), time)
+        else -> stringResource(R.string.when_day_at, shortDate(at), time)
     }
 }
 
 /** Momento passado: "hoje às 10:41", "ontem às 21:40", "sábado às 21:40", "03/10". */
+@Composable
 fun formatPast(at: Long, now: Long = System.currentTimeMillis()): String {
-    val dt = zoned(at)
     val today = localDate(now)
-    val day = dt.toLocalDate()
-    val time = dt.format(timeFmt)
+    val day = localDate(at)
+    val time = timeOfDay(at)
     return when {
-        day == today -> "hoje às $time"
-        day == today.minusDays(1) -> "ontem às $time"
-        day.isAfter(today.minusDays(7)) -> "${day.dayOfWeek.getDisplayName(TextStyle.FULL, PT_BR)} às $time"
-        else -> dt.format(shortDateFmt)
+        day == today -> stringResource(R.string.when_today_at, time)
+        day == today.minusDays(1) -> stringResource(R.string.when_yesterday_at, time)
+        day.isAfter(today.minusDays(7)) -> stringResource(R.string.when_day_at, weekdayName(day), time)
+        else -> shortDate(at)
     }
 }
 
 /** Cabeçalho dos grupos do histórico: "Hoje", "Ontem", "sáb., 10 de out.". */
+@Composable
 fun dayHeader(date: LocalDate, now: Long = System.currentTimeMillis()): String {
     val today = localDate(now)
     return when (date) {
-        today -> "Hoje"
-        today.minusDays(1) -> "Ontem"
-        else -> date.format(dayHeaderFmt)
+        today -> stringResource(R.string.day_today)
+        today.minusDays(1) -> stringResource(R.string.day_yesterday)
+        else -> date.format(DateTimeFormatter.ofPattern(stringResource(R.string.fmt_day_header), currentLocale()))
     }
 }
 

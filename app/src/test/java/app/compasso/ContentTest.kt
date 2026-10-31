@@ -62,12 +62,36 @@ class ContentTest {
         assertEquals(null, a.sources[1].url)
     }
 
+    private fun articles(language: String) = File("src/main/assets/artigos/$language")
+        .listFiles { f -> f.name.endsWith(".md") }.orEmpty().sortedBy { it.name }
+        .map { ArticleParser.parse(it.readText()) }
+
+    /** Os três idiomas têm os mesmos artigos (mesmo id, ordem, tema, tempo e fontes). */
+    @Test
+    fun articlesExistInEveryLanguage() {
+        val pt = articles("pt")
+        listOf("en", "es").forEach { lang ->
+            val other = articles(lang)
+            assertEquals(lang, pt.map { it.id }, other.map { it.id })
+            assertEquals(lang, pt.map { it.order }, other.map { it.order })
+            assertEquals(lang, pt.map { it.theme }, other.map { it.theme })
+            assertEquals(lang, pt.map { it.minutes }, other.map { it.minutes })
+            pt.zip(other).forEach { (a, b) ->
+                assertEquals("$lang ${a.id}: títulos de seção", a.blocks.count { it is Block.Heading }, b.blocks.count { it is Block.Heading })
+                assertTrue("$lang ${a.id}: fontes", b.sources.size >= a.sources.size - 1 && b.sources.isNotEmpty())
+                assertFalse("$lang ${a.id}: categoria", b.category.isBlank())
+            }
+        }
+    }
+
     @Test
     fun bundledArticlesAreCompleteAndCiteSources() {
-        val dir = File("src/main/assets/artigos")
-        val files = dir.listFiles { f -> f.name.endsWith(".md") }.orEmpty().sortedBy { it.name }
-        assertEquals(9, files.size)
-        val articles = files.map { ArticleParser.parse(it.readText()) }
+        listOf("pt", "en", "es").forEach { checkArticles(it) }
+    }
+
+    private fun checkArticles(language: String) {
+        val articles = articles(language)
+        assertEquals(9, articles.size)
         assertEquals(articles.size, articles.map { it.id }.toSet().size)
         assertEquals(articles.size, articles.map { it.order }.toSet().size)
         articles.forEach { a ->
@@ -78,7 +102,7 @@ class ContentTest {
             assertTrue(a.id, a.blocks.count { it is Block.Heading } >= 2)
             // tempo de leitura coerente: 120 a 260 palavras por minuto
             val wpm = ArticleParser.wordCount(a) / a.minutes.toFloat()
-            assertTrue("${a.id}: $wpm palavras/min", wpm in 120f..260f)
+            assertTrue("$language ${a.id}: $wpm palavras/min", wpm in 120f..260f)
             // sem promessas absolutas
             val text = a.blocks.joinToString(" ") { b ->
                 when (b) {
@@ -89,7 +113,8 @@ class ContentTest {
                     is Block.Numbered -> b.items.joinToString(" ")
                 }
             }.lowercase()
-            listOf("cura garantida", "fatal", "100% eficaz").forEach { assertFalse("${a.id}: $it", it in text) }
+            listOf("cura garantida", "fatal", "100% eficaz", "guaranteed cure", "100% effective", "cura garantizada", "100% eficaz")
+                .forEach { assertFalse("$language ${a.id}: $it", it in text) }
         }
     }
 

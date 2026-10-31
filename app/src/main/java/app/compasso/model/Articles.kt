@@ -12,11 +12,15 @@ sealed interface Block {
     data class Quote(val text: String) : Block
 }
 
+/** Tema do artigo: decide a cor da capa (o nome do tema vem traduzido no próprio artigo). */
+enum class Theme { MIND, SCIENCE, BODY, SUPPORT }
+
 data class Article(
     val id: String,
     val title: String,
     val summary: String,
     val category: String,
+    val theme: Theme,
     val minutes: Int,
     val order: Int,
     val blocks: List<Block>,
@@ -24,10 +28,13 @@ data class Article(
 )
 
 /**
- * Lê os artigos em Markdown simples (assets/artigos). Cabeçalho entre linhas "---" com
- * id, titulo, resumo, categoria, minutos e ordem. A seção "## Fontes" vira a lista de referências.
+ * Lê os artigos em Markdown simples (assets/artigos/<idioma>). Cabeçalho entre linhas "---" com
+ * id, titulo, resumo, categoria, tema, minutos e ordem. A seção "## Fontes" (ou "Sources",
+ * "Fuentes") vira a lista de referências.
  */
 object ArticleParser {
+    private val sourceHeadings = setOf("fontes", "referências", "sources", "references", "fuentes", "referencias")
+
     private val urlRegex = Regex("""https?://\S+""")
     private val numbered = Regex("""^\d+[.)]\s+(.*)$""")
 
@@ -95,7 +102,7 @@ object ArticleParser {
                 line.startsWith("## ") || line.startsWith("### ") -> {
                     flushAll()
                     val title = line.trimStart('#').trim()
-                    inSources = title.equals("Fontes", ignoreCase = true) || title.equals("Referências", ignoreCase = true)
+                    inSources = title.lowercase() in sourceHeadings
                     if (!inSources) blocks += Block.Heading(title)
                 }
                 line.startsWith("- ") || line.startsWith("* ") -> {
@@ -137,7 +144,13 @@ object ArticleParser {
             id = meta["id"] ?: error("artigo sem id"),
             title = meta["titulo"] ?: meta["title"] ?: "",
             summary = meta["resumo"] ?: "",
-            category = meta["categoria"] ?: "Geral",
+            category = meta["categoria"] ?: meta["category"] ?: "",
+            theme = when (meta["tema"] ?: meta["theme"]) {
+                "mente" -> Theme.MIND
+                "ciencia" -> Theme.SCIENCE
+                "corpo" -> Theme.BODY
+                else -> Theme.SUPPORT
+            },
             minutes = meta["minutos"]?.toIntOrNull() ?: 3,
             order = meta["ordem"]?.toIntOrNull() ?: 99,
             blocks = blocks,

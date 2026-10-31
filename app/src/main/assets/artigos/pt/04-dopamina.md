@@ -3,6 +3,7 @@ id: dopamina
 titulo: "Dopamina: menos mito, mais prática"
 resumo: Ela não é a "molécula do prazer". Entender o que ela faz de verdade muda a estratégia.
 categoria: Mente e hábitos
+tema: mente
 minutos: 2
 ordem: 4
 ---

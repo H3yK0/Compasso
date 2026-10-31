@@ -1,5 +1,6 @@
 package app.compasso
 
+import app.compasso.model.Codename
 import app.compasso.model.Codenames
 import app.compasso.model.Focus
 import app.compasso.model.Lapse
@@ -22,6 +23,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.util.Locale
 import kotlin.random.Random
 
 class ProgressTest {
@@ -184,9 +186,14 @@ class ProgressTest {
         val weeks = Progress.pointsSeries(log, Span.WEEKS, now, zone)
         assertEquals(8, weeks.size)
         assertEquals(300f, weeks.sumOf { it.value.toDouble() }.toFloat(), 0.001f)
-        val months = Progress.pointsSeries(log, Span.MONTHS, now, zone)
+        val months = Progress.pointsSeries(log, Span.MONTHS, now, zone, Locale.forLanguageTag("pt-BR"))
         assertEquals(6, months.size)
         assertEquals("out", months.last().label)
+        assertEquals("Oct", Progress.pointsSeries(log, Span.MONTHS, now, zone, Locale.ENGLISH).last().label)
+        assertEquals("oct", Progress.pointsSeries(log, Span.MONTHS, now, zone, Locale.forLanguageTag("es")).last().label)
+        // semana: dia/mês em português e espanhol, mês/dia em inglês
+        assertEquals("11/10", Progress.pointsSeries(log, Span.WEEKS, now, zone, Locale.forLanguageTag("pt-BR")).last().label)
+        assertEquals("10/11", Progress.pointsSeries(log, Span.WEEKS, now, zone, Locale.ENGLISH).last().label)
     }
 
     @Test
@@ -217,14 +224,27 @@ class ProgressTest {
 
     @Test
     fun codenamesAreAnonymousAndVaried() {
-        val names = (1..40).map { Codenames.generate(Random(it)).name }
+        val codes = (1..40).map { Codenames.generate(Random(it)) }
         val pattern = Regex("""^\p{L}+ \p{L}+ \d{2,3}$""")
-        names.forEach { assertTrue(it, pattern.matches(it)) }
-        assertTrue(names.toSet().size > 30)
-        // concordância: "Coruja Serena", nunca "Coruja Sereno"
-        val feminine = setOf("Raposa", "Coruja", "Águia", "Montanha", "Onça", "Estrela", "Brisa", "Aurora", "Garça", "Baleia", "Serra", "Lua", "Ariranha", "Sumaúma", "Maré", "Chuva")
-        (1..300).map { Codenames.generate(Random(it)).name.split(" ") }.forEach { (noun, adj) ->
-            if (noun in feminine) assertFalse("$noun $adj", adj.endsWith("o") && adj != "Livre")
+        listOf("pt", "en", "es").forEach { lang ->
+            val names = codes.map { Codenames.full(it, lang) }
+            names.forEach { assertTrue("$lang: $it", pattern.matches(it)) }
+            assertTrue(names.toSet().size > 30)
         }
+        // concordância: "Coruja Serena", nunca "Coruja Sereno"; "Lechuza Serena" em espanhol
+        val femininePt = setOf("Raposa", "Coruja", "Águia", "Montanha", "Onça", "Estrela", "Brisa", "Aurora", "Garça", "Baleia", "Serra", "Lua", "Ariranha", "Sumaúma", "Maré", "Chuva")
+        val feminineEs = setOf("Lechuza", "Águila", "Montaña", "Estrella", "Brisa", "Aurora", "Garza", "Ballena", "Sierra", "Luna", "Nutria", "Ceiba", "Marea", "Lluvia")
+        (1..300).map { Codenames.generate(Random(it)) }.forEach { c ->
+            val (noun, adj) = Codenames.full(c, "pt").split(" ")
+            if (noun in femininePt) assertFalse("$noun $adj", adj.endsWith("o") && adj != "Livre")
+            val (nounEs, adjEs) = Codenames.full(c, "es").split(" ")
+            if (nounEs in feminineEs) assertFalse("$nounEs $adjEs", adjEs.endsWith("o") && adjEs != "Libre")
+        }
+        // o mesmo codinome em cada idioma: "Lobo Sereno 42" / "Serene Wolf 42"
+        val wolf = Codename(noun = 0, adjective = 0, number = 42, seed = 1L)
+        assertEquals("Lobo Sereno 42", Codenames.full(wolf, "pt"))
+        assertEquals("Serene Wolf 42", Codenames.full(wolf, "en"))
+        assertEquals("Lobo Sereno 42", Codenames.full(wolf, "es"))
+        assertEquals("Wolf", Codenames.short(wolf, "en"))
     }
 }
