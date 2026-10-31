@@ -1,50 +1,65 @@
 # Publicar no F-Droid
 
-O F-Droid compila o app a partir do código-fonte, no servidor dele, e assina com a chave dele. Não dá para
-"subir um APK": o pedido é um merge request no repositório de metadados do F-Droid (`fdroiddata`, no GitLab),
-revisado por voluntários. Tudo do lado do código já está pronto neste repositório:
+O F-Droid compila o app a partir do código-fonte, no servidor dele. O pedido de inclusão é um merge request no
+repositório de metadados do F-Droid (`fdroiddata`, no GitLab), revisado por voluntários.
 
-- `io.github.h3yk0.compasso.yml`: a receita de build (licença, categorias, como compilar e como achar versões novas).
-- `../fastlane/metadata/android/`: título, descrições, notas da versão, ícone e capturas de tela em pt-BR,
-  en-US e es-ES. O F-Droid lê essa pasta direto do repositório, a cada versão.
-- O build de release sem assinatura (`./gradlew assembleRelease` sem `keystore.properties`) funciona sem
-  internet além do Google Maven e do Maven Central, sem bibliotecas fechadas, sem o bloco de dependências
-  do Google e sem o commit do git dentro do APK.
+O Compasso usa **builds reproduzíveis**: o APK assinado com a chave do H3yK0 fica anexado ao release do GitHub;
+o F-Droid compila o mesmo código, confere que o resultado é idêntico e distribui o APK com a assinatura do H3yK0.
+Assim, quem instalar pelo GitHub ou pelo F-Droid recebe o mesmo app e pode atualizar por qualquer um dos dois.
 
-## Verificações já feitas (com o fdroidserver 2.4.5)
+Nesta pasta:
 
-- `fdroid lint` e `fdroid rewritemeta`: a receita passa e já está no formato canônico.
-- `fdroid build` a partir da tag `v0.0.0.1` (commit `0ef5962`): o scanner do F-Droid não encontrou nenhum
-  problema (só removeu o `gradle-wrapper.jar`, como faz com todo app) e o build terminou com sucesso.
-- O APK gerado pelo F-Droid é **idêntico, byte a byte**, ao `assembleRelease` local: o build é reproduzível.
+- `io.github.h3yk0.compasso.yml`: a receita (licença, categorias, commit da versão, onde está o APK assinado e
+  qual chave é aceita).
+- `assinar.sh`: gera o APK assinado de uma versão no formato que o F-Droid aceita.
+- `../fastlane/metadata/android/`: título, descrições, notas da versão, ícone e capturas em pt-BR, en-US e es-ES.
+  O F-Droid lê essa pasta direto do repositório.
+
+## Verificações feitas (fdroidserver 2.4.5)
+
+- `fdroid lint` e `fdroid rewritemeta`: a receita passa e está no formato canônico.
+- `fdroid build` do commit `0ef5962` (tag `v0.0.0.1`): o scanner não encontrou problemas; o APK sem assinatura do
+  F-Droid é idêntico, byte a byte, ao `assembleRelease` local.
+- Com `Binaries` apontando para o APK assinado: "compared built binary to supplied reference binary successfully"
+  e "supplied reference binary has allowed signer". O `apksigcopier compare` também confere.
 - `fdroid checkupdates`: encontra a versão 0.0.0.1 (código 1) pela tag.
 
-## Passo a passo
+## A chave de assinatura
 
-1. Crie uma conta em https://gitlab.com (pode usar o mesmo apelido, H3yK0).
-2. Abra https://gitlab.com/fdroid/fdroiddata e clique em **Fork**.
-3. No seu fork, crie um branch chamado `io.github.h3yk0.compasso`.
-4. Adicione o arquivo `metadata/io.github.h3yk0.compasso.yml` com o conteúdo de `fdroid/io.github.h3yk0.compasso.yml`
-   deste repositório (pelo site do GitLab: **+ → New file**).
-5. Faça o commit e abra um **merge request** para `fdroid/fdroiddata`, escolhendo o modelo **App inclusion**
-   e marcando os itens da lista (o app é seu, o código é aberto, não tem rastreamento nem anúncios).
-6. O pipeline do GitLab vai rodar `fdroid lint` e um build de teste. Se algo falhar, os revisores comentam no
-   merge request; normalmente é um ajuste pequeno na receita.
-7. Depois do merge, o app aparece no F-Droid em alguns dias (o índice é gerado uma ou duas vezes por semana).
+- Arquivo `compasso-release.jks` (PKCS12), alias `compasso`, certificado `CN=H3yK0, O=Compasso`.
+- SHA-256 do certificado (é o `AllowedAPKSigningKeys` da receita):
+  `c98ea9ad403d51fbb661afa0e7c1d936c497b1c3ebca76be9488b0f09113356c`
+- **Nunca** coloque a chave ou a senha neste repositório (`*.jks`, `keystore/` e `keystore.properties` estão no
+  `.gitignore`). Guarde num gerenciador de senhas e numa cópia offline. **Sem ela, nenhuma versão nova sai**:
+  o F-Droid só aceita APKs com essa assinatura.
 
-## Pontos que os revisores podem comentar
+## Primeira versão: passo a passo
 
-- **Categorias**: `Habit Tracker` e `Sports & Health` (da lista atual do F-Droid). Se pedirem outra, troque.
-- **Aviso de conteúdo**: a lista atual de anti-features do F-Droid não tem mais "NSFW" (o `fdroid lint` recusa),
-  por isso a receita não marca nenhuma. O app não tem anúncios, rastreamento, internet nem partes fechadas.
-- **Reproducible builds** (opcional): se um dia você quiser publicar o seu próprio APK assinado e ter o
-  F-Droid distribuindo exatamente o mesmo arquivo, dá para adicionar `Binaries:` e `AllowedAPKSigningKeys:`
-  na receita. Para a primeira versão não precisa.
+1. **APK no GitHub**: em https://github.com/H3yK0/Compasso/releases/edit/v0.0.0.1, anexe `Compasso-0.0.0.1.apk`
+   (o nome tem que ser exatamente esse) e clique em **Update release**.
+2. **Fork** de https://gitlab.com/fdroid/fdroiddata (feito na conta `heykoanders`). O fork tem que ser público.
+3. **Branch** `io.github.h3yk0.compasso`, a partir de `master`, no fork.
+4. **Arquivo** `metadata/io.github.h3yk0.compasso.yml` no branch, com o conteúdo de `io.github.h3yk0.compasso.yml`
+   desta pasta. Mensagem do commit: `New app: Compasso`.
+5. **Merge request** do branch do fork para `fdroid/fdroiddata` · `master`, com o título `New app: Compasso`.
+   O modelo de descrição vem preenchido: responda as duas perguntas do topo, marque o checklist, apague a linha
+   `Closes rfp#…` (não há pedido anterior) e mantenha `/label ~"New App"`.
+6. O pipeline roda o lint e o build. Se o GitLab pedir telefone ou cartão para rodar o pipeline, não preencha:
+   deixe um comentário no merge request.
+7. Os revisores respondem por comentário. Depois do merge, o app entra no catálogo na próxima publicação.
+
+**Política de "3 meses":** o F-Droid pede que o app esteja em desenvolvimento ativo há pelo menos 3 meses (salvo
+exceções). Se o pedido for aberto antes disso, os revisores podem deixá-lo em espera até completar o prazo.
 
 ## Versões novas
 
-1. Aumente `versionCode` e `versionName` em `app/build.gradle.kts`.
-2. Escreva as notas em `fastlane/metadata/android/<idioma>/changelogs/<versionCode>.txt`.
-3. Faça o commit no `main` e crie a tag `v<versionName>` (por exemplo `v0.0.0.2`).
+1. Aumente `versionCode` e `versionName` em `app/build.gradle.kts` e escreva as notas em
+   `fastlane/metadata/android/<idioma>/changelogs/<versionCode>.txt` (pelo menos `en-US`).
+2. Faça o commit no `main` e crie a tag `v<versionName>` (por exemplo `v0.0.0.2`) com um release no GitHub.
+3. A partir da tag, rode `fdroid/assinar.sh <caminho/da/chave.jks>` e anexe o `Compasso-<versão>.apk` gerado
+   ao release dessa tag.
+4. Pronto: com `UpdateCheckMode: Tags` e `AutoUpdateMode: Version`, o F-Droid encontra a tag, compila, compara
+   com o seu APK e publica. Anexe o APK logo depois de criar a tag: sem ele o build do F-Droid falha.
 
-Com `UpdateCheckMode: Tags` e `AutoUpdateMode: Version`, o F-Droid encontra a tag nova e compila sozinho.
+Não assine pelo Gradle (`keystore.properties`) os APKs destinados ao F-Droid: o `assinar.sh` assina só com os
+esquemas v2 e v3 e preservando o alinhamento, que é o que permite ao F-Droid conferir que o build é idêntico.

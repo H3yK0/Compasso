@@ -144,18 +144,19 @@ Precisa do JDK 17+ e do Android SDK (plataforma 35).
 ```
 
 ID do app: `io.github.h3yk0.compasso`. Sem `keystore.properties`, o `assembleRelease` gera um APK sem
-assinatura (é assim que o F-Droid compila: ele assina com a chave dele). Para assinar você mesmo, crie
-`keystore.properties` com `storeFile`, `storePassword`, `keyAlias` e `keyPassword`.
-**Guarde a chave e as senhas fora do repositório público**: atualizações do app precisam da mesma chave;
+assinatura (é o que o F-Droid compila). Os APKs publicados são assinados com `fdroid/assinar.sh`, que assina
+o APK sem assinatura no formato que o F-Droid confere (builds reproduzíveis; veja `fdroid/README.md`).
+**Guarde a chave e a senha fora do repositório público**: atualizações do app precisam da mesma chave;
 com outra chave o Android obriga a desinstalar antes (e o histórico se perde).
 
 ## F-Droid
 
 O app segue o que o F-Droid pede: código aberto (AGPL v3.0), só bibliotecas abertas do Google Maven e do
 Maven Central, sem rastreamento, sem anúncios e sem internet, sem o bloco de dependências do Google no APK
-e sem o commit do git dentro dele (build reproduzível). A descrição, o ícone e as capturas de tela ficam em
-`fastlane/metadata/android/` (pt-BR, en-US e es-ES), que o F-Droid lê sozinho a cada versão. O rascunho da
-receita de build e o passo a passo para enviar ao F-Droid estão em `fdroid/`.
+e sem o commit do git dentro dele. O build é **reproduzível**: o F-Droid compila o mesmo código, confere que o
+resultado é idêntico ao APK assinado anexado ao release do GitHub e distribui esse APK, com a assinatura do
+H3yK0. A descrição, o ícone e as capturas de tela ficam em `fastlane/metadata/android/` (pt-BR, en-US e es-ES),
+que o F-Droid lê sozinho a cada versão. A receita, o script de assinatura e o passo a passo estão em `fdroid/`.
 
 ## Licença
 
