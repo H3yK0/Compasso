@@ -95,7 +95,7 @@ class ContentTest {
 
     private fun checkArticles(language: String) {
         val articles = articles(language)
-        assertEquals(29, articles.size)
+        assertEquals(30, articles.size)
         assertEquals(articles.size, articles.map { it.id }.toSet().size)
         assertEquals(articles.size, articles.map { it.order }.toSet().size)
         articles.forEach { a ->

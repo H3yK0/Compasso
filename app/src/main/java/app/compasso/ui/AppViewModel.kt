@@ -756,8 +756,15 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun setKegelTime(index: Int, minutes: Int) {
         val times = _settings.value.kegelTimes.toMutableList()
         if (index !in times.indices) return
-        times[index] = Math.floorMod(minutes, 24 * 60)
-        updateSettings { it.copy(kegelTimes = times.distinct().sorted()) }
+        val day = 24 * 60
+        val others = times.filterIndexed { i, _ -> i != index }
+        // dois lembretes no mesmo horário viram um só: pula o horário ocupado, no sentido do ajuste
+        val step = if (Math.floorMod(minutes - times[index], day) <= day / 2) 15 else -15
+        var m = Math.floorMod(minutes, day)
+        var guard = 0
+        while (m in others && guard++ < day / 15) m = Math.floorMod(m + step, day)
+        times[index] = m
+        updateSettings { it.copy(kegelTimes = times.sorted()) }
         runCatching { Reminders.schedule(getApplication(), _settings.value) }
     }
 

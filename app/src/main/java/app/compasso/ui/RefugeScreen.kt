@@ -136,6 +136,7 @@ fun RefugeScreen(
                 onClick = onKegel,
                 modifier = Modifier.padding(horizontal = 16.dp),
                 seed = 5,
+                motifArea = 0.55f,
             ) {
                 Row(Modifier.fillMaxSize().padding(20.dp), verticalAlignment = Alignment.Bottom) {
                     Column(Modifier.weight(1f)) {
