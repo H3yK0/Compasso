@@ -11,13 +11,16 @@ evolução por constância. App Android, 100% offline: não pede acesso à inter
 
 | Aba | O que faz |
 |---|---|
-| **Hoje** | O astro (cor = estado da liberação, anel = pontos do dia), níveis num carrossel, um botão para começar, a semana em estrelas |
-| **Refúgio** | Respirar 2 min com trilha calma e três jogos originais: Encaixe, Dobra e Eco |
+| **Hoje** | O astro (cor = estado da liberação, anel = pontos do dia), níveis num carrossel, um botão para começar, o cartão "Para você" (nível e leitura sugeridos), a semana em estrelas |
+| **Refúgio** | Respirar 2 min com 6 trilhas calmas à escolha e três jogos originais: Encaixe, Dobra e Eco |
 | **Evolução** | Nível pessoal (Iniciante → Invicto), check-in do dia, o céu do mês, gráficos, pódio das melhores semanas, recordes |
-| **Ler** | 9 artigos curtos (mente, corpo, sexualidade, apoio), cada um com as fontes no fim |
+| **Ler** | 29 artigos curtos (mente e hábitos, ciência, corpo e sexualidade, relações e emoções, apoio), cada um com as fontes no fim; dá para ler com música calma de fundo |
 
 Os **Ajustes** (controle inteligente, modo foco, sons e trilha, privacidade, visual Noite/Dia, idioma,
 ajuda, licença) abrem pelo emblema no alto da tela Hoje.
+
+Durante a sessão, o botão **"Não aguentei"** fica sempre à mão (no ritmo, na pausa e na tela de pausa):
+um toque encerra ali e registra com honestidade.
 
 Também: tela de boas-vindas e apresentação guiada, "Como usar" sempre disponível, dicas na primeira
 visita a cada parte ("ir descobrindo"), codinome anônimo com emblema gerado pelo app.
@@ -25,13 +28,13 @@ visita a cada parte ("ir descobrindo"), codinome anônimo com emblema gerado pel
 ## Idiomas
 
 O app segue o idioma do celular: **português**, **inglês** ou **espanhol** (outros idiomas caem no inglês).
-Também dá para escolher em Ajustes → Idioma. Traduzidos: todas as telas, os 9 artigos (com as mesmas fontes;
+Também dá para escolher em Ajustes → Idioma. Traduzidos: todas as telas, os 29 artigos (com as mesmas fontes;
 no artigo de ajuda, os serviços do Brasil viram linhas de apoio de outros países), datas, horas e números.
 
 - Textos das telas: `app/src/main/res/values/strings.xml` (inglês, o padrão), `values-pt/` e `values-es/`.
   As três listas precisam ter as mesmas chaves e os mesmos `%1$s`; o `LocalizationTest` confere.
-- Artigos: `app/src/main/assets/artigos/pt`, `en` e `es`, com o mesmo `id`, `ordem`, `tema` e `minutos`
-  em cada idioma (o `ContentTest` confere).
+- Artigos: `app/src/main/assets/artigos/pt`, `en` e `es`, com o mesmo `id`, `ordem`, `tema`, `tags` e
+  `minutos` em cada idioma (o `ContentTest` confere, junto com o ritmo de leitura e as fontes).
 - O codinome guarda só a posição das palavras: "Lobo Sereno 42" vira "Serene Wolf 42" em inglês.
 
 ## Visual "Noite"
@@ -109,24 +112,50 @@ Bronze 60, Prata 180, Ouro 360, Platina 540, Diamante 720, Invicto 900 (Invicto 
 seguidos de constância e 14 dias sem "não aguentei" nem sessão interrompida). Cada nível libera uma cor
 de destaque enquanto a pessoa estiver nele.
 
-## Trilha e sons
+## Recomendações (`model/Coach.kt`)
 
-Nada de arquivos de áudio de terceiros: a trilha do Respirar (`audio/Ambient.kt`) é sintetizada ao vivo
-(acordes lentos, "mar" de ruído filtrado que acompanha a respiração, sinos pentatônicos, reverberação) e
-os sons dos jogos (`audio/GameSounds.kt`) são gerados na primeira abertura.
+Um algoritmo simples, local e explicável lê as sessões, os tropeços e os pontos e encontra os **sinais**
+do momento, em ordem de prioridade: "não aguentei" recente, perder cedo na sessão (ou chegar perto muitas
+vezes), sessão interrompida, sessões e tropeços mais à noite, semana cheia, pouca constância, boa sequência
+e começo. Cada artigo tem `tags` no cabeçalho; a leitura sugerida é a não lida que mais combina com os sinais.
+O nível sugerido desce depois de dois "não aguentei" nas três últimas sessões do nível e sobe depois de três
+concluídas quase sem "estou perto" e sem tropeço na semana. O motivo sempre aparece junto da sugestão.
+
+Onde aparece: cartão "Para você" na tela Hoje, destaque no topo da aba Ler, no resumo da sessão e numa
+**sugestão de leitura ao abrir o app** (no máximo uma a cada 20 h, a primeira só depois de um dia de uso,
+nunca durante a sessão nem com o app travado; dá para desligar em Ajustes → Ajuda → Sugestões de leitura).
+Nada sai do aparelho.
+
+## Trilhas e sons
+
+Nada de arquivos de áudio de terceiros: as 6 trilhas (`audio/Ambient.kt` e `audio/Soundscapes.kt`) são
+sintetizadas ao vivo e acompanham a respiração: **Maré** (acordes lentos, "mar" de ruído filtrado, sinos
+pentatônicos), **Chuva leve**, **Floresta noturna**, **Tigelas**, **Céu estrelado** e **Piano calmo**.
+A trilha do Respirar também toca nas pausas da sessão; a da leitura toca só com o leitor aberto e para
+quando o app sai da frente. Os sons dos jogos (`audio/GameSounds.kt`) são gerados na primeira abertura.
 
 ## Compilar
 
 Precisa do JDK 17+ e do Android SDK (plataforma 35).
 
 ```
-./gradlew assembleRelease      # APK assinado em app/build/outputs/apk/release/
+./gradlew assembleRelease      # APK em app/build/outputs/apk/release/ (assinado se houver keystore.properties)
 ./gradlew testDebugUnitTest    # testes da lógica, das telas e dos fluxos completos
 ```
 
-A assinatura usa `keystore/compasso.jks` com as senhas de `keystore.properties`.
-**Guarde esses dois arquivos fora do repositório público**: atualizações do app precisam da mesma chave;
+ID do app: `io.github.h3yk0.compasso`. Sem `keystore.properties`, o `assembleRelease` gera um APK sem
+assinatura (é assim que o F-Droid compila: ele assina com a chave dele). Para assinar você mesmo, crie
+`keystore.properties` com `storeFile`, `storePassword`, `keyAlias` e `keyPassword`.
+**Guarde a chave e as senhas fora do repositório público**: atualizações do app precisam da mesma chave;
 com outra chave o Android obriga a desinstalar antes (e o histórico se perde).
+
+## F-Droid
+
+O app segue o que o F-Droid pede: código aberto (AGPL v3.0), só bibliotecas abertas do Google Maven e do
+Maven Central, sem rastreamento, sem anúncios e sem internet, sem o bloco de dependências do Google no APK
+e sem o commit do git dentro dele (build reproduzível). A descrição, o ícone e as capturas de tela ficam em
+`fastlane/metadata/android/` (pt-BR, en-US e es-ES), que o F-Droid lê sozinho a cada versão. O rascunho da
+receita de build e o passo a passo para enviar ao F-Droid estão em `fdroid/`.
 
 ## Licença
 

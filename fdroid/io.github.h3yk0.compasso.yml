@@ -1,0 +1,29 @@
+AntiFeatures:
+  NSFW:
+    en-US: Sexual health app with stop-start (control) training. No images or explicit content.
+    pt-BR: App de saúde sexual com treino de controle (para e recomeça). Sem imagens nem conteúdo explícito.
+Categories:
+  - Sports & Health
+License: AGPL-3.0-only
+AuthorName: H3yK0
+SourceCode: https://github.com/H3yK0/Compasso
+IssueTracker: https://github.com/H3yK0/Compasso/issues
+Changelog: https://github.com/H3yK0/Compasso/releases
+
+AutoName: Compasso
+
+RepoType: git
+Repo: https://github.com/H3yK0/Compasso.git
+
+Builds:
+  - versionName: 0.0.0.1
+    versionCode: 1
+    commit: v0.0.0.1
+    subdir: app
+    gradle:
+      - yes
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: 0.0.0.1
+CurrentVersionCode: 1

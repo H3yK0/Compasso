@@ -1,0 +1,1 @@
+Primera versión: entrenamiento de control en 5 niveles con el botón "No aguanté", control inteligente, modo foco, Respirar con 6 músicas, 3 juegos, 29 lecturas con fuentes (con música de fondo opcional), recomendaciones de nivel y lectura, puntos de constancia, PIN y nombre en clave. En español, inglés y portugués.

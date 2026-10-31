@@ -19,6 +19,7 @@ import app.compasso.audio.Track
 import app.compasso.data.Settings
 import app.compasso.games.GameKind
 import app.compasso.model.Accent
+import app.compasso.model.Article
 import app.compasso.model.ArticleInfo
 import app.compasso.model.ArticleParser
 import app.compasso.model.Coach
@@ -191,10 +192,12 @@ class ScreenshotTest {
     }
     private val level = Progress.level(points, records.mapNotNull { Lapse.from(it) }, now)
 
-    private val articles = File("src/main/assets/artigos/pt").listFiles().orEmpty()
+    private fun articlesIn(lang: String) = File("src/main/assets/artigos/$lang").listFiles().orEmpty()
         .filter { it.name.endsWith(".md") }
         .map { ArticleParser.parse(it.readText()) }
         .sortedBy { it.order }
+
+    private val articles = articlesIn("pt")
 
     /** O que o Coach sugere para o histórico de exemplo (o mesmo cálculo do app). */
     private val signals by lazy { Coach.signals(records, records.mapNotNull { Lapse.from(it) }, points, now) }
@@ -202,7 +205,13 @@ class ScreenshotTest {
         Coach.reading(signals, articles.map { ArticleInfo(it.id, it.order, it.tags) }, read = setOf("gatilhos"))
     }
 
-    private fun home(gate: ReleaseGate, tip: Tip? = null, focus: FocusSettings = FocusSettings(), initialLevel: Int = 0) = @Composable {
+    private fun home(
+        gate: ReleaseGate,
+        tip: Tip? = null,
+        focus: FocusSettings = FocusSettings(),
+        initialLevel: Int = 0,
+        articles: List<Article> = this.articles,
+    ) = @Composable {
         WithTabs(Tab.TRAIN) {
             TodayScreen(
                 gate, Levels.DEFAULT_CUSTOM, focus, codename, level, points, records.mapNotNull { Lapse.from(it) }, tip,
@@ -408,5 +417,76 @@ class ScreenshotTest {
         drawable.draw(canvas)
         File("build/shots").mkdirs()
         FileOutputStream(File("build/shots/17_icone.png")).use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+    }
+
+    /** Ícone de 512 px para as lojas (F-Droid): o ícone adaptativo inteiro, a loja aplica a máscara. */
+    @Test
+    fun storeIcon() {
+        val ctx: Context = RuntimeEnvironment.getApplication()
+        val drawable = ContextCompat.getDrawable(ctx, R.mipmap.ic_launcher)!!
+        val size = 512
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        drawable.setBounds(0, 0, size, size)
+        drawable.draw(Canvas(bitmap))
+        File("build/store").mkdirs()
+        FileOutputStream(File("build/store/icon.png")).use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+    }
+
+    // ---------- Capturas para as lojas (F-Droid): as mesmas telas nos três idiomas ----------
+
+    private fun storeShot(lang: String, n: Int, dark: Boolean = true, accent: Accent = Accent.TEAL, content: @Composable () -> Unit) =
+        shot("../store/$lang/$n", dark, accent, content)
+
+    private fun storeToday(lang: String) = storeShot(lang, 1) { home(open, articles = articlesIn(lang.take(2)))() }
+
+    private fun storeSession(lang: String) = storeShot(lang, 2) { SessionScreen(ui(PhaseType.GO), true, {}, {}, {}, {}) }
+
+    private fun storeBreathe(lang: String) = storeShot(lang, 3) {
+        BreatheContent(elapsedMs = 33_000, durationMs = 120_000, onClose = {}, onMore = {})
+    }
+
+    private fun storeRead(lang: String) = storeShot(lang, 4, dark = false) {
+        WithTabs(Tab.READ) {
+            ReadScreen(
+                articlesIn(lang.take(2)), setOf("gatilhos"), null, {}, {}, bottomPadding = FloatingTabBarSpace,
+                advice = readingAdvice, music = true, track = Track.RAIN,
+            )
+        }
+    }
+
+    private fun storeReader(lang: String) = storeShot(lang, 5) {
+        ReaderScreen(articlesIn(lang.take(2)).first { it.id == "habitos" }, isRead = false, onRead = {}, onBack = {})
+    }
+
+    private fun storeProgress(lang: String) = storeShot(lang, 6, accent = Accent.GOLD) {
+        WithTabs(Tab.PROGRESS) {
+            ProgressScreen(level, codename, points, records, null, {}, {}, {}, {}, bottomPadding = FloatingTabBarSpace, now = now)
+        }
+    }
+
+    @Test fun storePt1() = storeToday("pt-BR")
+    @Test fun storePt2() = storeSession("pt-BR")
+    @Test fun storePt3() = storeBreathe("pt-BR")
+    @Test fun storePt4() = storeRead("pt-BR")
+    @Test fun storePt5() = storeReader("pt-BR")
+    @Test fun storePt6() = storeProgress("pt-BR")
+
+    @Test @Config(qualifiers = EN) fun storeEn1() = storeToday("en-US")
+    @Test @Config(qualifiers = EN) fun storeEn2() = storeSession("en-US")
+    @Test @Config(qualifiers = EN) fun storeEn3() = storeBreathe("en-US")
+    @Test @Config(qualifiers = EN) fun storeEn4() = storeRead("en-US")
+    @Test @Config(qualifiers = EN) fun storeEn5() = storeReader("en-US")
+    @Test @Config(qualifiers = EN) fun storeEn6() = storeProgress("en-US")
+
+    @Test @Config(qualifiers = ES) fun storeEs1() = storeToday("es-ES")
+    @Test @Config(qualifiers = ES) fun storeEs2() = storeSession("es-ES")
+    @Test @Config(qualifiers = ES) fun storeEs3() = storeBreathe("es-ES")
+    @Test @Config(qualifiers = ES) fun storeEs4() = storeRead("es-ES")
+    @Test @Config(qualifiers = ES) fun storeEs5() = storeReader("es-ES")
+    @Test @Config(qualifiers = ES) fun storeEs6() = storeProgress("es-ES")
+
+    companion object {
+        const val EN = "en-rUS-w392dp-h850dp-xhdpi"
+        const val ES = "es-rES-w392dp-h850dp-xhdpi"
     }
 }

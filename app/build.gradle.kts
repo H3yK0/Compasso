@@ -45,6 +45,8 @@ android {
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.findByName("release")
+            // sem o commit do git dentro do APK: o mesmo código gera o mesmo APK (build reproduzível do F-Droid)
+            vcsInfo.include = false
         }
     }
 
