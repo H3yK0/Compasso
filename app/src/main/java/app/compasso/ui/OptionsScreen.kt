@@ -103,7 +103,6 @@ fun OptionsScreen(
 ) {
     val c = Ios.colors
     var confirmClear by remember { mutableStateOf(false) }
-    var confirmRemovePin by remember { mutableStateOf(false) }
     var confirmFocusOff by remember { mutableStateOf(false) }
     val req = pacing.requested
     val onChange = actions.onChange
@@ -237,11 +236,13 @@ fun OptionsScreen(
 
         section(
             header = "Privacidade",
-            footer = "Mesmo com o histórico desligado, o controle inteligente guarda a data e o tipo das sessões dos últimos 8 dias, só neste celular.",
+            footer = "Mesmo com o histórico desligado ou apagado, o app guarda, só neste celular, a data e o tipo das sessões dos " +
+                "últimos 8 dias (para o controle inteligente) e a data dos “não segurei” e das sessões interrompidas " +
+                "(para a sequência e o nível Invicto).",
             key = "privacidade",
         ) {
             SwitchRow(
-                "Senha ao abrir", hasPin, { on -> if (on) onSetPin() else confirmRemovePin = true },
+                "Senha ao abrir", hasPin, { on -> if (on) onSetPin() else onRemovePin() },
                 subtitle = if (hasPin) "Pede a senha ao abrir e ao voltar depois de 30 s" else null,
                 icon = RowIcon(Icons.Rounded.Lock, c.gray),
             )
@@ -321,7 +322,8 @@ fun OptionsScreen(
     if (confirmClear) {
         IosAlert(
             title = "Apagar histórico?",
-            message = "As sessões salvas serão apagadas. O controle inteligente continua lembrando só a data das sessões dos últimos 8 dias.",
+            message = "As sessões salvas serão apagadas. Continuam guardadas só a data das sessões dos últimos 8 dias (controle inteligente) " +
+                "e a dos “não segurei” e sessões interrompidas (sequência e Invicto).",
             actions = listOf(
                 AlertAction("Cancelar", { confirmClear = false }),
                 AlertAction("Apagar", { confirmClear = false; onClearHistory() }, destructive = true),
@@ -338,17 +340,6 @@ fun OptionsScreen(
                 AlertAction("Desligar em 24 h", { confirmFocusOff = false; actions.onFocus(false) }, destructive = true),
             ),
             onDismiss = { confirmFocusOff = false },
-        )
-    }
-    if (confirmRemovePin) {
-        IosAlert(
-            title = "Remover a senha?",
-            message = "O app vai abrir sem pedir senha.",
-            actions = listOf(
-                AlertAction("Cancelar", { confirmRemovePin = false }),
-                AlertAction("Remover", { confirmRemovePin = false; onRemovePin() }, bold = true),
-            ),
-            onDismiss = { confirmRemovePin = false },
         )
     }
 }

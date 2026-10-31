@@ -347,32 +347,94 @@ class FlowTest {
         }
     }
 
-    /** Atualização da 1.1: mostra as novidades e o histórico antigo continua no controle inteligente. */
+    /** Senha: os erros ficam gravados (fechar e abrir o app não zera a espera). */
     @Test
-    fun updateFromOldVersionShowsWhatsNew() {
-        val app = freshApp()
-        val store = Store(app)
-        val now = System.currentTimeMillis()
-        store.pinOffered = true
-        // histórico como a 1.0 gravava (sem fim da sessão nem "só controle")
-        app.getSharedPreferences("compasso", Context.MODE_PRIVATE).edit()
-            .putString(
-                "history",
-                """[{"t":${now - 5 * 3_600_000L},"id":"facil","n":"Fácil","d":200000,"r":4,"rt":4,"c":1,"b":120,"o":"RELEASED"}]""",
-            ).commit()
+    fun wrongPinWaitSurvivesRestart() {
+        val app = readyApp()
+        Store(app).setPin("1357")
         ActivityScenario.launch(MainActivity::class.java).use {
             tick(500)
-            compose.onNodeWithText("Novidades da versão 1.3").assertExists()
-            compose.onNodeWithText("Chegou na 1.2").assertExists() // veio da 1.1: mostra o que pulou
-            compose.onRoot().captureRoboImage("build/shots/flow_11_novidades.png")
-            compose.onNodeWithText("Continuar").performClick()
+            repeat(5) { typePin("0000") }
+            compose.onNodeWithText("Muitas tentativas", substring = true).assertExists()
+        }
+        assertEquals(5, Store(app).pinFails)
+        ActivityScenario.launch(MainActivity::class.java).use {
+            tick(500)
+            compose.onNodeWithText("Muitas tentativas", substring = true).assertExists()
+            typePin("1357") // ainda esperando: nem confere
+            compose.onNodeWithText("Digite sua senha").assertExists()
+            tick(31_000)
+            tick(2_000) // a tela confere a espera de segundo em segundo
+            typePin("1357")
+            assertToday()
+            assertEquals(0, Store(app).pinFails)
+        }
+    }
+
+    /** Trocar ou remover a senha pede a senha atual (quem pegou o celular destravado não consegue). */
+    @Test
+    fun changingOrRemovingPinAsksForTheCurrentOne() {
+        val app = readyApp()
+        Store(app).setPin("1357")
+        ActivityScenario.launch(MainActivity::class.java).use {
+            tick(500)
+            typePin("1357")
+            compose.onNodeWithContentDescription("Ajustes e perfil").performClick()
             tick(800)
-            compose.onNodeWithText("Só treino de controle").assertExists()
-            val history: List<SessionRecord> = Store(app).loadHistory()
-            assertEquals(1, history.size)
-            assertEquals(Outcome.RELEASED, history[0].outcome)
-            assertTrue(Store(app).loadPacingLog().single().released)
-            assertEquals(AppViewModel.CURRENT_VERSION, Store(app).seenVersion)
+            scrollTo("Trocar senha")
+            compose.onNodeWithText("Trocar senha").performClick()
+            tick(800)
+            compose.onNodeWithText("Digite a senha atual").assertExists()
+            typePin("2468")
+            compose.onNodeWithText("Senha incorreta").assertExists()
+            typePin("1357")
+            tick(800)
+            compose.onNodeWithText("Crie uma senha").assertExists()
+            compose.onNodeWithText("Cancelar").performClick()
+            tick(800)
+
+            scrollTo("Senha ao abrir")
+            compose.onNodeWithText("Senha ao abrir").performClick()
+            tick(800)
+            compose.onNodeWithText("Para remover a senha, confirme a atual.").assertExists()
+            typePin("1357")
+            tick(800)
+            assertFalse(Store(app).hasPin())
+        }
+    }
+
+    /** Com o histórico desligado, "não segurei" não aparece na lista, mas continua valendo para o Invicto. */
+    @Test
+    fun lapseIsKeptEvenWithHistoryOff() {
+        val app = readyApp()
+        Store(app).saveSettings(Store(app).loadSettings().copy(keepHistory = false))
+        ActivityScenario.launch(MainActivity::class.java).use {
+            tick(500)
+            startEasy()
+            tick(5_000)
+            compose.onNodeWithContentDescription("Encerrar sessão").performClick()
+            tick(600)
+            compose.onNodeWithText("Não segurei").performClick()
+            tick(800)
+            assertTrue(Store(app).loadHistory().isEmpty())
+            assertEquals(Outcome.LOST_CONTROL, Store(app).loadLapses().single().outcome)
+        }
+    }
+
+    /** Gráfico de sessões sem nenhuma sessão: tocar nele não pode fechar o app. */
+    @Test
+    fun tappingAnEmptyChartDoesNotCrash() {
+        readyApp()
+        ActivityScenario.launch(MainActivity::class.java).use {
+            tick(500)
+            compose.onNodeWithText("Evolução").performClick()
+            tick(500)
+            scrollTo("Sessões")
+            compose.onNodeWithText("Sessões").performClick()
+            tick(300)
+            compose.onNodeWithContentDescription("Seus tempos de treino aparecem aqui").performClick()
+            tick(300)
+            compose.onNodeWithText("Tempo de controle").assertExists()
         }
     }
 }

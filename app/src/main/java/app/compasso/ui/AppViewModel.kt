@@ -10,10 +10,10 @@ import app.compasso.audio.GameSound
 import app.compasso.audio.GameSounds
 import app.compasso.audio.Sound
 import app.compasso.data.ActiveSession
+import app.compasso.data.AppClock
 import app.compasso.data.ArticleRepo
 import app.compasso.data.Settings
 import app.compasso.data.Store
-import app.compasso.data.ThemeMode
 import app.compasso.games.GameKind
 import app.compasso.model.Article
 import app.compasso.model.Breath
@@ -22,6 +22,7 @@ import app.compasso.model.Codenames
 import app.compasso.model.EngineEvent
 import app.compasso.model.Focus
 import app.compasso.model.FocusSettings
+import app.compasso.model.Lapse
 import app.compasso.model.Level
 import app.compasso.model.LevelStatus
 import app.compasso.model.Outcome
@@ -31,6 +32,7 @@ import app.compasso.model.PacingEntry
 import app.compasso.model.PacingSettings
 import app.compasso.model.PacingSnapshot
 import app.compasso.model.PhaseType
+import app.compasso.model.PinPolicy
 import app.compasso.model.PointEntry
 import app.compasso.model.PointKind
 import app.compasso.model.Progress
@@ -76,11 +78,6 @@ sealed interface Screen {
     data class Intro(val back: Screen?) : Screen {
         override val depth: Int get() = if (back == null) 1 else 2
         override val onboarding: Boolean get() = back == null
-    }
-
-    data object WhatsNew : Screen {
-        override val depth = 0
-        override val onboarding = true
     }
 
     /** Tela principal com as abas. */
@@ -152,10 +149,20 @@ sealed interface Screen {
     }
 
     data class PinSetup(val fromOptions: Boolean) : Screen {
-        override val depth: Int get() = if (fromOptions) 2 else 2
+        override val depth: Int get() = 2
         override val onboarding: Boolean get() = !fromOptions
     }
+
+    /** Pede a senha atual antes de trocar ou remover (quem pegou o celular destravado não consegue). */
+    data class PinVerify(val action: PinAction) : Screen {
+        override val depth: Int get() = 2
+    }
 }
+
+enum class PinAction { CHANGE, REMOVE }
+
+/** Resultado de conferir a senha. */
+enum class PinCheck { OK, WRONG, WAIT }
 
 /** Foto do estado da sessão para a tela desenhar. */
 data class SessionUi(
@@ -200,6 +207,10 @@ data class Banner(val title: String, val subtitle: String? = null, val id: Long 
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val store = Store(app)
+    private val clock = AppClock(store)
+
+    /** Horário confiável (não volta para trás se a hora do celular for atrasada). */
+    fun now(): Long = clock.now()
     private val feedback = Feedback(app)
     private val ambient = AmbientPlayer(app)
     private var gameSounds: GameSounds? = null
@@ -243,7 +254,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val _points = MutableStateFlow(store.loadPoints())
     val points: StateFlow<List<PointEntry>> = _points.asStateFlow()
 
-    private val _level = MutableStateFlow(Progress.level(emptyList(), emptyList(), System.currentTimeMillis()))
+    private val _lapses = MutableStateFlow(store.loadLapses())
+    val lapses: StateFlow<List<Lapse>> = _lapses.asStateFlow()
+
+    private val _level = MutableStateFlow(Progress.level(emptyList(), emptyList(), clock.now()))
     val level: StateFlow<LevelStatus> = _level.asStateFlow()
 
     private val _codename = MutableStateFlow(store.loadCodename() ?: Codenames.generate().also { store.saveCodename(it) })
@@ -300,32 +314,13 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private var lastBeat = 0L
     private var breatheActive = false
 
-    /** Versão vista antes desta abertura (para as Novidades mostrarem o que a pessoa pulou). */
-    val previousVersion: Int = store.seenVersion
-
     init {
-        val now = System.currentTimeMillis()
-        // Antes de gravar qualquer coisa: já havia dados de uma versão anterior?
-        val upgrading = store.hasOldData()
-        // Atualização da 1.0: o controle inteligente já começa considerando o histórico existente.
-        if (!store.pacingSeeded) {
-            store.savePacingLog(Pacing.prune(_history.value.map { PacingEntry.from(it) }, now))
-            store.pacingSeeded = true
-        }
+        val now = clock.now()
         pacingLog = store.loadPacingLog()
         recoverOrphan(now)
         refreshPacing()
         refreshProgress()
-
-        // 1.3: o visual "Noite" passa a ser o padrão (quem escolheu Dia continua no Dia)
-        if ((upgrading || store.seenVersion > 0) && store.seenVersion < CURRENT_VERSION && _settings.value.theme == ThemeMode.SYSTEM) {
-            updateSettings { it.copy(theme = ThemeMode.DARK) }
-        }
-        _screen.value = when {
-            store.seenVersion >= CURRENT_VERSION -> Screen.Root
-            upgrading -> Screen.WhatsNew
-            else -> Screen.Welcome
-        }
+        _screen.value = if (store.seenVersion >= CURRENT_VERSION) Screen.Root else Screen.Welcome
         viewModelScope.launch {
             val list = withContext(Dispatchers.IO) { ArticleRepo.load(getApplication()) }
             _articles.value = list
@@ -363,7 +358,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // ---------- Apresentação e novidades ----------
+    // ---------- Apresentação ----------
 
     fun finishWelcome() = go(Screen.Intro(back = null))
 
@@ -379,11 +374,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         store.seenVersion = CURRENT_VERSION
         _tab.value = Tab.TRAIN
         go(Screen.Root)
-    }
-
-    fun closeWhatsNew(showIntro: Boolean) {
-        store.seenVersion = CURRENT_VERSION
-        go(if (showIntro) Screen.Intro(back = Screen.Root) else Screen.Root)
     }
 
     // ---------- Dicas ("ir descobrindo") ----------
@@ -421,7 +411,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (s.vibratePhase) feedback.vibratePhase(PhaseType.STOP)
     }
 
-    /** Apaga o histórico visível. O controle inteligente continua lembrando os últimos 8 dias. */
+    /**
+     * Apaga o histórico visível. O controle inteligente continua lembrando os últimos 8 dias e
+     * os lapsos ("não segurei" e interrompidas) continuam valendo para a sequência e o Invicto.
+     */
     fun clearHistory() {
         store.clearHistory()
         _history.value = emptyList()
@@ -431,7 +424,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     // ---------- Controle inteligente ----------
 
     fun refreshPacing() {
-        val now = System.currentTimeMillis()
+        val now = clock.now()
         val applied = Pacing.applyDue(_pacing.value, now)
         if (applied != _pacing.value) {
             _pacing.value = applied
@@ -446,7 +439,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun requestPacing(target: PacingConfig) {
-        val now = System.currentTimeMillis()
+        val now = clock.now()
         val next = Pacing.request(Pacing.applyDue(_pacing.value, now), target, now)
         _pacing.value = next
         store.savePacing(next)
@@ -458,7 +451,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     // ---------- Modo foco (ajuste) ----------
 
     fun requestFocus(enable: Boolean) {
-        val now = System.currentTimeMillis()
+        val now = clock.now()
         val next = Focus.request(Focus.applyDue(_focus.value, now), enable, now)
         _focus.value = next
         store.saveFocus(next)
@@ -467,12 +460,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     // ---------- Pontos, nível e codinome ----------
 
     fun refreshProgress() {
-        _level.value = Progress.level(_points.value, _history.value, System.currentTimeMillis())
+        _level.value = Progress.level(_points.value, _lapses.value, clock.now())
     }
 
     /** Tenta ganhar pontos; devolve a entrada nova ou o motivo de não ter rendido. */
     private fun award(kind: PointKind, banner: Boolean): Pair<PointEntry?, String?> {
-        val now = System.currentTimeMillis()
+        val now = clock.now()
         val result = Progress.award(_points.value, kind, now)
         val entry = result.entry
         if (entry != null) {
@@ -516,6 +509,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val s = _settings.value
         ambient.gain = s.ambientVolume
         ambient.breathLevel = 0f
+        ambient.allowAgain()
         if (s.breatheSound) ambient.start()
     }
 
@@ -530,7 +524,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setBreatheSound(on: Boolean) {
         updateSettings { it.copy(breatheSound = on) }
-        if (on && breatheActive) ambient.start() else if (!on) ambient.stop()
+        if (on && breatheActive) {
+            ambient.allowAgain()
+            ambient.start()
+        } else if (!on) {
+            ambient.stop()
+        }
     }
 
     /** Um bloco de 2 minutos de respiração chegou ao fim. */
@@ -584,18 +583,65 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     // ---------- Senha ----------
 
-    fun unlock(pin: String): Boolean {
-        val ok = store.checkPin(pin)
-        if (ok) _locked.value = false
-        return ok
+    /** Quanto falta para poder tentar a senha de novo (0 = pode tentar). */
+    fun pinWaitMs(): Long = (store.pinWaitUntil - clock.now()).coerceAtLeast(0L)
+
+    /**
+     * Confere a senha. Erros ficam gravados e, da 5ª tentativa errada em diante, cada erro pede
+     * uma espera (fechar e abrir o app não zera, e atrasar a hora do celular não encurta).
+     */
+    private fun checkPin(pin: String): PinCheck {
+        if (pinWaitMs() > 0L) return PinCheck.WAIT
+        if (store.checkPin(pin)) {
+            store.pinFails = 0
+            store.pinWaitUntil = 0L
+            return PinCheck.OK
+        }
+        val fails = store.pinFails + 1
+        store.pinFails = fails
+        val wait = PinPolicy.waitAfter(fails)
+        if (wait > 0L) store.pinWaitUntil = clock.now() + wait
+        return PinCheck.WRONG
+    }
+
+    fun unlock(pin: String): PinCheck {
+        val r = checkPin(pin)
+        if (r == PinCheck.OK) _locked.value = false
+        return r
+    }
+
+    /** Senha atual conferida: segue para trocar ou remover. */
+    fun verifyPin(pin: String, action: PinAction): PinCheck {
+        val r = checkPin(pin)
+        if (r == PinCheck.OK) {
+            when (action) {
+                PinAction.CHANGE -> go(Screen.PinSetup(fromOptions = true))
+                PinAction.REMOVE -> {
+                    removePin()
+                    go(Screen.Settings)
+                }
+            }
+        }
+        return r
+    }
+
+    /** Criar senha nova ou trocar a atual (trocar pede a atual antes). */
+    fun requestPinSetup() {
+        go(if (store.hasPin()) Screen.PinVerify(PinAction.CHANGE) else Screen.PinSetup(fromOptions = true))
+    }
+
+    fun requestPinRemoval() {
+        if (store.hasPin()) go(Screen.PinVerify(PinAction.REMOVE))
     }
 
     fun setPin(pin: String) {
         store.setPin(pin)
+        store.pinFails = 0
+        store.pinWaitUntil = 0L
         _hasPin.value = true
     }
 
-    fun removePin() {
+    private fun removePin() {
         store.removePin()
         _hasPin.value = false
         _locked.value = false
@@ -628,7 +674,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val e = engine ?: return
         if (leftAt != 0L) return
         leftAt = SystemClock.elapsedRealtime()
-        leftWall = System.currentTimeMillis()
+        leftWall = clock.now()
         if (e.isFinal) {
             // fim da sessão já alcançado: sair por um tempo apenas conclui
             awayJob?.cancel()
@@ -776,7 +822,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         lastLevel = level
         paused = false
         lastBreathStep = -1L
-        sessionStartedAt = System.currentTimeMillis()
+        ambient.allowAgain()
+        sessionStartedAt = clock.now()
         sessionFocusMode = focusMode
         sessionPinned = pinned
         _focusActive.value = focusMode
@@ -839,14 +886,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun finalOutcome(e: SessionEngine) = if (e.phase == PhaseType.RELEASE) Outcome.RELEASED else Outcome.DENIED
 
-    fun finishSession(outcome: Outcome, endedAt: Long = System.currentTimeMillis()) {
+    fun finishSession(outcome: Outcome, endedAt: Long = clock.now()) {
         val e = engine ?: return
         ticker?.cancel()
         ticker = null
         awayJob?.cancel()
         awayJob = null
         ambient.stop()
-        val now = System.currentTimeMillis()
+        val now = clock.now()
         val record = SessionRecord(
             startedAt = sessionStartedAt,
             endedAt = endedAt.coerceAtLeast(sessionStartedAt),
@@ -875,6 +922,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             pacingLog = Pacing.prune(pacingLog + PacingEntry.from(record), now)
             store.savePacingLog(pacingLog)
         }
+        addLapse(record, now)
         store.saveActive(null)
 
         val kind = Progress.kindFor(record)
@@ -930,6 +978,15 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
         pacingLog = Pacing.prune(pacingLog + PacingEntry.from(record), now)
         store.savePacingLog(pacingLog)
+        addLapse(record, now)
+    }
+
+    /** "Não segurei" e interrompidas ficam registrados mesmo com o histórico desligado. */
+    private fun addLapse(record: SessionRecord, now: Long) {
+        val lapse = Lapse.from(record) ?: return
+        val list = Progress.pruneLapses(_lapses.value + lapse, now)
+        _lapses.value = list
+        store.saveLapses(list)
     }
 
     private fun saveHeartbeat() {
@@ -943,7 +1000,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 roundsTotal = e.level.rounds,
                 focusMode = sessionFocusMode,
                 controlOnly = e.controlOnly,
-                beatAt = System.currentTimeMillis(),
+                beatAt = clock.now(),
                 elapsedMs = e.activeElapsedMs,
                 roundsDone = e.roundsCompleted,
                 closeCount = e.closeCount,
@@ -990,6 +1047,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         for (ev in events) {
             when (ev) {
                 is EngineEvent.PhaseStart -> {
+                    // cada pausa nova pode voltar a tocar a trilha, mesmo que outro app tenha pego o áudio antes
+                    if (ev.type == PhaseType.STOP) ambient.allowAgain()
                     if (s.phaseSound) feedback.soundFor(ev.type)?.let { feedback.play(it, s.volume) }
                     if (s.vibratePhase) feedback.vibratePhase(ev.type)
                 }
@@ -1040,8 +1099,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     companion object {
-        /** Versão das telas de apresentação/novidades (sobe quando houver novidades a mostrar). */
-        const val CURRENT_VERSION = 4
+        /** Versão da apresentação (sobe quando ela mudar e precisar ser mostrada de novo). */
+        const val CURRENT_VERSION = 1
         private const val MAX_HISTORY = 500
         private const val LOCK_AFTER_MS = 30_000L
         private const val HEARTBEAT_MS = 5_000L

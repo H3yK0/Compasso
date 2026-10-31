@@ -73,6 +73,8 @@ import app.compasso.ui.components.TipCard
 import app.compasso.ui.components.inlineMarkdown
 import app.compasso.ui.components.section
 import app.compasso.ui.theme.Ios
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 
@@ -228,13 +230,14 @@ fun ReaderScreen(article: Article, isRead: Boolean, onRead: () -> Unit, onBack: 
         derivedStateOf { if (state.firstVisibleItemIndex > 0) 1f else (state.firstVisibleItemScrollOffset / rangePx).coerceIn(0f, 1f) }
     }
     var openedFor by remember { mutableLongStateOf(0L) }
-    // tempo mínimo: 30% do tempo estimado (pelo menos 20 s)
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    // tempo mínimo: 30% do tempo estimado (pelo menos 20 s), só contando com o app na frente
     val minMs = (article.minutes * 60_000L * 3 / 10).coerceAtLeast(20_000L)
     LaunchedEffect(article.id) {
         if (isRead) return@LaunchedEffect
         while (openedFor < minMs) {
             delay(1_000)
-            openedFor += 1_000
+            if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) openedFor += 1_000
         }
         snapshotFlow {
             val last = state.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0

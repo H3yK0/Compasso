@@ -115,7 +115,7 @@ fun CompassoApp(vm: AppViewModel) {
         SystemBarsEffect(darkIcons = !dark && !colored)
         Box(Modifier.fillMaxSize().background(Ios.colors.bg)) {
             if (locked) {
-                PinUnlockScreen(onTry = vm::unlock)
+                PinUnlockScreen(onTry = vm::unlock, waitMs = vm::pinWaitMs)
             } else {
                 AnimatedContent(
                     targetState = screen,
@@ -169,12 +169,6 @@ private fun ScreenContent(current: Screen, vm: AppViewModel) {
             if (current.back != null) BackHandler(onBack = done)
             IntroScreen(codename, vm::newCodename, onDone = done, replay = current.back != null)
         }
-
-        Screen.WhatsNew -> WhatsNewScreen(
-            onContinue = { vm.closeWhatsNew(false) },
-            onTour = { vm.closeWhatsNew(true) },
-            includePrevious = vm.previousVersion < 3,
-        )
 
         Screen.Root -> RootTabs(vm, tab, ::tipFor)
 
@@ -305,6 +299,21 @@ private fun ScreenContent(current: Screen, vm: AppViewModel) {
                 onSkip = leave,
             )
         }
+
+        is Screen.PinVerify -> {
+            val back: () -> Unit = { vm.go(Screen.Settings) }
+            BackHandler(onBack = back)
+            PinUnlockScreen(
+                onTry = { vm.verifyPin(it, current.action) },
+                waitMs = vm::pinWaitMs,
+                title = "Digite a senha atual",
+                subtitle = when (current.action) {
+                    PinAction.CHANGE -> "Para trocar a senha, confirme a atual."
+                    PinAction.REMOVE -> "Para remover a senha, confirme a atual."
+                },
+                onCancel = back,
+            )
+        }
     }
 }
 
@@ -316,6 +325,7 @@ private fun RootTabs(vm: AppViewModel, tab: Tab, tipFor: (Tip) -> Tip?) {
     val snapshot by vm.pacingSnapshot.collectAsStateWithLifecycle()
     val focus by vm.focus.collectAsStateWithLifecycle()
     val points by vm.points.collectAsStateWithLifecycle()
+    val lapses by vm.lapses.collectAsStateWithLifecycle()
     val level by vm.level.collectAsStateWithLifecycle()
     val codename by vm.codename.collectAsStateWithLifecycle()
     val articles by vm.articles.collectAsStateWithLifecycle()
@@ -335,7 +345,7 @@ private fun RootTabs(vm: AppViewModel, tab: Tab, tipFor: (Tip) -> Tip?) {
                     codename = codename,
                     level = level,
                     points = points,
-                    history = history,
+                    lapses = lapses,
                     tip = tipFor(Tip.TRAIN),
                     onTipClose = vm::dismissTip,
                     onStart = vm::requestStart,
@@ -369,6 +379,7 @@ private fun RootTabs(vm: AppViewModel, tab: Tab, tipFor: (Tip) -> Tip?) {
                     onProfile = { vm.go(Screen.Profile) },
                     onHistory = { vm.go(Screen.History) },
                     bottomPadding = FloatingTabBarSpace,
+                    lapses = lapses,
                 )
 
                 Tab.READ -> ReadScreen(
@@ -410,8 +421,8 @@ private fun SettingsRoute(vm: AppViewModel, tip: Tip?, onBack: () -> Unit) {
             onCancelPending = vm::cancelPendingPacing,
             onFocus = vm::requestFocus,
             onTestSound = vm::testSound,
-            onSetPin = { vm.go(Screen.PinSetup(fromOptions = true)) },
-            onRemovePin = vm::removePin,
+            onSetPin = vm::requestPinSetup,
+            onRemovePin = vm::requestPinRemoval,
             onClearHistory = vm::clearHistory,
             onGuide = { vm.go(Screen.Guide) },
             onReplayIntro = { vm.go(Screen.Intro(back = Screen.Settings)) },

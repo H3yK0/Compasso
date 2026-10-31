@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import app.compasso.model.Codename
 import app.compasso.model.FocusSettings
+import app.compasso.model.Lapse
 import app.compasso.model.Level
 import app.compasso.model.LevelStatus
 import app.compasso.model.Levels
@@ -67,7 +68,6 @@ import app.compasso.model.PointEntry
 import app.compasso.model.Progress
 import app.compasso.model.ReleaseGate
 import app.compasso.model.ReleaseMode
-import app.compasso.model.SessionRecord
 import app.compasso.model.Tip
 import app.compasso.ui.components.Astro
 import app.compasso.ui.components.CodenameAvatar
@@ -140,7 +140,7 @@ fun TodayScreen(
     codename: Codename,
     level: LevelStatus,
     points: List<PointEntry>,
-    history: List<SessionRecord>,
+    lapses: List<Lapse>,
     tip: Tip?,
     onTipClose: (Tip) -> Unit,
     onStart: (Level) -> Unit,
@@ -162,7 +162,7 @@ fun TodayScreen(
     val tint = gateTint(gate)
     val today = remember(points, now / 60_000) { Progress.pointsToday(points, now) }
     val week = remember(points, now / 60_000) { weekStars(points, now) }
-    val streak = remember(points, history, now / 60_000) { Progress.streak(points, history, now) }
+    val streak = remember(points, lapses, now / 60_000) { Progress.streak(points, lapses, now) }
     val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val selected = levels[chosen]
     val screenH = LocalConfiguration.current.screenHeightDp

@@ -104,23 +104,26 @@ fun BarChart(
             color = c.secondary,
         )
         Spacer(Modifier.height(12.dp))
-        val description = bars.joinToString { "${it.label}: ${formatNumber(it.value)} $unit" }
+        val description = if (bars.isEmpty()) emptyText else bars.joinToString { "${it.label}: ${formatNumber(it.value)} $unit" }
         Canvas(
             Modifier
                 .fillMaxWidth()
                 .height(chartHeight)
                 .semantics { contentDescription = description }
                 .pointerInput(bars) {
+                    // sem barras (nenhuma sessão ainda) não há o que escolher: tocar não pode quebrar o app
+                    if (bars.isEmpty()) return@pointerInput
                     detectTapGestures { pos ->
                         val axisW = 30.dp.toPx()
-                        val slot = (size.width - axisW) / bars.size.coerceAtLeast(1)
+                        val slot = (size.width - axisW) / bars.size
                         selected = (pos.x / slot).toInt().coerceIn(0, bars.lastIndex)
                     }
                 }
                 .pointerInput(bars) {
+                    if (bars.isEmpty()) return@pointerInput
                     detectHorizontalDragGestures { change, _ ->
                         val axisW = 30.dp.toPx()
-                        val slot = (size.width - axisW) / bars.size.coerceAtLeast(1)
+                        val slot = (size.width - axisW) / bars.size
                         selected = (change.position.x / slot).toInt().coerceIn(0, bars.lastIndex)
                     }
                 },

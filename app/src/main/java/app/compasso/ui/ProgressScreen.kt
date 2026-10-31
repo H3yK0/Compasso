@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.compasso.model.Accent
 import app.compasso.model.Codename
+import app.compasso.model.Lapse
 import app.compasso.model.LevelStatus
 import app.compasso.model.PointEntry
 import app.compasso.model.PointKind
@@ -66,6 +67,7 @@ import app.compasso.model.SessionRecord
 import app.compasso.model.Span
 import app.compasso.model.Tier
 import app.compasso.model.Tip
+import app.compasso.model.UnbeatenNeed
 import app.compasso.model.WeekScore
 import app.compasso.ui.components.BarChart
 import app.compasso.ui.components.ButtonKind
@@ -104,14 +106,15 @@ fun ProgressScreen(
     onHistory: () -> Unit,
     bottomPadding: Dp = 0.dp,
     now: Long = System.currentTimeMillis(),
+    lapses: List<Lapse> = emptyList(),
 ) {
     val c = Ios.colors
     var span by rememberSaveable { mutableStateOf(Span.DAYS) }
-    val streak = remember(points, history, now / 60_000) { Progress.streak(points, history, now) }
+    val streak = remember(points, lapses, now / 60_000) { Progress.streak(points, lapses, now) }
     val today = remember(points, now / 60_000) { Progress.pointsToday(points, now) }
     val checkedIn = remember(points, now / 60_000) { Progress.doneToday(points, PointKind.CHECKIN, now) }
     val podium = remember(points) { Progress.podium(points) }
-    val records = remember(points, history) { Progress.records(points, history) }
+    val records = remember(points, history, lapses) { Progress.records(points, history, lapses) }
     val control = remember(history, span, now / 60_000) { Progress.controlSeries(history, span, now) }
     val pts = remember(points, span, now / 60_000) { Progress.pointsSeries(points, span, now) }
 
@@ -265,6 +268,11 @@ private fun spanCaption(span: Span, label: String): String = when (span) {
 
 private fun daysLabel(n: Int) = if (n == 1) "1 dia" else "$n dias"
 
+private fun needText(n: UnbeatenNeed): String = when (n) {
+    UnbeatenNeed.CLEAN_DAYS -> "14 dias sem “não segurei” nem sessão interrompida"
+    UnbeatenNeed.STREAK -> "14 dias seguidos de constância"
+}
+
 @Composable
 private fun LevelCard(level: LevelStatus, codename: Codename, streak: Int, today: Int, onProfile: () -> Unit) {
     val c = Ios.colors
@@ -303,7 +311,7 @@ private fun LevelCard(level: LevelStatus, codename: Codename, streak: Int, today
         val next = level.next
         Text(
             when {
-                level.missing.isNotEmpty() -> "Pontos de Invicto alcançados. Falta: ${level.missing.joinToString(" e ")}."
+                level.missing.isNotEmpty() -> "Pontos de Invicto alcançados. Falta: ${level.missing.joinToString(" e ") { needText(it) }}."
                 next == null -> "Você é Invicto. Para continuar, mantenha a constância."
                 else -> "Faltam ${level.toNext} pontos para ${next.label}"
             },

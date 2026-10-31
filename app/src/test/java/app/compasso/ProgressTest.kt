@@ -2,6 +2,7 @@ package app.compasso
 
 import app.compasso.model.Codenames
 import app.compasso.model.Focus
+import app.compasso.model.Lapse
 import app.compasso.model.FocusSettings
 import app.compasso.model.NoPoints
 import app.compasso.model.Outcome
@@ -12,6 +13,7 @@ import app.compasso.model.Progress
 import app.compasso.model.SessionRecord
 import app.compasso.model.Span
 import app.compasso.model.Tier
+import app.compasso.model.UnbeatenNeed
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -33,6 +35,8 @@ class ProgressTest {
         LocalDateTime.of(2026, 10, 12, hour, 0).minusDays(daysAgo.toLong()).atZone(zone).toInstant().toEpochMilli()
 
     private fun p(daysAgo: Int, kind: PointKind, points: Int = kind.base, hour: Int = 12) = PointEntry(at(daysAgo, hour), kind, points)
+
+    private fun lapse(daysAgo: Int, outcome: Outcome) = Lapse(at(daysAgo, 20), outcome)
 
     private fun rec(daysAgo: Int, outcome: Outcome, minutes: Int = 10, focused: Boolean = true): SessionRecord {
         val start = at(daysAgo, 20)
@@ -106,20 +110,20 @@ class ProgressTest {
     fun unbeatenNeedsStreakAndCleanFortnight() {
         // 33 por dia em 28 dias (924) + 4 artigos (20) = 944
         val log = goodDays(28) + List(28) { p(it, PointKind.GAME) } + (10..13).map { p(it, PointKind.ARTICLE) }
-        val clean = Progress.level(log, listOf(rec(20, Outcome.LOST_CONTROL)), now, zone)
+        val clean = Progress.level(log, listOf(lapse(20, Outcome.LOST_CONTROL)), now, zone)
         assertEquals(944, clean.windowPoints)
         assertEquals(Tier.UNBEATEN, clean.tier)
         assertTrue(clean.missing.isEmpty())
 
-        val lostRecently = Progress.level(log, listOf(rec(3, Outcome.LOST_CONTROL)), now, zone)
+        val lostRecently = Progress.level(log, listOf(lapse(3, Outcome.LOST_CONTROL)), now, zone)
         assertEquals(Tier.DIAMOND, lostRecently.tier)
-        assertEquals(1, lostRecently.missing.size)
+        assertEquals(listOf(UnbeatenNeed.CLEAN_DAYS), lostRecently.missing)
 
         val gap = log.filter { Progress.day(it.at, zone) != Progress.day(at(5), zone) } // um dia sem nada
         val noStreak = Progress.level(gap, emptyList(), now, zone)
         assertTrue(noStreak.windowPoints >= Tier.UNBEATEN.minPoints)
         assertEquals(Tier.DIAMOND, noStreak.tier)
-        assertTrue(noStreak.missing.any { "seguidos" in it })
+        assertEquals(listOf(UnbeatenNeed.STREAK), noStreak.missing)
     }
 
     // ---------- Sequência, pódio e recordes ----------
@@ -131,7 +135,7 @@ class ProgressTest {
         // hoje ainda vazio: conta a partir de ontem
         assertEquals(2, Progress.streak(log.drop(1), emptyList(), now, zone))
         // dia com sessão interrompida não vale
-        assertEquals(1, Progress.streak(log, listOf(rec(1, Outcome.INTERRUPTED)), now, zone))
+        assertEquals(1, Progress.streak(log, listOf(lapse(1, Outcome.INTERRUPTED)), now, zone))
         assertEquals(3, Progress.bestStreak(log, emptyList(), zone))
     }
 
@@ -141,12 +145,12 @@ class ProgressTest {
         val podium = Progress.podium(log, zone)
         assertEquals(3, podium.size)
         assertTrue(podium[0].points >= podium[1].points && podium[1].points >= podium[2].points)
-        assertEquals(podium[0].points, Progress.records(log, emptyList(), zone).bestWeekPoints)
+        assertEquals(podium[0].points, Progress.records(log, emptyList(), emptyList(), zone).bestWeekPoints)
     }
 
     @Test
     fun recordsIgnoreInterruptedSessions() {
-        val r = Progress.records(emptyList(), listOf(rec(1, Outcome.DENIED, 12), rec(2, Outcome.INTERRUPTED, 40), rec(3, Outcome.RELEASED, 8)), zone)
+        val r = Progress.records(emptyList(), listOf(rec(1, Outcome.DENIED, 12), rec(2, Outcome.INTERRUPTED, 40), rec(3, Outcome.RELEASED, 8)), emptyList(), zone)
         assertEquals(12 * 60_000L, r.bestControlMs)
         assertEquals(2, r.completedSessions)
         assertEquals(1, r.controlSessions)

@@ -244,6 +244,13 @@ class AmbientPlayer(context: Context) {
     @Volatile
     private var stopRequested = false
 
+    /**
+     * Outro app pegou o áudio (ligação, música, vídeo): a trilha não volta sozinha a cada
+     * quadro, brigando pelo som, até alguém pedir de novo com [allowAgain].
+     */
+    @Volatile
+    private var heldOff = false
+
     /** Nos testes no computador (Robolectric) não há saída de áudio de verdade. */
     private val enabled = Build.FINGERPRINT != "robolectric"
 
@@ -252,13 +259,13 @@ class AmbientPlayer(context: Context) {
     private var focusRequest: AudioFocusRequest? = null
 
     fun start() {
-        if (!enabled) return
-        if (thread?.isAlive == true) {
-            stopRequested = false
+        if (!enabled || heldOff) return
+        if (focusRequest == null && !requestFocus()) {
+            heldOff = true
             return
         }
         stopRequested = false
-        requestFocus()
+        if (thread?.isAlive == true) return
         thread = Thread({ loop() }, "trilha-respirar").apply {
             priority = Thread.MAX_PRIORITY
             isDaemon = true
@@ -273,16 +280,27 @@ class AmbientPlayer(context: Context) {
         focusRequest = null
     }
 
-    private fun requestFocus() {
-        val am = audioManager ?: return
+    /** Volta a permitir a trilha depois de outro app ter pego o áudio. */
+    fun allowAgain() {
+        heldOff = false
+    }
+
+    /** Pede o foco de áudio; falso se o sistema negar (ex.: durante uma ligação). */
+    private fun requestFocus(): Boolean {
+        val am = audioManager ?: return true
         val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
             .setAudioAttributes(attributes())
             .setOnAudioFocusChangeListener { change ->
-                if (change == AudioManager.AUDIOFOCUS_LOSS) stop()
+                if (change == AudioManager.AUDIOFOCUS_LOSS || change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+                    heldOff = true
+                    stop()
+                }
             }
             .build()
-        runCatching { am.requestAudioFocus(req) }
+        val granted = runCatching { am.requestAudioFocus(req) }.getOrDefault(AudioManager.AUDIOFOCUS_REQUEST_FAILED)
+        if (granted != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return false
         focusRequest = req
+        return true
     }
 
     private fun attributes() = AudioAttributes.Builder()

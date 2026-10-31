@@ -24,20 +24,10 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Air
-import androidx.compose.material.icons.rounded.AutoAwesome
-import androidx.compose.material.icons.rounded.Explore
-import androidx.compose.material.icons.rounded.Face
 import androidx.compose.material.icons.rounded.GraphicEq
-import androidx.compose.material.icons.rounded.Insights
-import androidx.compose.material.icons.rounded.Lightbulb
-import androidx.compose.material.icons.rounded.LightMode
-import androidx.compose.material.icons.rounded.NightsStay
 import androidx.compose.material.icons.rounded.PhonelinkLock
 import androidx.compose.material.icons.rounded.Spa
-import androidx.compose.material.icons.rounded.SportsEsports
-import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -60,19 +50,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.compasso.model.Breath
 import app.compasso.model.Codename
-import app.compasso.ui.components.AppIconTile
 import app.compasso.ui.components.Astro
 import app.compasso.ui.components.CodenameAvatar
 import app.compasso.ui.components.GlowOrb
-import app.compasso.ui.components.GroupCard
-import app.compasso.ui.components.GroupHeader
-import app.compasso.ui.components.IconInset
-import app.compasso.ui.components.IosRow
 import app.compasso.ui.components.NavTextButton
 import app.compasso.ui.components.PageDots
 import app.compasso.ui.components.PrimaryButton
-import app.compasso.ui.components.RowDivider
-import app.compasso.ui.components.RowIcon
 import app.compasso.ui.components.SkyBackground
 import app.compasso.ui.theme.Ios
 import kotlinx.coroutines.launch
@@ -269,70 +252,3 @@ fun IntroScreen(
     }
 }
 
-/** Para quem atualizou: o que chegou na 1.3 (e na 1.2, para quem pulou uma versão). */
-@Composable
-fun WhatsNewScreen(onContinue: () -> Unit, onTour: () -> Unit, includePrevious: Boolean = false) {
-    val c = Ios.colors
-    SkyBackground(Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize().safeDrawingPadding()) {
-        Column(
-            Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Spacer(Modifier.height(30.dp))
-            AppIconTile(size = 88.dp)
-            Spacer(Modifier.height(18.dp))
-            Text("Novidades da versão 1.3", style = Ios.type.title1, color = c.label, textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 24.dp))
-            Spacer(Modifier.height(6.dp))
-            Text(
-                "Um visual novo, mais fácil de usar. Seu histórico e seus ajustes continuam aqui.",
-                style = Ios.type.callout,
-                color = c.secondary,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 32.dp),
-            )
-            Spacer(Modifier.height(18.dp))
-            NewsGroup(
-                listOf(
-                    Triple(Icons.Rounded.NightsStay, c.lavender, "Visual Noite" to "Céu, vidro e um astro que mostra como está o seu dia."),
-                    Triple(Icons.Rounded.Explore, c.accent, "Tela Hoje" to "Deslize para escolher o nível e comece com um toque."),
-                    Triple(Icons.Rounded.AutoAwesome, c.amber, "Semana em estrelas" to "Cada dia com pontos vira uma estrela; dias seguidos se ligam."),
-                    Triple(Icons.Rounded.Spa, c.pink, "Refúgio renovado" to "Capas desenhadas pelo app e o Respirar a um toque."),
-                    Triple(Icons.Rounded.Tune, c.blue, "Ajustes no seu emblema" to "Toque no emblema, no alto da tela Hoje."),
-                    Triple(Icons.Rounded.LightMode, c.yellow, "Prefere claro?" to "O modo Dia continua em Ajustes, em Visual."),
-                ),
-            )
-            if (includePrevious) {
-                GroupHeader("Chegou na 1.2")
-                NewsGroup(
-                    listOf(
-                        Triple(Icons.Rounded.SportsEsports, c.orange, "Refúgio com jogos" to "Encaixe, Dobra e Eco para atravessar a vontade."),
-                        Triple(Icons.Rounded.Insights, c.pink, "Evolução" to "Gráficos, pódio, recordes e níveis até Invicto."),
-                        Triple(Icons.AutoMirrored.Rounded.MenuBook, c.blue, "Leituras com fontes" to "Mente, corpo e sexualidade, sem exagero."),
-                        Triple(Icons.Rounded.PhonelinkLock, c.indigo, "Modo foco" to "Tela fixada durante a sessão, sem saídas."),
-                        Triple(Icons.Rounded.Face, c.purple, "Codinome anônimo" to "Um nome e um emblema só seus, sem foto."),
-                        Triple(Icons.Rounded.Lightbulb, c.yellow, "Dicas pelo caminho" to "O app ensina na primeira vez que você chega em cada parte."),
-                    ),
-                )
-            }
-            Spacer(Modifier.height(20.dp))
-        }
-        // botões sempre à vista, mesmo com a lista longa
-        Column(Modifier.fillMaxWidth().padding(start = 22.dp, end = 22.dp, top = 10.dp, bottom = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            PrimaryButton("Continuar", onContinue, Modifier.fillMaxWidth())
-            Spacer(Modifier.height(4.dp))
-            NavTextButton("Ver a apresentação", onTour)
-        }
-        }
-    }
-}
-
-@Composable
-private fun NewsGroup(items: List<Triple<ImageVector, Color, Pair<String, String>>>) {
-    GroupCard {
-        items.forEachIndexed { i, (icon, tint, text) ->
-            if (i > 0) RowDivider(IconInset)
-            IosRow(text.first, subtitle = text.second, icon = RowIcon(icon, tint), subtitleLines = 2)
-        }
-    }
-}

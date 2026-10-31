@@ -45,6 +45,15 @@ enum class Tier(val label: String, val minPoints: Int) {
     UNBEATEN("Invicto", 900),
 }
 
+/** Exigências do Invicto além dos pontos. */
+enum class UnbeatenNeed {
+    /** 14 dias sem "não segurei" nem sessão interrompida. */
+    CLEAN_DAYS,
+
+    /** 14 dias seguidos de constância. */
+    STREAK,
+}
+
 data class LevelStatus(
     val tier: Tier,
     val windowPoints: Int,
@@ -52,7 +61,7 @@ data class LevelStatus(
     val toNext: Int,
     val progress: Float,
     /** O que ainda falta para Invicto quando os pontos já bastam. */
-    val missing: List<String>,
+    val missing: List<UnbeatenNeed>,
 )
 
 data class WeekScore(val start: LocalDate, val points: Int)
@@ -119,16 +128,18 @@ object Progress {
     fun windowPoints(log: List<PointEntry>, now: Long): Int =
         log.filter { it.at > now - WINDOW_DAYS * DAY && it.at <= now }.sumOf { it.points }
 
-    fun level(log: List<PointEntry>, history: List<SessionRecord>, now: Long, zone: ZoneId = ZoneId.systemDefault()): LevelStatus {
+    /**
+     * Nível atual. [lapses] são os "não segurei" e as sessões interrompidas, que ficam
+     * registrados mesmo com o histórico desligado ou apagado.
+     */
+    fun level(log: List<PointEntry>, lapses: List<Lapse>, now: Long, zone: ZoneId = ZoneId.systemDefault()): LevelStatus {
         val pts = windowPoints(log, now)
         var tier = Tier.entries.last { pts >= it.minPoints }
-        val missing = mutableListOf<String>()
+        val missing = mutableListOf<UnbeatenNeed>()
         if (tier == Tier.UNBEATEN) {
             val since = now - CLEAN_DAYS * DAY
-            if (history.any { it.startedAt > since && (it.outcome == Outcome.LOST_CONTROL || it.outcome == Outcome.INTERRUPTED) }) {
-                missing += "14 dias sem “não segurei” nem sessão interrompida"
-            }
-            if (streak(log, history, now, zone) < STREAK_FOR_UNBEATEN) missing += "14 dias seguidos de constância"
+            if (lapses.any { it.at > since }) missing += UnbeatenNeed.CLEAN_DAYS
+            if (streak(log, lapses, now, zone) < STREAK_FOR_UNBEATEN) missing += UnbeatenNeed.STREAK
             if (missing.isNotEmpty()) tier = Tier.DIAMOND
         }
         val next = Tier.entries.getOrNull(tier.ordinal + 1)
@@ -141,8 +152,8 @@ object Progress {
      * Dias seguidos com pelo menos uma ação que vale pontos, terminando hoje (ou ontem, se hoje
      * ainda não teve nada). Dia com sessão interrompida não conta.
      */
-    fun streak(log: List<PointEntry>, history: List<SessionRecord>, now: Long, zone: ZoneId = ZoneId.systemDefault()): Int {
-        val good = goodDays(log, history, zone)
+    fun streak(log: List<PointEntry>, lapses: List<Lapse>, now: Long, zone: ZoneId = ZoneId.systemDefault()): Int {
+        val good = goodDays(log, lapses, zone)
         var d = day(now, zone)
         if (d !in good) d = d.minusDays(1)
         var n = 0
@@ -153,8 +164,8 @@ object Progress {
         return n
     }
 
-    fun bestStreak(log: List<PointEntry>, history: List<SessionRecord>, zone: ZoneId = ZoneId.systemDefault()): Int {
-        val good = goodDays(log, history, zone).sorted()
+    fun bestStreak(log: List<PointEntry>, lapses: List<Lapse>, zone: ZoneId = ZoneId.systemDefault()): Int {
+        val good = goodDays(log, lapses, zone).sorted()
         var best = 0
         var run = 0
         var prev: LocalDate? = null
@@ -166,10 +177,13 @@ object Progress {
         return best
     }
 
-    private fun goodDays(log: List<PointEntry>, history: List<SessionRecord>, zone: ZoneId): Set<LocalDate> {
-        val bad = history.filter { it.outcome == Outcome.INTERRUPTED }.map { day(it.startedAt, zone) }.toSet()
+    private fun goodDays(log: List<PointEntry>, lapses: List<Lapse>, zone: ZoneId): Set<LocalDate> {
+        val bad = lapses.filter { it.outcome == Outcome.INTERRUPTED }.map { day(it.at, zone) }.toSet()
         return log.map { day(it.at, zone) }.toSet() - bad
     }
+
+    /** Guarda os lapsos pelo mesmo tempo que os pontos (o bastante para a sequência e o Invicto). */
+    fun pruneLapses(lapses: List<Lapse>, now: Long): List<Lapse> = lapses.filter { it.at > now - KEEP_DAYS * DAY }
 
     /** As 3 melhores semanas (pódio pessoal). */
     fun podium(log: List<PointEntry>, zone: ZoneId = ZoneId.systemDefault()): List<WeekScore> =
@@ -178,9 +192,14 @@ object Progress {
             .sortedWith(compareByDescending<WeekScore> { it.points }.thenByDescending { it.start })
             .take(3)
 
-    fun records(log: List<PointEntry>, history: List<SessionRecord>, zone: ZoneId = ZoneId.systemDefault()): Records = Records(
+    fun records(
+        log: List<PointEntry>,
+        history: List<SessionRecord>,
+        lapses: List<Lapse>,
+        zone: ZoneId = ZoneId.systemDefault(),
+    ): Records = Records(
         bestControlMs = history.filter { it.outcome != Outcome.INTERRUPTED }.maxOfOrNull { it.durationMs } ?: 0L,
-        bestStreak = bestStreak(log, history, zone),
+        bestStreak = bestStreak(log, lapses, zone),
         bestWeekPoints = podium(log, zone).firstOrNull()?.points ?: 0,
         completedSessions = history.count { it.outcome == Outcome.RELEASED || it.outcome == Outcome.DENIED },
         controlSessions = history.count { it.outcome == Outcome.DENIED },

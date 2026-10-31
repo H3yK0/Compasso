@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -175,38 +176,60 @@ private fun Key(ch: Char, onClick: () -> Unit) {
     }
 }
 
+/**
+ * Pede a senha (ao abrir o app ou antes de trocar/remover). As tentativas erradas e a espera
+ * ficam com o ViewModel, gravadas: fechar e abrir o app não zera.
+ */
 @Composable
-fun PinUnlockScreen(onTry: (String) -> Boolean) {
+fun PinUnlockScreen(
+    onTry: (String) -> PinCheck,
+    waitMs: () -> Long,
+    title: String = "Digite sua senha",
+    subtitle: String? = null,
+    onCancel: (() -> Unit)? = null,
+) {
     var error by remember { mutableStateOf<String?>(null) }
     var errorTick by remember { mutableIntStateOf(0) }
-    var attempts by remember { mutableIntStateOf(0) }
-    var waiting by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
+    var remaining by remember { mutableLongStateOf(waitMs()) }
+    // conta a espera de segundo em segundo
+    LaunchedEffect(errorTick) {
+        remaining = waitMs()
+        while (remaining > 0L) {
+            delay(1_000)
+            remaining = waitMs()
+        }
+    }
+    val waiting = remaining > 0L
     PinPad(
-        title = "Digite sua senha",
-        subtitle = null,
-        error = if (waiting) "Muitas tentativas. Aguarde 30 segundos." else error,
+        title = title,
+        subtitle = subtitle,
+        error = if (waiting) "Muitas tentativas. Tente de novo em ${formatWait(remaining)}." else error,
         errorTick = errorTick,
         enabled = !waiting,
         onComplete = { pin ->
-            if (onTry(pin)) {
-                error = null
-                attempts = 0
-            } else {
-                attempts++
-                error = "Senha incorreta"
-                errorTick++
-                if (attempts % 5 == 0) {
-                    waiting = true
-                    scope.launch {
-                        delay(30_000)
-                        waiting = false
-                        error = null
-                    }
+            when (onTry(pin)) {
+                PinCheck.OK -> error = null
+                PinCheck.WRONG -> {
+                    error = "Senha incorreta"
+                    errorTick++
                 }
+                PinCheck.WAIT -> errorTick++
             }
         },
+        bottom = { if (onCancel != null) NavTextButton("Cancelar", onCancel) },
     )
+}
+
+/** "30 s", "2 min", "1 min 30 s". */
+private fun formatWait(ms: Long): String {
+    val s = ((ms + 999) / 1000).toInt()
+    val m = s / 60
+    val r = s % 60
+    return when {
+        m == 0 -> "$s s"
+        r == 0 -> "$m min"
+        else -> "$m min $r s"
+    }
 }
 
 @Composable

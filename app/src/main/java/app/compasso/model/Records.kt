@@ -18,6 +18,18 @@ enum class Outcome {
 val Outcome.isRelease: Boolean
     get() = this == Outcome.RELEASED || this == Outcome.LOST_CONTROL || this == Outcome.INTERRUPTED
 
+/**
+ * Registro mínimo de um "não segurei" ou de uma sessão interrompida: só o momento e o tipo.
+ * Fica guardado mesmo com o histórico desligado ou apagado, porque conta para a sequência e
+ * para o nível Invicto (senão bastaria desligar o histórico para apagar os tropeços).
+ */
+data class Lapse(val at: Long, val outcome: Outcome) {
+    companion object {
+        fun from(record: SessionRecord): Lapse? =
+            if (record.outcome == Outcome.LOST_CONTROL || record.outcome == Outcome.INTERRUPTED) Lapse(record.startedAt, record.outcome) else null
+    }
+}
+
 data class SessionRecord(
     val startedAt: Long,
     val endedAt: Long,

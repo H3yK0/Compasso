@@ -31,10 +31,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        applyDiscreet(vm.settings.value.discreet)
+        applyPrivacy(vm.settings.value.discreet, vm.hasPin.value)
         setContent {
             val settings by vm.settings.collectAsStateWithLifecycle()
-            LaunchedEffect(settings.discreet) { applyDiscreet(settings.discreet) }
+            val hasPin by vm.hasPin.collectAsStateWithLifecycle()
+            LaunchedEffect(settings.discreet, hasPin) { applyPrivacy(settings.discreet, hasPin) }
             CompassoApp(vm)
         }
         lifecycleScope.launch {
@@ -53,10 +54,17 @@ class MainActivity : ComponentActivity() {
         vm.onMultiWindow(isInMultiWindowMode)
     }
 
-    /** Modo discreto: esconde o conteúdo na tela de recentes e bloqueia prints e gravação de tela. */
-    private fun applyDiscreet(on: Boolean) {
-        if (on) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+    /**
+     * Modo discreto: esconde o conteúdo na tela de recentes e bloqueia prints e gravação de tela.
+     * Com senha, a miniatura dos recentes também fica escondida (Android 13+), senão ela
+     * mostraria o conteúdo sem pedir a senha.
+     */
+    private fun applyPrivacy(discreet: Boolean, hasPin: Boolean) {
+        if (discreet) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            runCatching { setRecentsScreenshotEnabled(!(discreet || hasPin)) }
+        }
     }
 
     /** Fixar a tela (recurso do Android): enquanto fixada, não dá para abrir outro app. */

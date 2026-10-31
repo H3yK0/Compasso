@@ -22,6 +22,7 @@ import app.compasso.model.ArticleParser
 import app.compasso.model.Codename
 import app.compasso.model.FocusSettings
 import app.compasso.model.GateRule
+import app.compasso.model.Lapse
 import app.compasso.model.Levels
 import app.compasso.model.Outcome
 import app.compasso.model.PacingConfig
@@ -58,7 +59,6 @@ import app.compasso.ui.SummaryUi
 import app.compasso.ui.Tab
 import app.compasso.ui.TodayScreen
 import app.compasso.ui.WelcomeScreen
-import app.compasso.ui.WhatsNewScreen
 import app.compasso.ui.components.ActionSheetContent
 import app.compasso.ui.components.AlertAction
 import app.compasso.ui.components.AlertCard
@@ -184,7 +184,7 @@ class ScreenshotTest {
             if (d % 5 == 0) add(PointEntry(t, PointKind.ARTICLE, 5))
         }
     }
-    private val level = Progress.level(points, records, now)
+    private val level = Progress.level(points, records.mapNotNull { Lapse.from(it) }, now)
 
     private val articles = File("src/main/assets/artigos").listFiles().orEmpty()
         .filter { it.name.endsWith(".md") }
@@ -194,7 +194,7 @@ class ScreenshotTest {
     private fun home(gate: ReleaseGate, tip: Tip? = null, focus: FocusSettings = FocusSettings(), initialLevel: Int = 0) = @Composable {
         WithTabs(Tab.TRAIN) {
             TodayScreen(
-                gate, Levels.DEFAULT_CUSTOM, focus, codename, level, points, records, tip,
+                gate, Levels.DEFAULT_CUSTOM, focus, codename, level, points, records.mapNotNull { Lapse.from(it) }, tip,
                 {}, {}, {}, {}, {}, {}, {},
                 bottomPadding = FloatingTabBarSpace, now = now, initialLevel = initialLevel,
             )
@@ -208,8 +208,6 @@ class ScreenshotTest {
     @Test fun intro() = shot("00b_apresentacao", dark = false) { IntroScreen(codename, {}, {}) }
 
     @Test fun introCodename() = shot("00c_apresentacao_codinome") { IntroScreen(codename, {}, {}, startPage = 4) }
-
-    @Test fun whatsNew() = shot("00d_novidades", dark = false) { WhatsNewScreen({}, {}) }
 
     // ---------- Treinar ----------
 

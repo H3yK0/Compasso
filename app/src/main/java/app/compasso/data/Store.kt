@@ -5,6 +5,7 @@ import app.compasso.games.GameKind
 import app.compasso.model.Accent
 import app.compasso.model.Codename
 import app.compasso.model.FocusSettings
+import app.compasso.model.Lapse
 import app.compasso.model.Level
 import app.compasso.model.Levels
 import app.compasso.model.Outcome
@@ -17,6 +18,7 @@ import app.compasso.model.PacingSettings
 import app.compasso.model.PendingChange
 import app.compasso.model.ReleaseMode
 import app.compasso.model.SessionRecord
+import app.compasso.model.TrustedTime
 import org.json.JSONArray
 import org.json.JSONObject
 import java.security.MessageDigest
@@ -75,7 +77,7 @@ class Store(context: Context) {
         return Settings(
             beatSound = prefs.getBoolean("beatSound", d.beatSound),
             phaseSound = prefs.getBoolean("phaseSound", d.phaseSound),
-            volume = prefs.getFloat("volume", d.volume),
+            volume = prefs.getFloat("volume", d.volume).coerceIn(0f, 1f),
             vibratePhase = prefs.getBoolean("vibratePhase", d.vibratePhase),
             vibrateBeat = prefs.getBoolean("vibrateBeat", d.vibrateBeat),
             countdown = prefs.getBoolean("countdown", d.countdown),
@@ -86,7 +88,7 @@ class Store(context: Context) {
             theme = runCatching { ThemeMode.valueOf(prefs.getString("theme", null) ?: d.theme.name) }.getOrDefault(d.theme),
             breatheSound = prefs.getBoolean("breatheSound", d.breatheSound),
             pauseSound = prefs.getBoolean("pauseSound", d.pauseSound),
-            ambientVolume = prefs.getFloat("ambientVolume", d.ambientVolume),
+            ambientVolume = prefs.getFloat("ambientVolume", d.ambientVolume).coerceIn(0f, 1f),
             showTips = prefs.getBoolean("showTips", d.showTips),
             accent = runCatching { Accent.valueOf(prefs.getString("accent", null) ?: d.accent.name) }.getOrDefault(d.accent),
         )
@@ -157,7 +159,6 @@ class Store(context: Context) {
                     val duration = o.getLong("d")
                     SessionRecord(
                         startedAt = start,
-                        // Versão 1.0 não guardava o fim: estima pelo tempo de treino.
                         endedAt = o.optLong("e", start + duration),
                         levelId = o.getString("id"),
                         levelName = o.getString("n"),
@@ -209,11 +210,9 @@ class Store(context: Context) {
             intervalHours = prefs.getInt("p_hours", 24).takeIf { it in Pacing.INTERVAL_OPTIONS } ?: 24,
         )
         val at = prefs.getLong("p_pend_at", 0L)
-        val pending = if (at > 0L) {
-            PendingChange(
-                PacingConfig(prefs.getBoolean("p_pend_on", true), prefs.getInt("p_pend_hours", 24)),
-                at,
-            )
+        val pendingHours = prefs.getInt("p_pend_hours", 24)
+        val pending = if (at > 0L && pendingHours in Pacing.INTERVAL_OPTIONS) {
+            PendingChange(PacingConfig(prefs.getBoolean("p_pend_on", true), pendingHours), at)
         } else {
             null
         }
@@ -232,13 +231,6 @@ class Store(context: Context) {
         }
         e.apply()
     }
-
-    /** Se o registro do controle já foi preenchido com o histórico antigo (atualização da 1.0). */
-    var pacingSeeded: Boolean
-        get() = prefs.getBoolean("p_seeded", false)
-        set(value) {
-            prefs.edit().putBoolean("p_seeded", value).apply()
-        }
 
     fun loadPacingLog(): List<PacingEntry> {
         val raw = prefs.getString("pacing", null) ?: return emptyList()
@@ -278,6 +270,39 @@ class Store(context: Context) {
         val arr = JSONArray()
         list.forEach { arr.put(JSONObject().put("a", it.at).put("k", it.kind.name).put("p", it.points)) }
         prefs.edit().putString("points", arr.toString()).apply()
+    }
+
+    // ---------- Lapsos ("não segurei" e sessões interrompidas) ----------
+
+    /** Só o momento e o tipo. Não some com o histórico: conta para a sequência e para o Invicto. */
+    fun loadLapses(): List<Lapse> {
+        val raw = prefs.getString("lapses", null) ?: return emptyList()
+        return runCatching {
+            val arr = JSONArray(raw)
+            (0 until arr.length()).mapNotNull { i ->
+                runCatching {
+                    val o = arr.getJSONObject(i)
+                    Lapse(o.getLong("a"), Outcome.valueOf(o.getString("o")))
+                }.getOrNull()
+            }
+        }.getOrDefault(emptyList())
+    }
+
+    fun saveLapses(list: List<Lapse>) {
+        val arr = JSONArray()
+        list.forEach { arr.put(JSONObject().put("a", it.at).put("o", it.outcome.name)) }
+        prefs.edit().putString("lapses", arr.toString()).apply()
+    }
+
+    // ---------- Relógio confiável ----------
+
+    fun loadClock(): TrustedTime.Mark? {
+        if (!prefs.contains("clk_t")) return null
+        return TrustedTime.Mark(prefs.getLong("clk_t", 0L), prefs.getLong("clk_u", 0L))
+    }
+
+    fun saveClock(m: TrustedTime.Mark) {
+        prefs.edit().putLong("clk_t", m.trusted).putLong("clk_u", m.uptime).apply()
     }
 
     // ---------- Codinome ----------
@@ -341,15 +366,12 @@ class Store(context: Context) {
         prefs.edit().putStringSet("tips", HashSet(ids)).apply()
     }
 
-    /** Última versão do app aberta (para mostrar a apresentação ou as novidades uma vez). */
+    /** Versão da apresentação já vista (para mostrar a apresentação uma vez). */
     var seenVersion: Int
         get() = prefs.getInt("seen_version", 0)
         set(value) {
             prefs.edit().putInt("seen_version", value).apply()
         }
-
-    /** Se já havia dados de uma versão anterior (atualização, não instalação nova). */
-    fun hasOldData(): Boolean = prefs.contains("history") || prefs.contains("pinOffered") || prefs.contains("pacing")
 
     fun loadRead(): Set<String> = prefs.getStringSet("read", emptySet())?.toSet() ?: emptySet()
 
@@ -384,8 +406,22 @@ class Store(context: Context) {
     }
 
     fun removePin() {
-        prefs.edit().remove("pinHash").remove("pinSalt").apply()
+        prefs.edit().remove("pinHash").remove("pinSalt").remove("pinFails").remove("pinWaitUntil").apply()
     }
+
+    /** Tentativas erradas seguidas (gravadas: fechar o app não zera a contagem). */
+    var pinFails: Int
+        get() = prefs.getInt("pinFails", 0)
+        set(value) {
+            prefs.edit().putInt("pinFails", value).apply()
+        }
+
+    /** Até quando a senha não pode ser tentada de novo (horário confiável). */
+    var pinWaitUntil: Long
+        get() = prefs.getLong("pinWaitUntil", 0L)
+        set(value) {
+            prefs.edit().putLong("pinWaitUntil", value).apply()
+        }
 
     /** Se o app já ofereceu criar a senha na primeira abertura. */
     var pinOffered: Boolean
