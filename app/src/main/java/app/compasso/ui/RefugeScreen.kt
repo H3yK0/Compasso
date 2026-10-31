@@ -168,6 +168,7 @@ fun CoverCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     seed: Int = 1,
+    motifArea: Float = 1f,
     content: @Composable () -> Unit,
 ) {
     val c = Ios.colors
@@ -187,7 +188,7 @@ fun CoverCard(
             .border(0.75.dp, c.glassBorder, shape)
             .clickable(interactionSource = source, indication = null, role = Role.Button, onClick = onClick),
     ) {
-        CoverArt(colors, motif, Modifier.matchParentSize(), seed)
+        CoverArt(colors, motif, Modifier.matchParentSize(), seed, motifArea = motifArea)
         content()
     }
 }

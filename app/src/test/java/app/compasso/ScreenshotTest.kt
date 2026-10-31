@@ -9,16 +9,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import app.compasso.audio.Track
 import app.compasso.data.Settings
 import app.compasso.games.GameKind
 import app.compasso.model.Accent
+import app.compasso.model.ArticleInfo
 import app.compasso.model.ArticleParser
+import app.compasso.model.Coach
 import app.compasso.model.Codename
 import app.compasso.model.FocusSettings
 import app.compasso.model.GateRule
@@ -43,6 +46,7 @@ import app.compasso.ui.FocusPrepScreen
 import app.compasso.ui.GuideScreen
 import app.compasso.ui.HistoryScreen
 import app.compasso.ui.IntroScreen
+import app.compasso.ui.NoPointsReason
 import app.compasso.ui.OptionsActions
 import app.compasso.ui.OptionsScreen
 import app.compasso.ui.PacingInfoScreen
@@ -52,11 +56,10 @@ import app.compasso.ui.ProgressScreen
 import app.compasso.ui.ReadScreen
 import app.compasso.ui.ReaderScreen
 import app.compasso.ui.RefugeScreen
+import app.compasso.ui.SessionNotice
 import app.compasso.ui.SessionScreen
 import app.compasso.ui.SessionUi
 import app.compasso.ui.SummaryScreen
-import app.compasso.ui.NoPointsReason
-import app.compasso.ui.SessionNotice
 import app.compasso.ui.SummaryUi
 import app.compasso.ui.Tab
 import app.compasso.ui.TodayScreen
@@ -193,12 +196,21 @@ class ScreenshotTest {
         .map { ArticleParser.parse(it.readText()) }
         .sortedBy { it.order }
 
+    /** O que o Coach sugere para o histórico de exemplo (o mesmo cálculo do app). */
+    private val signals by lazy { Coach.signals(records, records.mapNotNull { Lapse.from(it) }, points, now) }
+    private val readingAdvice by lazy {
+        Coach.reading(signals, articles.map { ArticleInfo(it.id, it.order, it.tags) }, read = setOf("gatilhos"))
+    }
+
     private fun home(gate: ReleaseGate, tip: Tip? = null, focus: FocusSettings = FocusSettings(), initialLevel: Int = 0) = @Composable {
         WithTabs(Tab.TRAIN) {
             TodayScreen(
                 gate, Levels.DEFAULT_CUSTOM, focus, codename, level, points, records.mapNotNull { Lapse.from(it) }, tip,
                 {}, {}, {}, {}, {}, {}, {},
                 bottomPadding = FloatingTabBarSpace, now = now, initialLevel = initialLevel,
+                levelAdvice = Coach.level(records, records.mapNotNull { Lapse.from(it) }, now),
+                readingTitle = readingAdvice?.let { a -> articles.first { it.id == a.articleId }.title },
+                readingReason = readingAdvice?.reason,
             )
         }
     }
@@ -351,7 +363,10 @@ class ScreenshotTest {
 
     @Test fun read() = shot("20_ler", dark = false) {
         WithTabs(Tab.READ) {
-            ReadScreen(articles, setOf("gatilhos"), null, {}, {}, bottomPadding = FloatingTabBarSpace)
+            ReadScreen(
+                articles, setOf("gatilhos"), null, {}, {}, bottomPadding = FloatingTabBarSpace,
+                advice = readingAdvice, music = true, track = Track.RAIN,
+            )
         }
     }
 

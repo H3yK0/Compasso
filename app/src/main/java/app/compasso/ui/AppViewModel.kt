@@ -400,6 +400,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (screen == Screen.Root) {
             refreshPacing()
             refreshProgress()
+        } else {
+            // saiu da tela principal sem responder: a sugestão não volta a aparecer depois (ela é de "ao abrir")
+            _nudge.value = null
         }
         _screen.value = screen
     }

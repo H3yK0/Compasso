@@ -188,7 +188,13 @@ fun ReadScreen(
 @Composable
 private fun FeaturedArticle(a: Article, isRead: Boolean, label: String, onClick: () -> Unit) {
     val (colors, motif) = articleCover(a)
-    CoverCard(colors, motif, 236.dp, onClick, Modifier.padding(horizontal = 16.dp), seed = 3) {
+    // o destaque pode ser qualquer artigo: o desenho fica na faixa de cima e um véu protege o texto
+    CoverCard(colors, motif, 236.dp, onClick, Modifier.padding(horizontal = 16.dp), seed = 3, motifArea = 0.5f) {
+        Box(
+            Modifier.fillMaxSize().background(
+                Brush.verticalGradient(0.35f to Color.Transparent, 1f to colors.last().copy(alpha = 0.7f)),
+            ),
+        )
         Column(Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.Bottom) {
             Text(
                 label,

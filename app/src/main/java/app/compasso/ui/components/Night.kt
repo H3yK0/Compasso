@@ -567,11 +567,12 @@ enum class Motif { WAVES, ORBITS, BLOCKS, TILES, PADS, STARS, SPARK }
  * simples que lembra o conteúdo.
  */
 @Composable
-fun CoverArt(colors: List<Color>, motif: Motif, modifier: Modifier = Modifier, seed: Int = 1, centered: Boolean = false) {
+fun CoverArt(colors: List<Color>, motif: Motif, modifier: Modifier = Modifier, seed: Int = 1, centered: Boolean = false, motifArea: Float = 1f) {
     Canvas(modifier) {
         drawRect(Brush.linearGradient(colors, start = Offset(0f, 0f), end = Offset(size.width, size.height)))
         val w = size.width
-        val h = size.height
+        // o desenho ocupa só a faixa de cima quando há muito texto por baixo (ex.: artigo em destaque)
+        val h = size.height * motifArea.coerceIn(0.2f, 1f)
         val white = Color.White
         when (motif) {
             Motif.WAVES -> for (k in 0 until 4) {
