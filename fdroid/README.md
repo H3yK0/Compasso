@@ -37,7 +37,7 @@ Nesta pasta:
 
 1. **APK no GitHub**: em https://github.com/H3yK0/Compasso/releases/edit/v0.0.0.1, anexe `Compasso-0.0.0.1.apk`
    (o nome tem que ser exatamente esse) e clique em **Update release**.
-2. **Fork** de https://gitlab.com/fdroid/fdroiddata (feito na conta `heykoanders`). O fork tem que ser público.
+2. **Fork** de https://gitlab.com/fdroid/fdroiddata com a sua conta do GitLab. O fork tem que ser público.
 3. **Branch** `io.github.h3yk0.compasso`, a partir de `master`, no fork.
 4. **Arquivo** `metadata/io.github.h3yk0.compasso.yml` no branch, com o conteúdo de `io.github.h3yk0.compasso.yml`
    desta pasta. Mensagem do commit: `New app: Compasso`.
