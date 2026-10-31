@@ -4,6 +4,7 @@ titulo: "Dopamine: less myth, more practice"
 resumo: It isn't the "pleasure molecule". Understanding what it really does changes the strategy.
 categoria: Mind and habits
 tema: mente
+tags: dopamina, novidade, pressa
 minutos: 2
 ordem: 4
 ---

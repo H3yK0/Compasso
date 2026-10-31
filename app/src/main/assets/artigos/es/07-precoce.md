@@ -4,6 +4,7 @@ titulo: "Eyaculación precoz: qué es y qué ayuda"
 resumo: La definición médica, por qué existe el "parar y volver a empezar" y qué dicen los estudios sobre entrenar el control.
 categoria: Cuerpo y sexualidad
 tema: corpo
+tags: precoce, corpo, respiracao
 minutos: 3
 ordem: 7
 ---

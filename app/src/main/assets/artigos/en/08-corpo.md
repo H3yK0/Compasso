@@ -4,6 +4,7 @@ titulo: "Sleep and movement: the base that holds back the urge"
 resumo: A tired brain wants a quick reward. Sleeping and moving are among the cheapest defenses there are.
 categoria: Body and sexuality
 tema: corpo
+tags: sono, noite, corpo
 minutos: 2
 ordem: 8
 ---

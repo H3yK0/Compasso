@@ -59,7 +59,7 @@ data class PacingSnapshot(
 /**
  * Controle inteligente da liberação. Três regras fixas e visíveis, sem sorteio:
  *
- * 1. Intervalo: depois de uma liberação (ou de um "não segurei"), a próxima só vem depois
+ * 1. Intervalo: depois de uma liberação (ou de um "não aguentei"), a próxima só vem depois
  *    do intervalo escolhido (12, 24, 48 ou 72 h).
  * 2. Sem pressa: sessão começada menos de 2 h depois do fim da anterior é só de controle.
  * 3. Semana cheia: com 5 sessões ou mais nos últimos 7 dias, o intervalo dobra.

@@ -4,6 +4,7 @@ titulo: Cuándo y dónde buscar ayuda
 resumo: Señales de que vale la pena buscar a un profesional, qué tratamientos tienen evidencia y dónde encontrar apoyo.
 categoria: Apoyo
 tema: apoio
+tags: ajuda, recaida
 minutos: 2
 ordem: 9
 ---

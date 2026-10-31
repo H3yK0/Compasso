@@ -11,6 +11,7 @@ import app.compasso.audio.Feedback
 import app.compasso.audio.GameSound
 import app.compasso.audio.GameSounds
 import app.compasso.audio.Sound
+import app.compasso.audio.Track
 import app.compasso.data.ActiveSession
 import app.compasso.data.AppClock
 import app.compasso.data.ArticleRepo
@@ -18,6 +19,13 @@ import app.compasso.data.Settings
 import app.compasso.data.Store
 import app.compasso.games.GameKind
 import app.compasso.model.Article
+import app.compasso.model.ArticleInfo
+import app.compasso.model.Coach
+import app.compasso.model.LevelAdvice
+import app.compasso.model.LevelReason
+import app.compasso.model.Levels
+import app.compasso.model.ReadingAdvice
+import app.compasso.model.Signal
 import app.compasso.model.Breath
 import app.compasso.model.Codename
 import app.compasso.model.Codenames
@@ -216,6 +224,8 @@ data class SummaryUi(
     val gate: ReleaseGate,
     val points: PointEntry? = null,
     val noPoints: NoPointsReason? = null,
+    /** Leitura sugerida pelo que aconteceu nesta sessão e nas anteriores. */
+    val reading: ReadingAdvice? = null,
 )
 
 /** Pedido de começar um nível enquanto a liberação está fechada (o app pergunta antes). */
@@ -305,6 +315,20 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     val articles: StateFlow<List<Article>> = _articles.asStateFlow()
     private var articlesLanguage: String? = null
 
+    /** Recomendações a partir do histórico (ver [Coach]). */
+    private val _levelAdvice = MutableStateFlow(LevelAdvice(Levels.EASY.id, LevelReason.FIRST))
+    val levelAdvice: StateFlow<LevelAdvice> = _levelAdvice.asStateFlow()
+
+    private val _readingAdvice = MutableStateFlow<ReadingAdvice?>(null)
+    val readingAdvice: StateFlow<ReadingAdvice?> = _readingAdvice.asStateFlow()
+
+    /** Sugestão de leitura que aparece ao abrir o app, de tempos em tempos. */
+    private val _nudge = MutableStateFlow<ReadingAdvice?>(null)
+    val nudge: StateFlow<ReadingAdvice?> = _nudge.asStateFlow()
+
+    /** Leitor aberto (a música de fundo da leitura toca só nele). */
+    private var readingActive = false
+
     private val _read = MutableStateFlow(store.loadRead())
     val read: StateFlow<Set<String>> = _read.asStateFlow()
 
@@ -362,7 +386,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         articlesLanguage = language
         viewModelScope.launch {
             val list = withContext(Dispatchers.IO) { ArticleRepo.load(getApplication(), language) }
-            if (articlesLanguage == language) _articles.value = list
+            if (articlesLanguage == language) {
+                _articles.value = list
+                refreshAdvice()
+                maybeNudge()
+            }
         }
     }
 
@@ -399,6 +427,46 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             return
         }
         if (!store.hasPin() && !store.pinOffered) go(Screen.PinSetup(fromOptions = false)) else finishOnboarding()
+    }
+
+    // ---------- Recomendações ----------
+
+    private fun articleInfos(): List<ArticleInfo> = _articles.value.map { ArticleInfo(it.id, it.order, it.tags) }
+
+    private fun currentSignals(now: Long = clock.now()): List<Signal> =
+        Coach.signals(_history.value, _lapses.value, _points.value, now)
+
+    /** Recalcula o nível e a leitura sugeridos (depois de sessões, pontos ou leituras). */
+    fun refreshAdvice() {
+        val now = clock.now()
+        _levelAdvice.value = Coach.level(_history.value, _lapses.value, now)
+        _readingAdvice.value = Coach.reading(currentSignals(now), articleInfos(), _read.value)
+    }
+
+    /**
+     * Ao abrir o app (ou voltar a ele), sugere uma leitura de tempos em tempos: só na tela principal,
+     * destravado, fora de sessão, com a opção ligada e pelo menos [NUDGE_EVERY_MS] desde a última.
+     */
+    fun maybeNudge() {
+        if (!_settings.value.readingNudges || _nudge.value != null) return
+        if (_locked.value || engine != null || _screen.value != Screen.Root) return
+        if (store.seenVersion < CURRENT_VERSION || _articles.value.isEmpty()) return
+        val now = clock.now()
+        if (store.nudgeAt > 0L && now - store.nudgeAt < NUDGE_EVERY_MS) return
+        val advice = Coach.reading(currentSignals(now), articleInfos(), _read.value, skip = store.nudged.toSet()) ?: return
+        store.nudgeAt = now
+        store.nudged = store.nudged + advice.articleId
+        _nudge.value = advice
+    }
+
+    fun openNudge() {
+        val n = _nudge.value ?: return
+        _nudge.value = null
+        go(Screen.Reader(n.articleId))
+    }
+
+    fun dismissNudge() {
+        _nudge.value = null
     }
 
     fun finishOnboarding() {
@@ -444,7 +512,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     /**
      * Apaga o histórico visível. O controle inteligente continua lembrando os últimos 8 dias e
-     * os lapsos ("não segurei" e interrompidas) continuam valendo para a sequência e o Invicto.
+     * os lapsos ("não aguentei" e interrompidas) continuam valendo para a sequência e o Invicto.
      */
     fun clearHistory() {
         store.clearHistory()
@@ -492,6 +560,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun refreshProgress() {
         _level.value = Progress.level(_points.value, _lapses.value, clock.now())
+        refreshAdvice()
     }
 
     /** Tenta ganhar pontos; devolve a entrada nova ou o motivo de não ter rendido. */
@@ -539,9 +608,16 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         breatheActive = true
         val s = _settings.value
         ambient.gain = s.ambientVolume
+        ambient.track = s.breatheTrack
         ambient.breathLevel = 0f
         ambient.allowAgain()
         if (s.breatheSound) ambient.start()
+    }
+
+    /** Trilha do Respirar (também usada nas pausas da sessão). Troca na hora se estiver tocando. */
+    fun setBreatheTrack(track: Track) {
+        updateSettings { it.copy(breatheTrack = track) }
+        if (breatheActive) ambient.track = track
     }
 
     fun breatheLevel(level: Float) {
@@ -610,6 +686,37 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _read.value = next
         store.saveRead(next)
         award(PointKind.ARTICLE, banner = true)
+        refreshAdvice()
+    }
+
+    /** O leitor abriu ou fechou: com a música de leitura ligada, ela toca enquanto ele estiver aberto. */
+    fun readerOpen(open: Boolean) {
+        readingActive = open
+        if (open) startReadingMusic() else if (!breatheActive) ambient.stop()
+    }
+
+    private fun startReadingMusic() {
+        val s = _settings.value
+        if (!readingActive || !s.readingMusic) return
+        ambient.gain = s.ambientVolume
+        ambient.track = s.readingTrack
+        // sem respiração guiada: um nível fixo e calmo
+        ambient.breathLevel = 0.35f
+        ambient.allowAgain()
+        ambient.start()
+    }
+
+    fun setReadingMusic(on: Boolean) {
+        updateSettings { it.copy(readingMusic = on) }
+        if (on) startReadingMusic() else if (readingActive) ambient.stop()
+    }
+
+    fun setReadingTrack(track: Track) {
+        updateSettings { it.copy(readingTrack = track) }
+        if (readingActive && _settings.value.readingMusic) {
+            ambient.track = track
+            startReadingMusic()
+        }
     }
 
     // ---------- Senha ----------
@@ -637,7 +744,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun unlock(pin: String): PinCheck {
         val r = checkPin(pin)
-        if (r == PinCheck.OK) _locked.value = false
+        if (r == PinCheck.OK) {
+            _locked.value = false
+            maybeNudge()
+        }
         return r
     }
 
@@ -687,7 +797,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun onAppBackground() {
         backgroundAt = SystemClock.elapsedRealtime()
         pause()
-        if (breatheActive) ambient.stop()
+        if (breatheActive || readingActive) ambient.stop()
     }
 
     fun onAppForeground() {
@@ -697,7 +807,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         backgroundAt = 0L
         refreshPacing()
         refreshProgress()
-        if (breatheActive && _settings.value.breatheSound) ambient.start()
+        if (breatheActive && _settings.value.breatheSound) {
+            ambient.allowAgain()
+            ambient.start()
+        }
+        startReadingMusic()
+        maybeNudge()
     }
 
     /** O app deixou de ser a tela da frente (outro app, notificação aberta, tela apagada…). */
@@ -969,7 +1084,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
         refreshPacing()
         refreshProgress()
-        _summary.value = SummaryUi(record, saved = save, gate = _snapshot.value.gate, points = entry, noPoints = why)
+        val reading = Coach.reading(currentSignals(now), articleInfos(), _read.value)
+        _summary.value = SummaryUi(record, saved = save, gate = _snapshot.value.gate, points = entry, noPoints = why, reading = reading)
         engine = null
         paused = false
         notice = null
@@ -1010,7 +1126,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         addLapse(record, now)
     }
 
-    /** "Não segurei" e interrompidas ficam registrados mesmo com o histórico desligado. */
+    /** "Não aguentei" e interrompidas ficam registrados mesmo com o histórico desligado. */
     private fun addLapse(record: SessionRecord, now: Long) {
         val lapse = Lapse.from(record) ?: return
         val list = Progress.pruneLapses(_lapses.value + lapse, now)
@@ -1044,6 +1160,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val want = s.pauseSound && !paused && e.phase == PhaseType.STOP
         if (want) {
             ambient.gain = s.ambientVolume
+            ambient.track = s.breatheTrack
             ambient.breathLevel = if (s.breathGuide) Breath.level(e.phaseElapsedMs) else 0.4f
             if (!ambient.isPlaying) ambient.start()
         } else if (ambient.isPlaying && !breatheActive) {
@@ -1133,5 +1250,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         private const val MAX_HISTORY = 500
         private const val LOCK_AFTER_MS = 30_000L
         private const val HEARTBEAT_MS = 5_000L
+
+        /** Intervalo mínimo entre duas sugestões de leitura ao abrir o app. */
+        const val NUDGE_EVERY_MS = 20 * 3_600_000L
     }
 }

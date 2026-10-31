@@ -105,6 +105,8 @@ fun CompassoApp(vm: AppViewModel) {
     val level by vm.level.collectAsStateWithLifecycle()
     val banner by vm.banner.collectAsStateWithLifecycle()
     val prompt by vm.startPrompt.collectAsStateWithLifecycle()
+    val nudge by vm.nudge.collectAsStateWithLifecycle()
+    val articles by vm.articles.collectAsStateWithLifecycle()
 
     val dark = when (settings.theme) {
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
@@ -140,6 +142,15 @@ fun CompassoApp(vm: AppViewModel) {
                     )
                 }
                 PointsBanner(banner, onDismiss = vm::dismissBanner)
+                // sugestão de leitura ao abrir o app (só na tela principal)
+                val n = nudge
+                ReadingNudge(
+                    visible = n != null && screen == Screen.Root,
+                    title = n?.let { a -> articles.firstOrNull { it.id == a.articleId }?.title },
+                    reason = n?.reason,
+                    onRead = vm::openNudge,
+                    onLater = vm::dismissNudge,
+                )
             }
         }
     }
@@ -188,7 +199,12 @@ private fun ScreenContent(current: Screen, vm: AppViewModel) {
             BackHandler(onBack = toRoot)
             val s = rememberLast(summary)
             if (s != null) {
-                SummaryScreen(s, onHome = toRoot, onRepeat = vm::repeatLast, tip = tipFor(Tip.SUMMARY), onTipClose = vm::dismissTip)
+                val readingId = s.reading?.articleId
+                SummaryScreen(
+                    s, onHome = toRoot, onRepeat = vm::repeatLast, tip = tipFor(Tip.SUMMARY), onTipClose = vm::dismissTip,
+                    readingTitle = readingId?.let { id -> articles.firstOrNull { it.id == id }?.title },
+                    onRead = { if (readingId != null) vm.go(Screen.Reader(readingId)) },
+                )
             } else {
                 Box(Modifier.fillMaxSize())
             }
@@ -208,6 +224,8 @@ private fun ScreenContent(current: Screen, vm: AppViewModel) {
             onStop = vm::breatheStop,
             onCue = vm::breathCue,
             onClose = toRoot,
+            track = settings.breatheTrack,
+            onTrack = vm::setBreatheTrack,
         )
 
         is Screen.Game -> {
@@ -277,7 +295,17 @@ private fun ScreenContent(current: Screen, vm: AppViewModel) {
             BackHandler(onBack = toRoot)
             val article = articles.firstOrNull { it.id == current.id }
             if (article != null) {
-                ReaderScreen(article, isRead = article.id in read, onRead = { vm.onArticleRead(article.id) }, onBack = toRoot)
+                ReaderScreen(
+                    article,
+                    isRead = article.id in read,
+                    onRead = { vm.onArticleRead(article.id) },
+                    onBack = toRoot,
+                    music = settings.readingMusic,
+                    track = settings.readingTrack,
+                    onMusic = vm::setReadingMusic,
+                    onTrack = vm::setReadingTrack,
+                    onOpenChange = vm::readerOpen,
+                )
             } else {
                 Box(Modifier.fillMaxSize().background(Ios.colors.bg))
             }
@@ -338,6 +366,9 @@ private fun RootTabs(vm: AppViewModel, tab: Tab, tipFor: (Tip) -> Tip?) {
     val best by vm.best.collectAsStateWithLifecycle()
     val holder = rememberSaveableStateHolder()
     val navInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val settings by vm.settings.collectAsStateWithLifecycle()
+    val levelAdvice by vm.levelAdvice.collectAsStateWithLifecycle()
+    val readingAdvice by vm.readingAdvice.collectAsStateWithLifecycle()
 
     BackHandler(enabled = tab != Tab.TRAIN) { vm.selectTab(Tab.TRAIN) }
     Box(Modifier.fillMaxSize()) {
@@ -360,6 +391,10 @@ private fun RootTabs(vm: AppViewModel, tab: Tab, tipFor: (Tip) -> Tip?) {
                     onSettings = { vm.go(Screen.Settings) },
                     onProgress = { vm.selectTab(Tab.PROGRESS) },
                     bottomPadding = FloatingTabBarSpace + navInset,
+                    levelAdvice = levelAdvice,
+                    readingTitle = readingAdvice?.let { a -> articles.firstOrNull { it.id == a.articleId }?.title },
+                    readingReason = readingAdvice?.reason,
+                    onOpenArticle = { readingAdvice?.let { vm.go(Screen.Reader(it.articleId)) } },
                 )
 
                 Tab.REFUGE -> RefugeScreen(
@@ -394,6 +429,11 @@ private fun RootTabs(vm: AppViewModel, tab: Tab, tipFor: (Tip) -> Tip?) {
                     onTipClose = vm::dismissTip,
                     onOpen = { vm.go(Screen.Reader(it)) },
                     bottomPadding = FloatingTabBarSpace,
+                    advice = readingAdvice,
+                    music = settings.readingMusic,
+                    track = settings.readingTrack,
+                    onMusic = vm::setReadingMusic,
+                    onTrack = vm::setReadingTrack,
                 )
             }
         }
@@ -432,6 +472,9 @@ private fun SettingsRoute(vm: AppViewModel, tip: Tip?, onBack: () -> Unit) {
             onGuide = { vm.go(Screen.Guide) },
             onReplayIntro = { vm.go(Screen.Intro(back = Screen.Settings)) },
             onResetTips = vm::resetTips,
+            onBreatheTrack = vm::setBreatheTrack,
+            onReadingMusic = vm::setReadingMusic,
+            onReadingTrack = vm::setReadingTrack,
             onProfile = { vm.go(Screen.Profile) },
             onAbout = { vm.go(Screen.About) },
             onTipClose = vm::dismissTip,
@@ -466,6 +509,7 @@ private fun SessionRoute(ui: SessionUi, vm: AppViewModel, breathGuide: Boolean) 
         onTogglePause = vm::togglePause,
         onRequestEnd = requestEnd,
         onFinish = finishFinal,
+        onLost = { vm.finishSession(Outcome.LOST_CONTROL) },
     )
 
     if (askEnd) {

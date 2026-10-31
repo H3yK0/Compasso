@@ -311,7 +311,7 @@ class ScreenshotTest {
             ActionSheetContent(
                 "Encerrar a sessão?",
                 "Se não deu pra segurar até o fim, marque abaixo. Isso conta no seu progresso.",
-                listOf(AlertAction("Não segurei", {}), AlertAction("Só encerrar", {}, destructive = true)),
+                listOf(AlertAction("Não aguentei", {}), AlertAction("Só encerrar", {}, destructive = true)),
                 AlertAction("Continuar sessão", {}),
             )
         }

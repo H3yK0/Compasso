@@ -13,6 +13,8 @@ import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.Air
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Headphones
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Gavel
 import androidx.compose.material.icons.rounded.Lightbulb
 import androidx.compose.material.icons.rounded.Palette
@@ -46,6 +48,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.compasso.BuildConfig
 import app.compasso.R
+import app.compasso.audio.Track
 import app.compasso.data.AppLanguage
 import app.compasso.data.Settings
 import app.compasso.data.ThemeMode
@@ -89,6 +92,9 @@ class OptionsActions(
     val onProfile: () -> Unit = {},
     val onAbout: () -> Unit = {},
     val onTipClose: (Tip) -> Unit = {},
+    val onBreatheTrack: (Track) -> Unit = {},
+    val onReadingMusic: (Boolean) -> Unit = {},
+    val onReadingTrack: (Track) -> Unit = {},
 )
 
 @Composable
@@ -109,6 +115,8 @@ fun OptionsScreen(
     val c = Ios.colors
     var confirmClear by remember { mutableStateOf(false) }
     var confirmFocusOff by remember { mutableStateOf(false) }
+    // qual trilha está sendo escolhida: a do Respirar ou a da leitura
+    var pickingTrack by remember { mutableStateOf<String?>(null) }
     val req = pacing.requested
     val onChange = actions.onChange
     val onPacing = actions.onPacing
@@ -235,6 +243,30 @@ fun OptionsScreen(
                 icon = RowIcon(Icons.Rounded.Air, c.indigo),
             )
             RowDivider(IconInset)
+            IosRow(
+                stringResource(R.string.settings_breathe_track),
+                icon = RowIcon(Icons.Rounded.MusicNote, c.teal),
+                value = trackName(settings.breatheTrack),
+                chevron = true,
+                onClick = { pickingTrack = "breathe" },
+            )
+            RowDivider(IconInset)
+            SwitchRow(
+                stringResource(R.string.read_music_title), settings.readingMusic, actions.onReadingMusic,
+                subtitle = stringResource(R.string.settings_reading_music_sub),
+                icon = RowIcon(Icons.Rounded.Headphones, c.lavender),
+            )
+            if (settings.readingMusic) {
+                RowDivider(IconInset)
+                IosRow(
+                    stringResource(R.string.settings_reading_track),
+                    icon = RowIcon(Icons.Rounded.MusicNote, c.blue),
+                    value = trackName(settings.readingTrack),
+                    chevron = true,
+                    onClick = { pickingTrack = "reading" },
+                )
+            }
+            RowDivider(IconInset)
             AmbientVolumeRow(settings.ambientVolume) { v -> onChange { it.copy(ambientVolume = v) } }
         }
 
@@ -322,6 +354,12 @@ fun OptionsScreen(
             )
             RowDivider(IconInset)
             IosRow(stringResource(R.string.settings_reset_tips), icon = RowIcon(Icons.Rounded.AutoAwesome, c.orange), onClick = actions.onResetTips)
+            RowDivider(IconInset)
+            SwitchRow(
+                stringResource(R.string.settings_nudges), settings.readingNudges, { v -> onChange { it.copy(readingNudges = v) } },
+                subtitle = stringResource(R.string.settings_nudges_sub),
+                icon = RowIcon(Icons.AutoMirrored.Rounded.MenuBook, c.blue),
+            )
         }
 
         section(
@@ -344,6 +382,10 @@ fun OptionsScreen(
             ),
             onDismiss = { confirmClear = false },
         )
+    }
+    when (pickingTrack) {
+        "breathe" -> TrackPicker(settings.breatheTrack, actions.onBreatheTrack) { pickingTrack = null }
+        "reading" -> TrackPicker(settings.readingTrack, actions.onReadingTrack) { pickingTrack = null }
     }
     if (confirmFocusOff) {
         IosAlert(

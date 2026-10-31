@@ -4,6 +4,7 @@ titulo: "Pornografía y cerebro: lo que se sabe"
 resumo: Ni "no hace nada" ni "destruye el cerebro". Lo que muestran los estudios, y lo que todavía no se puede afirmar.
 categoria: Lo que dice la ciencia
 tema: ciencia
+tags: ciencia, dopamina
 minutos: 3
 ordem: 5
 ---

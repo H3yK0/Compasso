@@ -4,6 +4,7 @@ titulo: A relapse doesn't erase the road
 resumo: A slip isn't going back to square one. What you think right after it is what decides the rest.
 categoria: Mind and habits
 tema: mente
+tags: recaida, autocompaixao
 minutos: 2
 ordem: 3
 ---
@@ -36,7 +37,7 @@ Those who see the slip as **a specific situation they didn't yet know how to han
 
 ## How Compasso handles this
 
-Marking "Couldn't hold it" honestly earns honesty points, because recording it is part of the training. The day streak starts over, but your level counts the last 28 days: **one bad day doesn't erase a good month**.
+Marking "Couldn't hold on" honestly earns honesty points, because recording it is part of the training. The day streak starts over, but your level counts the last 28 days: **one bad day doesn't erase a good month**.
 
 ## Sources
 

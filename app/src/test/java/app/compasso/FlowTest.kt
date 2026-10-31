@@ -151,15 +151,15 @@ class FlowTest {
             compose.onNodeWithText("Continuar").performClick()
             tick(300)
 
-            // encerrar marcando "Não segurei"
+            // encerrar marcando "Não aguentei"
             compose.onNodeWithContentDescription("Encerrar sessão").performClick()
             tick(600)
             compose.onNodeWithText("Encerrar a sessão?").assertExists()
-            compose.onNodeWithText("Não segurei").performClick()
+            compose.onNodeWithText("Não aguentei").performClick()
             tick(800)
             compose.onNodeWithText("Não foi dessa vez").assertExists()
             compose.onNodeWithText("Salvo no histórico").assertExists()
-            compose.onNodeWithText("Próxima liberação").assertExists() // "não segurei" conta como liberação
+            compose.onNodeWithText("Próxima liberação").assertExists() // "não aguentei" conta como liberação
             compose.onNodeWithText("+3").assertExists() // honestidade vale pontos (sessão em foco)
             compose.onRoot().captureRoboImage("build/shots/flow_3_resumo.png")
 
@@ -174,7 +174,7 @@ class FlowTest {
             scrollTo("Histórico de sessões")
             compose.onNodeWithText("Histórico de sessões").performClick()
             tick(800)
-            compose.onNodeWithText("Não segurou").assertExists()
+            compose.onNodeWithText("Não aguentou").assertExists()
             compose.onNodeWithText("perto 1×", substring = true).assertExists()
             compose.onRoot().captureRoboImage("build/shots/flow_4_historico.png")
         }
@@ -403,7 +403,7 @@ class FlowTest {
         }
     }
 
-    /** Com o histórico desligado, "não segurei" não aparece na lista, mas continua valendo para o Invicto. */
+    /** Com o histórico desligado, "não aguentei" não aparece na lista, mas continua valendo para o Invicto. */
     @Test
     fun lapseIsKeptEvenWithHistoryOff() {
         val app = readyApp()
@@ -414,7 +414,7 @@ class FlowTest {
             tick(5_000)
             compose.onNodeWithContentDescription("Encerrar sessão").performClick()
             tick(600)
-            compose.onNodeWithText("Não segurei").performClick()
+            compose.onNodeWithText("Não aguentei").performClick()
             tick(800)
             assertTrue(Store(app).loadHistory().isEmpty())
             assertEquals(Outcome.LOST_CONTROL, Store(app).loadLapses().single().outcome)

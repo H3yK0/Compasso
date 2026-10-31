@@ -4,6 +4,7 @@ titulo: "Porn and the brain: what we know"
 resumo: Neither "it does nothing" nor "it destroys your brain". What the studies show, and what can't be claimed yet.
 categoria: What science says
 tema: ciencia
+tags: ciencia, dopamina
 minutos: 3
 ordem: 5
 ---

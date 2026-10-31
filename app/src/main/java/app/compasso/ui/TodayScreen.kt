@@ -65,6 +65,8 @@ import app.compasso.model.Codename
 import app.compasso.model.FocusSettings
 import app.compasso.model.Lapse
 import app.compasso.model.Level
+import app.compasso.model.LevelAdvice
+import app.compasso.model.Signal
 import app.compasso.model.LevelStatus
 import app.compasso.model.Levels
 import app.compasso.model.PointEntry
@@ -157,6 +159,10 @@ fun TodayScreen(
     bottomPadding: Dp = 0.dp,
     now: Long = System.currentTimeMillis(),
     initialLevel: Int = 0,
+    levelAdvice: LevelAdvice? = null,
+    readingTitle: String? = null,
+    readingReason: Signal? = null,
+    onOpenArticle: () -> Unit = {},
 ) {
     val c = Ios.colors
     val levels = remember(customLevel) { Levels.presets + customLevel }
@@ -300,8 +306,23 @@ fun TodayScreen(
                 TipCard(stringResource(tip.title), stringResource(tip.message), Icons.Rounded.Air, onClose = { onTipClose(tip) })
             }
 
+            // recomendações a partir do histórico
+            if (levelAdvice != null) {
+                Spacer(Modifier.height(if (tip != null) 12.dp else 22.dp))
+                ForYouCard(
+                    level = levelAdvice,
+                    readingTitle = readingTitle,
+                    readingReason = readingReason,
+                    onLevel = {
+                        val i = levels.indexOfFirst { it.id == levelAdvice.levelId }
+                        if (i >= 0) scope.launch { pager.animateScrollToPage(i) }
+                    },
+                    onRead = onOpenArticle,
+                )
+            }
+
             // socorro rápido
-            Spacer(Modifier.height(if (tip != null) 12.dp else 22.dp))
+            Spacer(Modifier.height(if (tip != null || levelAdvice != null) 12.dp else 22.dp))
             GlassCard(Modifier.fillMaxWidth().padding(horizontal = 16.dp), onClick = onBreathe, contentPadding = PaddingValues(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(

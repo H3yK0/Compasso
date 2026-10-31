@@ -62,6 +62,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.compasso.model.Breath
+import app.compasso.audio.Track
+import androidx.compose.material.icons.rounded.MusicNote
 import app.compasso.ui.components.ButtonKind
 import app.compasso.ui.components.GlassCircleButton
 import app.compasso.ui.components.IosButton
@@ -84,6 +86,8 @@ fun BreatheScreen(
     onStop: () -> Unit,
     onCue: (inhale: Boolean) -> Unit,
     onClose: () -> Unit,
+    track: Track = Track.TIDE,
+    onTrack: (Track) -> Unit = {},
 ) {
     var duration by remember { mutableLongStateOf(BLOCK_MS) }
     var elapsed by remember { mutableLongStateOf(0L) }
@@ -112,7 +116,7 @@ fun BreatheScreen(
     }
     KeepScreenOn()
     BackHandler(onBack = onClose)
-    BreatheContent(elapsed, duration, onClose = onClose, onMore = { duration += BLOCK_MS }, sound = sound, onSound = onSound)
+    BreatheContent(elapsed, duration, onClose = onClose, onMore = { duration += BLOCK_MS }, sound = sound, onSound = onSound, track = track, onTrack = onTrack)
 }
 
 @Composable
@@ -123,8 +127,11 @@ fun BreatheContent(
     onMore: () -> Unit,
     sound: Boolean = true,
     onSound: (Boolean) -> Unit = {},
+    track: Track = Track.TIDE,
+    onTrack: (Track) -> Unit = {},
 ) {
     val c = Ios.colors
+    var picking by remember { mutableStateOf(false) }
     val done = elapsedMs >= durationMs
     val level by animateFloatAsState(
         targetValue = if (done) 0f else Breath.level(elapsedMs),
@@ -153,8 +160,14 @@ fun BreatheContent(
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(stringResource(R.string.breathe_title), style = Ios.type.headline, color = c.label)
-                    Text(stringResource(R.string.breathe_pattern), style = Ios.type.subhead, color = c.secondary)
+                    Text(
+                        if (sound) stringResource(R.string.breathe_pattern_track, trackName(track)) else stringResource(R.string.breathe_pattern),
+                        style = Ios.type.subhead,
+                        color = c.secondary,
+                    )
                 }
+                GlassCircleButton(Icons.Rounded.MusicNote, stringResource(R.string.track_change), { picking = true }, size = 40.dp, iconSize = 20.dp)
+                Spacer(Modifier.width(10.dp))
                 GlassCircleButton(
                     if (sound) Icons.AutoMirrored.Rounded.VolumeUp else Icons.AutoMirrored.Rounded.VolumeOff,
                     stringResource(if (sound) R.string.breathe_sound_off else R.string.breathe_sound_on),
@@ -238,4 +251,5 @@ fun BreatheContent(
             }
         }
     }
+    if (picking) TrackPicker(track, onPick = onTrack, onDismiss = { picking = false })
 }

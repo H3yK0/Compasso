@@ -15,13 +15,13 @@ import kotlin.math.tanh
 import kotlin.random.Random
 
 /**
- * Trilha calma gerada no próprio app, sem arquivos de música (então sem direitos autorais):
+ * Trilha "Maré" ([Track.TIDE]), gerada no próprio app, sem arquivos de música (então sem direitos autorais):
  * - acordes suaves que mudam devagar a cada 16 s, com o filtro abrindo na inspiração;
  * - um "mar" de ruído filtrado que cresce ao inspirar e recua ao soltar o ar;
  * - sinos raros numa escala pentatônica;
  * - um pouco de reverberação para dar espaço.
  */
-class AmbientSynth(private val sampleRate: Int = 44_100, seed: Long = 7L) {
+class AmbientSynth(private val sampleRate: Int = 44_100, seed: Long = 7L) : Soundscape {
     private val random = Random(seed)
     private var t = 0L
 
@@ -61,15 +61,15 @@ class AmbientSynth(private val sampleRate: Int = 44_100, seed: Long = 7L) {
 
     /** 1 = tocando; 0 = sumindo (fade). */
     @Volatile
-    var masterTarget = 1.0
-    val masterLevel: Double get() = master
+    override var masterTarget = 1.0
+    override val masterLevel: Double get() = master
 
     private val breathCoef = 1.0 - exp(-1.0 / (0.25 * sampleRate))
     private val masterCoef = 1.0 - exp(-1.0 / (1.2 * sampleRate))
     private val twoPi = 2 * PI
 
     /** Preenche [out] (estéreo intercalado) com [frames] quadros. [breathTarget]: 0 vazio → 1 cheio. */
-    fun render(out: FloatArray, frames: Int, breathTarget: Float) {
+    override fun render(out: FloatArray, frames: Int, breathTarget: Float) {
         val sr = sampleRate.toDouble()
         for (i in 0 until frames) {
             breath += (breathTarget - breath) * breathCoef
@@ -241,6 +241,10 @@ class AmbientPlayer(context: Context) {
     @Volatile
     var gain: Float = 0.7f
 
+    /** Qual trilha tocar. Trocar com a trilha tocando faz a atual sumir e a nova entrar. */
+    @Volatile
+    var track: Track = Track.TIDE
+
     @Volatile
     private var stopRequested = false
 
@@ -310,7 +314,7 @@ class AmbientPlayer(context: Context) {
 
     private fun loop() {
         val sr = 44_100
-        val track = runCatching {
+        val audio = runCatching {
             val min = AudioTrack.getMinBufferSize(sr, AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_FLOAT)
             AudioTrack.Builder()
                 .setAudioAttributes(attributes())
@@ -325,15 +329,25 @@ class AmbientPlayer(context: Context) {
                 .setTransferMode(AudioTrack.MODE_STREAM)
                 .build()
         }.getOrNull() ?: return
-        val synth = AmbientSynth(sr, seed = System.nanoTime())
+        var playing = track
+        var synth = soundscapeFor(playing, sr, seed = System.nanoTime())
         val frames = 1024
         val buf = FloatArray(frames * 2)
-        runCatching { track.play() }
+        runCatching { audio.play() }
         var safety = 0
         while (true) {
+            val wanted = track
             if (stopRequested) {
                 synth.masterTarget = 0.0
                 if (synth.masterLevel < 0.002 || ++safety > 200) break
+            } else if (wanted != playing) {
+                // troca de trilha: a atual some e a nova entra do silêncio
+                synth.masterTarget = 0.0
+                if (synth.masterLevel < 0.002 || ++safety > 200) {
+                    playing = wanted
+                    synth = soundscapeFor(playing, sr, seed = System.nanoTime())
+                    safety = 0
+                }
             } else {
                 synth.masterTarget = 1.0
                 safety = 0
@@ -341,10 +355,10 @@ class AmbientPlayer(context: Context) {
             synth.render(buf, frames, breathLevel)
             val g = gain.coerceIn(0f, 1f)
             for (k in buf.indices) buf[k] *= g
-            val written = runCatching { track.write(buf, 0, buf.size, AudioTrack.WRITE_BLOCKING) }.getOrDefault(-1)
+            val written = runCatching { audio.write(buf, 0, buf.size, AudioTrack.WRITE_BLOCKING) }.getOrDefault(-1)
             if (written < 0) break
         }
-        runCatching { track.stop() }
-        runCatching { track.release() }
+        runCatching { audio.stop() }
+        runCatching { audio.release() }
     }
 }

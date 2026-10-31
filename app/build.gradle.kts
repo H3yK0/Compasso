@@ -18,7 +18,8 @@ android {
     buildToolsVersion = "35.0.0"
 
     defaultConfig {
-        applicationId = "app.compasso"
+        // ID público (F-Droid e lojas). O pacote do código continua app.compasso.
+        applicationId = "io.github.h3yk0.compasso"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
@@ -68,6 +69,12 @@ android {
         abortOnError = false
     }
 
+    // O F-Droid pede que o APK não leve o bloco de metadados de dependências (só o Google lê).
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
     packaging {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
     }
@@ -79,7 +86,6 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 
 tasks.withType<Test>().configureEach {
     systemProperty("roborazzi.test.record", "true")
-    systemProperty("robolectric.dependency.repo.url", "https://maven-central.storage-download.googleapis.com/maven2")
     maxHeapSize = "2g"
 }
 

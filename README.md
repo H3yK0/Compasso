@@ -58,7 +58,7 @@ Durante a pausa, o mesmo botão soma mais 10 s.
 
 Regras fixas e visíveis (`model/Pacing.kt`):
 
-1. **Intervalo**: depois de uma liberação (ou de um "não segurei", ou de uma sessão interrompida), a
+1. **Intervalo**: depois de uma liberação (ou de um "não aguentei", ou de uma sessão interrompida), a
    próxima só vem depois do intervalo escolhido: 12, 24 (padrão), 48 ou 72 h.
 2. **Sem pressa**: sessão começada menos de 2 h depois do fim da anterior é só de controle.
 3. **Semana cheia**: com 5 sessões ou mais nos últimos 7 dias, o intervalo dobra.
@@ -82,7 +82,7 @@ bloqueia outros apps, notificações e tela dividida, e fecha vídeos em picture
 
 - **Relógio confiável** (`model/Clock.kt`): atrasar a hora do celular não reabre a liberação, não devolve
   pontos e não encurta esperas. O app guarda o último horário que viu e soma só o tempo que de fato passou.
-- **Lapsos**: "não segurei" e sessões interrompidas ficam registrados (só data e tipo) mesmo com o histórico
+- **Lapsos**: "não aguentei" e sessões interrompidas ficam registrados (só data e tipo) mesmo com o histórico
   desligado ou apagado, porque contam para a sequência e para o Invicto.
 - **Senha**: tentativas erradas ficam gravadas (fechar o app não zera) e, da 5ª em diante, pedem uma espera
   que cresce de 30 s até 15 min. Trocar ou remover a senha pede a senha atual. Com senha, a miniatura nos
@@ -98,7 +98,7 @@ Premiam constância, não "fazer mais sessões". Teto de 40 pontos por dia.
 |---|---|---|
 | Sessão concluída com liberação | 10 | 1 sessão pontuada por dia |
 | Sessão concluída sem liberação | 15 | (idem) |
-| "Não segurei" marcado com honestidade | 3 | (idem) |
+| "Não aguentei" marcado com honestidade | 3 | (idem) |
 | Check-in: um dia longe da pornografia | 10 | 1×/dia |
 | Respirar até o fim (2 min) | 5 | 3×/dia |
 | Jogar pelo menos 3 min | 3 | 2×/dia |
@@ -106,7 +106,7 @@ Premiam constância, não "fazer mais sessões". Teto de 40 pontos por dia.
 
 Sessões só pontuam com o modo foco ligado e a tela fixada. O nível conta os pontos dos últimos 28 dias:
 Bronze 60, Prata 180, Ouro 360, Platina 540, Diamante 720, Invicto 900 (Invicto também pede 14 dias
-seguidos de constância e 14 dias sem "não segurei" nem sessão interrompida). Cada nível libera uma cor
+seguidos de constância e 14 dias sem "não aguentei" nem sessão interrompida). Cada nível libera uma cor
 de destaque enquanto a pessoa estiver nele.
 
 ## Trilha e sons

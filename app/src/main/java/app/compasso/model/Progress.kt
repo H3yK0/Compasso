@@ -50,7 +50,7 @@ enum class Tier(@StringRes val label: Int, val minPoints: Int) {
 
 /** Exigências do Invicto além dos pontos. */
 enum class UnbeatenNeed {
-    /** 14 dias sem "não segurei" nem sessão interrompida. */
+    /** 14 dias sem "não aguentei" nem sessão interrompida. */
     CLEAN_DAYS,
 
     /** 14 dias seguidos de constância. */
@@ -134,7 +134,7 @@ object Progress {
         log.filter { it.at > now - WINDOW_DAYS * DAY && it.at <= now }.sumOf { it.points }
 
     /**
-     * Nível atual. [lapses] são os "não segurei" e as sessões interrompidas, que ficam
+     * Nível atual. [lapses] são os "não aguentei" e as sessões interrompidas, que ficam
      * registrados mesmo com o histórico desligado ou apagado.
      */
     fun level(log: List<PointEntry>, lapses: List<Lapse>, now: Long, zone: ZoneId = ZoneId.systemDefault()): LevelStatus {

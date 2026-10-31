@@ -4,6 +4,7 @@ titulo: "Porn and erections: what the studies say"
 resumo: Watching, by itself, doesn't seem to "break" erections. But compulsive use and dependence on a screen do matter.
 categoria: What science says
 tema: ciencia
+tags: corpo, ansiedade
 minutos: 2
 ordem: 6
 ---

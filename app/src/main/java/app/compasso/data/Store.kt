@@ -1,6 +1,7 @@
 package app.compasso.data
 
 import android.content.Context
+import app.compasso.audio.Track
 import app.compasso.games.GameKind
 import app.compasso.model.Accent
 import app.compasso.model.Codename
@@ -59,6 +60,13 @@ data class Settings(
     /** Cor de destaque escolhida (as especiais dependem do nível atual). */
     val accent: Accent = Accent.TEAL,
     val language: AppLanguage = AppLanguage.SYSTEM,
+    /** Trilha do Respirar (também toca nas pausas da sessão). */
+    val breatheTrack: Track = Track.TIDE,
+    /** Música calma de fundo ao ler um artigo. */
+    val readingMusic: Boolean = false,
+    val readingTrack: Track = Track.RAIN,
+    /** Sugestão de leitura ao abrir o app, de tempos em tempos. */
+    val readingNudges: Boolean = true,
 )
 
 /** Sessão em andamento gravada no celular: se o app for fechado no meio, ela não some sem registro. */
@@ -102,6 +110,10 @@ class Store(context: Context) {
             showTips = prefs.getBoolean("showTips", d.showTips),
             accent = runCatching { Accent.valueOf(prefs.getString("accent", null) ?: d.accent.name) }.getOrDefault(d.accent),
             language = loadLanguage(),
+            breatheTrack = track("breatheTrack", d.breatheTrack),
+            readingMusic = prefs.getBoolean("readingMusic", d.readingMusic),
+            readingTrack = track("readingTrack", d.readingTrack),
+            readingNudges = prefs.getBoolean("readingNudges", d.readingNudges),
         )
     }
 
@@ -124,8 +136,15 @@ class Store(context: Context) {
             .putBoolean("showTips", s.showTips)
             .putString("accent", s.accent.name)
             .putString("language", s.language.name)
+            .putString("breatheTrack", s.breatheTrack.name)
+            .putBoolean("readingMusic", s.readingMusic)
+            .putString("readingTrack", s.readingTrack.name)
+            .putBoolean("readingNudges", s.readingNudges)
             .apply()
     }
+
+    private fun track(key: String, default: Track): Track =
+        runCatching { Track.valueOf(prefs.getString(key, null) ?: default.name) }.getOrDefault(default)
 
     /** Lido também antes de a tela abrir (para montar o app já no idioma certo). */
     fun loadLanguage(): AppLanguage =
@@ -288,7 +307,7 @@ class Store(context: Context) {
         prefs.edit().putString("points", arr.toString()).apply()
     }
 
-    // ---------- Lapsos ("não segurei" e sessões interrompidas) ----------
+    // ---------- Lapsos ("não aguentei" e sessões interrompidas) ----------
 
     /** Só o momento e o tipo. Não some com o histórico: conta para a sequência e para o Invicto. */
     fun loadLapses(): List<Lapse> {
@@ -400,6 +419,20 @@ class Store(context: Context) {
         }
 
     fun loadRead(): Set<String> = prefs.getStringSet("read", emptySet())?.toSet() ?: emptySet()
+
+    /** Quando o app sugeriu uma leitura pela última vez (horário confiável). */
+    var nudgeAt: Long
+        get() = prefs.getLong("nudge_at", 0L)
+        set(value) {
+            prefs.edit().putLong("nudge_at", value).apply()
+        }
+
+    /** Leituras sugeridas há pouco (para não repetir a mesma sugestão logo em seguida). */
+    var nudged: List<String>
+        get() = prefs.getString("nudged", null)?.split(',')?.filter { it.isNotBlank() } ?: emptyList()
+        set(value) {
+            prefs.edit().putString("nudged", value.takeLast(5).joinToString(",")).apply()
+        }
 
     fun saveRead(ids: Set<String>) {
         prefs.edit().putStringSet("read", HashSet(ids)).apply()

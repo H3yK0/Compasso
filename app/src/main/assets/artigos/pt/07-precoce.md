@@ -4,6 +4,7 @@ titulo: "Ejaculação precoce: o que é e o que ajuda"
 resumo: A definição médica, por que o "para e recomeça" existe e o que os estudos dizem sobre treinar o controle.
 categoria: Corpo e sexualidade
 tema: corpo
+tags: precoce, corpo, respiracao
 minutos: 3
 ordem: 7
 ---

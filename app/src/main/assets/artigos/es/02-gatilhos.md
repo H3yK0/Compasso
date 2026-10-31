@@ -4,6 +4,7 @@ titulo: "Detonantes: mapearlos para desactivarlos"
 resumo: La mayoría de las recaídas ocurre en situaciones previsibles. Un plan "si… entonces…" cambia eso.
 categoria: Mente y hábitos
 tema: mente
+tags: gatilhos, comecar, noite, foco
 minutos: 2
 ordem: 2
 ---

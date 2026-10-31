@@ -12,14 +12,14 @@ enum class Outcome {
 }
 
 /**
- * Conta como liberação para o intervalo do controle inteligente: liberado, "não segurei" e
+ * Conta como liberação para o intervalo do controle inteligente: liberado, "não aguentei" e
  * sessão interrompida (o app não sabe o que aconteceu fora dele).
  */
 val Outcome.isRelease: Boolean
     get() = this == Outcome.RELEASED || this == Outcome.LOST_CONTROL || this == Outcome.INTERRUPTED
 
 /**
- * Registro mínimo de um "não segurei" ou de uma sessão interrompida: só o momento e o tipo.
+ * Registro mínimo de um "não aguentei" ou de uma sessão interrompida: só o momento e o tipo.
  * Fica guardado mesmo com o histórico desligado ou apagado, porque conta para a sequência e
  * para o nível Invicto (senão bastaria desligar o histórico para apagar os tropeços).
  */

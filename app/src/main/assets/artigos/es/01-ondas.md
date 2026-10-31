@@ -4,6 +4,7 @@ titulo: Las ganas vienen en olas
 resumo: Por qué parecen crecer sin fin, por qué no crecen, y un plan de 10 minutos para atravesarlas.
 categoria: Mente y hábitos
 tema: mente
+tags: vontade, comecar, respiracao
 minutos: 2
 ordem: 1
 ---

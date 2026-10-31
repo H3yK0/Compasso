@@ -4,6 +4,7 @@ titulo: Urges come in waves
 resumo: Why an urge seems to grow without end, why it doesn't, and a 10-minute plan to get through it.
 categoria: Mind and habits
 tema: mente
+tags: vontade, comecar, respiracao
 minutos: 2
 ordem: 1
 ---

@@ -4,6 +4,7 @@ titulo: Recaída não apaga o caminho
 resumo: Um deslize não é voltar à estaca zero. O que você pensa logo depois dele é o que decide o resto.
 categoria: Mente e hábitos
 tema: mente
+tags: recaida, autocompaixao
 minutos: 2
 ordem: 3
 ---
@@ -36,7 +37,7 @@ Já quem enxerga o deslize como **uma situação específica que ainda não sabi
 
 ## Como o Compasso trata isso
 
-Marcar "Não segurei" com honestidade rende pontos de honestidade, porque registrar é parte do treino. A sequência de dias recomeça, mas o seu nível conta os últimos 28 dias: **um dia ruim não apaga um mês bom**.
+Marcar "Não aguentei" com honestidade rende pontos de honestidade, porque registrar é parte do treino. A sequência de dias recomeça, mas o seu nível conta os últimos 28 dias: **um dia ruim não apaga um mês bom**.
 
 ## Fontes
 

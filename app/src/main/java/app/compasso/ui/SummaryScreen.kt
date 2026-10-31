@@ -27,6 +27,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.HourglassTop
 import androidx.compose.material.icons.rounded.Insights
@@ -59,6 +60,8 @@ fun SummaryScreen(
     now: Long = System.currentTimeMillis(),
     tip: Tip? = null,
     onTipClose: (Tip) -> Unit = {},
+    readingTitle: String? = null,
+    onRead: () -> Unit = {},
 ) {
     val c = Ios.colors
     val r = summary.record
@@ -119,6 +122,20 @@ fun SummaryScreen(
                     )
                 }
                 summary.noPoints?.let { GroupFooter(noPointsText(it)) }
+            }
+            val reading = summary.reading
+            if (reading != null && readingTitle != null) {
+                Spacer(Modifier.height(14.dp))
+                GroupCard {
+                    IosRow(
+                        readingTitle,
+                        subtitle = stringResource(R.string.summary_read_now),
+                        icon = RowIcon(Icons.AutoMirrored.Rounded.MenuBook, c.blue),
+                        chevron = true,
+                        onClick = onRead,
+                    )
+                }
+                GroupFooter(signalText(reading.reason))
             }
             if (tip != null) {
                 Spacer(Modifier.height(16.dp))

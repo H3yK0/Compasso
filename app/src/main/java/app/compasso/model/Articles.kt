@@ -13,7 +13,7 @@ sealed interface Block {
 }
 
 /** Tema do artigo: decide a cor da capa (o nome do tema vem traduzido no próprio artigo). */
-enum class Theme { MIND, SCIENCE, BODY, SUPPORT }
+enum class Theme { MIND, SCIENCE, BODY, SUPPORT, RELATIONS }
 
 data class Article(
     val id: String,
@@ -25,11 +25,13 @@ data class Article(
     val order: Int,
     val blocks: List<Block>,
     val sources: List<Source>,
+    /** Assuntos do artigo (iguais nos três idiomas), usados pelas recomendações. */
+    val tags: Set<String> = emptySet(),
 )
 
 /**
  * Lê os artigos em Markdown simples (assets/artigos/<idioma>). Cabeçalho entre linhas "---" com
- * id, titulo, resumo, categoria, tema, minutos e ordem. A seção "## Fontes" (ou "Sources",
+ * id, titulo, resumo, categoria, tema, tags (separadas por vírgula), minutos e ordem. A seção "## Fontes" (ou "Sources",
  * "Fuentes") vira a lista de referências.
  */
 object ArticleParser {
@@ -149,8 +151,10 @@ object ArticleParser {
                 "mente" -> Theme.MIND
                 "ciencia" -> Theme.SCIENCE
                 "corpo" -> Theme.BODY
+                "relacoes" -> Theme.RELATIONS
                 else -> Theme.SUPPORT
             },
+            tags = meta["tags"].orEmpty().split(',').map { it.trim().lowercase() }.filter { it.isNotEmpty() }.toSet(),
             minutes = meta["minutos"]?.toIntOrNull() ?: 3,
             order = meta["ordem"]?.toIntOrNull() ?: 99,
             blocks = blocks,

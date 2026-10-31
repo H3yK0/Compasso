@@ -4,6 +4,7 @@ titulo: "Dopamina: menos mito, más práctica"
 resumo: No es la "molécula del placer". Entender lo que hace de verdad cambia la estrategia.
 categoria: Mente y hábitos
 tema: mente
+tags: dopamina, novidade, pressa
 minutos: 2
 ordem: 4
 ---

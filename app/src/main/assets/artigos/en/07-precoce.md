@@ -4,6 +4,7 @@ titulo: "Premature ejaculation: what it is and what helps"
 resumo: The medical definition, why "stop and start" exists and what studies say about training control.
 categoria: Body and sexuality
 tema: corpo
+tags: precoce, corpo, respiracao
 minutos: 3
 ordem: 7
 ---

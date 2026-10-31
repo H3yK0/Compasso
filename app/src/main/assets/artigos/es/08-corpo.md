@@ -4,6 +4,7 @@ titulo: "Sueño y movimiento: la base que frena las ganas"
 resumo: Un cerebro cansado quiere una recompensa rápida. Dormir y moverse son de las defensas más baratas que existen.
 categoria: Cuerpo y sexualidad
 tema: corpo
+tags: sono, noite, corpo
 minutos: 2
 ordem: 8
 ---

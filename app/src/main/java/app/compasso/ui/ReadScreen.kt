@@ -67,6 +67,15 @@ import androidx.compose.ui.unit.sp
 import app.compasso.model.Article
 import app.compasso.model.Block
 import app.compasso.model.Theme
+import app.compasso.model.ReadingAdvice
+import app.compasso.audio.Track
+import app.compasso.ui.components.NavIconButton
+import androidx.compose.material.icons.rounded.Headphones
+import androidx.compose.material.icons.rounded.HeadsetOff
+import androidx.compose.material.icons.rounded.MusicNote
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import app.compasso.model.Tip
 import app.compasso.ui.components.IosNavBar
 import app.compasso.ui.components.IosRow
@@ -88,12 +97,15 @@ fun articleCover(a: Article): Pair<List<Color>, Motif> {
         Theme.SCIENCE -> CoverColors.science
         Theme.BODY -> CoverColors.body
         Theme.SUPPORT -> CoverColors.support
+        Theme.RELATIONS -> CoverColors.relations
     }
     val motif = when (a.id) {
         "ondas", "corpo", "erecao" -> Motif.WAVES
         "gatilhos", "ajuda" -> Motif.SPARK
         "recaida", "cerebro", "precoce" -> Motif.ORBITS
-        else -> Motif.STARS
+        "dopamina" -> Motif.STARS
+        // os mais novos alternam os desenhos pela ordem
+        else -> listOf(Motif.WAVES, Motif.ORBITS, Motif.SPARK, Motif.STARS)[a.order % 4]
     }
     return colors to motif
 }
@@ -107,10 +119,17 @@ fun ReadScreen(
     onTipClose: (Tip) -> Unit,
     onOpen: (String) -> Unit,
     bottomPadding: Dp = 0.dp,
+    advice: ReadingAdvice? = null,
+    music: Boolean = false,
+    track: Track = Track.RAIN,
+    onMusic: (Boolean) -> Unit = {},
+    onTrack: (Track) -> Unit = {},
 ) {
     val c = Ios.colors
-    val featured = articles.firstOrNull()
-    val groups = remember(articles) { articles.drop(1).groupBy { it.category } }
+    // em destaque: a leitura sugerida pelo histórico (ou a primeira, para quem está chegando)
+    val featured = advice?.let { a -> articles.firstOrNull { it.id == a.articleId } } ?: articles.firstOrNull()
+    val groups = remember(articles, featured) { articles.filter { it.id != featured?.id }.groupBy { it.category } }
+    var picking by remember { mutableStateOf(false) }
     val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val readCount = articles.count { it.id in read }
     SkyBackground(Modifier.fillMaxSize(), glow = c.blue, glowStrength = 0.8f) {
@@ -131,9 +150,20 @@ fun ReadScreen(
                 Spacer(Modifier.height(14.dp))
                 TipCard(stringResource(tip.title), stringResource(tip.message), Icons.AutoMirrored.Rounded.MenuBook, onClose = { onTipClose(tip) })
             }
+            Spacer(Modifier.height(14.dp))
+            ReadingMusicCard(music, track, onToggle = onMusic, onPickTrack = { picking = true })
             if (featured != null) {
-                Spacer(Modifier.height(18.dp))
-                FeaturedArticle(featured, featured.id in read) { onOpen(featured.id) }
+                Spacer(Modifier.height(14.dp))
+                val label = if (advice != null && advice.articleId == featured.id) stringResource(R.string.for_you) else stringResource(R.string.read_start_here)
+                FeaturedArticle(featured, featured.id in read, label) { onOpen(featured.id) }
+                if (advice != null && advice.articleId == featured.id) {
+                    Text(
+                        signalText(advice.reason),
+                        style = Ios.type.footnote,
+                        color = c.secondary,
+                        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 6.dp),
+                    )
+                }
             }
             groups.forEach { (category, list) ->
                 SectionTitle(category)
@@ -152,15 +182,16 @@ fun ReadScreen(
             )
         }
     }
+    if (picking) TrackPicker(track, onPick = onTrack, onDismiss = { picking = false })
 }
 
 @Composable
-private fun FeaturedArticle(a: Article, isRead: Boolean, onClick: () -> Unit) {
+private fun FeaturedArticle(a: Article, isRead: Boolean, label: String, onClick: () -> Unit) {
     val (colors, motif) = articleCover(a)
     CoverCard(colors, motif, 236.dp, onClick, Modifier.padding(horizontal = 16.dp), seed = 3) {
         Column(Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.Bottom) {
             Text(
-                stringResource(R.string.read_start_here),
+                label,
                 style = Ios.type.footnote.copy(fontWeight = FontWeight.SemiBold),
                 color = Color.White,
                 modifier = Modifier.clip(CircleShape).background(Color.White.copy(alpha = 0.18f)).padding(horizontal = 10.dp, vertical = 4.dp),
@@ -224,8 +255,25 @@ private fun ArticleRow(a: Article, isRead: Boolean, onClick: () -> Unit) {
  * rende pontos uma vez.
  */
 @Composable
-fun ReaderScreen(article: Article, isRead: Boolean, onRead: () -> Unit, onBack: () -> Unit) {
+fun ReaderScreen(
+    article: Article,
+    isRead: Boolean,
+    onRead: () -> Unit,
+    onBack: () -> Unit,
+    music: Boolean = false,
+    track: Track = Track.RAIN,
+    onMusic: (Boolean) -> Unit = {},
+    onTrack: (Track) -> Unit = {},
+    onOpenChange: (Boolean) -> Unit = {},
+) {
     val c = Ios.colors
+    var picking by remember { mutableStateOf(false) }
+    // a música de leitura toca só com o leitor aberto
+    val openChange by rememberUpdatedState(onOpenChange)
+    DisposableEffect(Unit) {
+        openChange(true)
+        onDispose { openChange(false) }
+    }
     val state = rememberLazyListState()
     val uri = LocalUriHandler.current
     val rangePx = with(LocalDensity.current) { 60.dp.toPx() }
@@ -383,6 +431,22 @@ fun ReaderScreen(article: Article, isRead: Boolean, onRead: () -> Unit, onBack: 
                 )
             }
         }
-        IosNavBar(article.title, collapsed, onBack = onBack, backLabel = stringResource(R.string.tab_read), progress = progress)
+        IosNavBar(
+            article.title,
+            collapsed,
+            onBack = onBack,
+            backLabel = stringResource(R.string.tab_read),
+            progress = progress,
+            actions = {
+                if (music) NavIconButton(Icons.Rounded.MusicNote, stringResource(R.string.track_change), { picking = true })
+                NavIconButton(
+                    if (music) Icons.Rounded.Headphones else Icons.Rounded.HeadsetOff,
+                    stringResource(if (music) R.string.read_music_turn_off else R.string.read_music_turn_on),
+                    { onMusic(!music) },
+                    tint = if (music) c.accent else c.secondary,
+                )
+            },
+        )
     }
+    if (picking) TrackPicker(track, onPick = onTrack, onDismiss = { picking = false })
 }

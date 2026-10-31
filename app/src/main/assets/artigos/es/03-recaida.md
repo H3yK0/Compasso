@@ -4,6 +4,7 @@ titulo: Una recaída no borra el camino
 resumo: Un desliz no es volver a cero. Lo que piensas justo después es lo que decide el resto.
 categoria: Mente y hábitos
 tema: mente
+tags: recaida, autocompaixao
 minutos: 2
 ordem: 3
 ---

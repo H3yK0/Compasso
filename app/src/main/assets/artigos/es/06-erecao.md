@@ -4,6 +4,7 @@ titulo: "Pornografía y erección: lo que dicen los estudios"
 resumo: Mirar, por sí solo, no parece "romper" la erección. Pero el uso compulsivo y la dependencia de la pantalla cuentan.
 categoria: Lo que dice la ciencia
 tema: ciencia
+tags: corpo, ansiedade
 minutos: 2
 ordem: 6
 ---

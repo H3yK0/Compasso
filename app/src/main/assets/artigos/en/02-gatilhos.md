@@ -4,6 +4,7 @@ titulo: "Triggers: map them to disarm them"
 resumo: Most relapses happen in predictable situations. An "if… then…" plan changes that.
 categoria: Mind and habits
 tema: mente
+tags: gatilhos, comecar, noite, foco
 minutos: 2
 ordem: 2
 ---

@@ -44,7 +44,7 @@ class PacingTest {
 
     @Test
     fun lostControlCountsAsRelease() {
-        // PacingEntry.from marca "não segurei" como liberação
+        // PacingEntry.from marca "não aguentei" como liberação
         val g = Pacing.evaluate(on24, listOf(session(5.0, released = true)), now)
         assertTrue(g is ReleaseGate.Closed)
     }

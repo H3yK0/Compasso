@@ -96,6 +96,8 @@ fun SessionScreen(
     onTogglePause: () -> Unit,
     onRequestEnd: () -> Unit,
     onFinish: () -> Unit,
+    /** "Não aguentei": encerra ali mesmo e registra com honestidade. */
+    onLost: () -> Unit = {},
 ) {
     val gradient = phaseGradient(ui.phase)
     val top by animateColorAsState(gradient[0], tween(450), label = "topo")
@@ -148,9 +150,9 @@ fun SessionScreen(
                 Spacer(Modifier.weight(1f))
                 RoundDots(ui)
                 Spacer(Modifier.height(22.dp))
-                SessionControls(ui, bottom, onClose, onTogglePause, onFinish)
+                SessionControls(ui, bottom, onClose, onTogglePause, onFinish, onLost)
             }
-            if (ui.paused) PausedOverlay(blurred, ui.notice, ui.blocked, onResume = onTogglePause, onEnd = onRequestEnd)
+            if (ui.paused) PausedOverlay(blurred, ui.notice, ui.blocked, onResume = onTogglePause, onEnd = onRequestEnd, onLost = onLost)
         }
     }
 }
@@ -344,13 +346,15 @@ private fun SessionControls(
     onClose: () -> Unit,
     onTogglePause: () -> Unit,
     onFinish: () -> Unit,
+    onLost: () -> Unit,
 ) {
     when (ui.phase) {
         PhaseType.RELEASE, PhaseType.DENIED -> IosButton(
             stringResource(R.string.action_finish), onFinish, Modifier.fillMaxWidth(),
             kind = ButtonKind.White, contentColor = accent, height = 58.dp, shape = CircleShape,
         )
-        else -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        else -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             IosButton(
                 stringResource(if (ui.phase == PhaseType.STOP) R.string.session_still_close else R.string.session_close),
                 onClose,
@@ -369,11 +373,24 @@ private fun SessionControls(
                 iconSize = 26.dp,
             )
         }
+        // sempre à mão, sem passar pelo menu de encerrar
+        if (ui.phase != PhaseType.COUNTDOWN) {
+            Spacer(Modifier.height(4.dp))
+            IosButton(stringResource(R.string.session_lost), onLost, kind = ButtonKind.Plain, color = Color.White.copy(alpha = 0.85f), height = 40.dp)
+        }
+        }
     }
 }
 
 @Composable
-private fun PausedOverlay(blurred: Boolean, notice: SessionNotice?, blocked: Boolean, onResume: () -> Unit, onEnd: () -> Unit) {
+private fun PausedOverlay(
+    blurred: Boolean,
+    notice: SessionNotice?,
+    blocked: Boolean,
+    onResume: () -> Unit,
+    onEnd: () -> Unit,
+    onLost: () -> Unit,
+) {
     Box(
         Modifier
             .fillMaxSize()
@@ -408,7 +425,8 @@ private fun PausedOverlay(blurred: Boolean, notice: SessionNotice?, blocked: Boo
                 enabled = !blocked,
             )
             Spacer(Modifier.height(6.dp))
-            IosButton(stringResource(R.string.session_end_cd), onEnd, kind = ButtonKind.Plain, color = Color.White, height = 44.dp)
+            IosButton(stringResource(R.string.session_lost), onLost, kind = ButtonKind.Plain, color = Color.White, height = 44.dp)
+            IosButton(stringResource(R.string.session_end_cd), onEnd, kind = ButtonKind.Plain, color = Color.White.copy(alpha = 0.8f), height = 44.dp)
         }
     }
 }

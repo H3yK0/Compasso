@@ -651,6 +651,7 @@ object CoverColors {
     val science = listOf(Color(0xFF138A93), Color(0xFF0B2F52))
     val body = listOf(Color(0xFFC2546B), Color(0xFF4A1438))
     val support = listOf(Color(0xFFD08A2E), Color(0xFF5A2A12))
+    val relations = listOf(Color(0xFF2E9E6E), Color(0xFF0E3A3A))
     val breathe = listOf(Color(0xFF3A57C9), Color(0xFF121A52))
     val blocks = listOf(Color(0xFFE58A3A), Color(0xFF7A2A1E))
     val merge = listOf(Color(0xFF8E5BE0), Color(0xFF2E1A6B))
