@@ -18,8 +18,8 @@ Nesta pasta:
 ## Verificações feitas (fdroidserver 2.4.5)
 
 - `fdroid lint` e `fdroid rewritemeta`: a receita passa e está no formato canônico.
-- `fdroid build` do commit `f49df9e` (versão 0.0.0.2): o scanner não encontrou problemas; o APK sem assinatura do
-  F-Droid é idêntico, byte a byte, ao `assembleRelease` local.
+- `fdroid build` do commit `a0a2340` (tag `v0.0.0.3`): o scanner não encontrou problemas; o APK sem assinatura do
+  F-Droid é idêntico, byte a byte, ao build do commit `edcda21` (o mesmo código do app).
 - Com `Binaries` apontando para o APK assinado: "compared built binary to supplied reference binary successfully"
   e "supplied reference binary has allowed signer". O `apksigcopier compare` também confere.
 - `fdroid checkupdates`: encontra a versão pela tag (`v<versão>`).
