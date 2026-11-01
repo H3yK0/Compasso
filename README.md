@@ -52,11 +52,17 @@
 
 ## Download
 
-- **[GitHub Releases](https://github.com/H3yK0/Compasso/releases/latest)**: signed APK.
-- **F-Droid**: submitted, under review.
+<a href="https://github.com/ImranR98/Obtainium"><img src="docs/badges/obtainium.png" height="48" alt="Get it on Obtainium"></a>
 
-Builds are reproducible: F-Droid compiles the same source and checks it matches the signed APK. Signing certificate
-SHA-256: `c98ea9ad403d51fbb661afa0e7c1d936c497b1c3ebca76be9488b0f09113356c`
+- **Obtainium** (recommended): installs the app straight from GitHub Releases and keeps it up to date. Install
+  [Obtainium](https://github.com/ImranR98/Obtainium), tap **Add App** and paste `https://github.com/H3yK0/Compasso`.
+- **[GitHub Releases](https://github.com/H3yK0/Compasso/releases/latest)**: the signed APK, to install by hand.
+- **F-Droid**: planned for February 2027. F-Droid asks for 3 months of active development before including an app,
+  and the build is already set up to be reproducible there.
+
+Signing certificate SHA-256, to check the APK (for example with AppVerifier):
+`c98ea9ad403d51fbb661afa0e7c1d936c497b1c3ebca76be9488b0f09113356c`. Where the app is published and why (in
+Portuguese): [docs/distribuicao.md](docs/distribuicao.md).
 
 ## Languages
 
@@ -80,6 +86,7 @@ Technical documentation (in Portuguese): [docs/tecnico.md](docs/tecnico.md). F-D
 - Code: [GNU Affero General Public License v3.0](LICENSE). Copyright (C) 2026 H3yK0.
 - Articles (`app/src/main/assets/artigos`): Creative Commons BY-SA 4.0.
 - Fonts: Inter and Cormorant Garamond, SIL Open Font License 1.1.
+- Obtainium badge (`docs/badges/obtainium.png`): from the Obtainium project, GPL-3.0.
 
 This app is a support tool and doesn't replace a health professional. If you're struggling, reach out to someone you
 trust or a local helpline ([findahelpline.com](https://findahelpline.com)).
