@@ -30,7 +30,7 @@ Por eso tanta gente describe la sensación de **querer cada vez más y disfrutar
 ## Qué hacer en la práctica
 
 - **Corta las señales:** el teléfono fuera del cuarto, las notificaciones apagadas de noche, los atajos viejos borrados.
-- **Pon fricción en el camino viejo** y deja el nuevo a mano (Compasso en la pantalla de inicio, por ejemplo).
+- **Pon fricción en el camino viejo** y deja el nuevo a mano (Astrolabio en la pantalla de inicio, por ejemplo).
 - **Aprende a esperar:** el control inteligente espacia las liberaciones justamente para que el "querer" deje de mandar en el reloj.
 - **Busca otras recompensas:** movimiento, gente, música, aprender algo, terminar una tarea. El sistema de motivación sigue necesitando un blanco; dale buenos blancos.
 - **Un "detox de dopamina" literal no existe:** lo que funciona es reducir las señales y repetir el camino nuevo hasta que se vuelva el habitual.

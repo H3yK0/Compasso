@@ -43,7 +43,7 @@ En los grupos de atención plena para recaídas se usa una pausa de pocos pasos 
 4. **Amplía.** Mira alrededor: ¿dónde estás, qué hora es, qué te importa hoy?
 5. **Responde eligiendo.** Ahora sí, decide el siguiente paso, de preferencia uno de tu plan.
 
-Practicar también cuando todo está bien, cinco minutos al día, deja la habilidad lista para cuando las ganas aprieten. Respirar, en Compasso, es un buen lugar para eso.
+Practicar también cuando todo está bien, cinco minutos al día, deja la habilidad lista para cuando las ganas aprieten. Respirar, en Astrolabio, es un buen lugar para eso.
 
 ## Fuentes
 

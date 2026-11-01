@@ -30,7 +30,7 @@ Los terapeutas William Masters y Virginia Johnson lo llamaron ser **espectador d
 - **Llevar la atención a las sensaciones.** Temperatura, textura, respiración. Cuando la mente se vaya al juicio, vuelve con amabilidad, como en la atención plena.
 - **Respirar despacio** antes y durante. La exhalación larga ayuda a bajar la alarma.
 - **Hablar.** Contarle el miedo a tu pareja suele reducir mucho su peso (mira el artículo sobre hablar de sexo).
-- **Entrenar con calma, a solas.** El entrenamiento de parar y volver a empezar de Compasso ayuda a conocer tu propio ritmo sin público y sin pornografía.
+- **Entrenar con calma, a solas.** El entrenamiento de parar y volver a empezar de Astrolabio ayuda a conocer tu propio ritmo sin público y sin pornografía.
 
 La revisión señala que la **terapia cognitivo-conductual** y el **entrenamiento en atención plena** funcionan bien para la ansiedad de desempeño en general y se recomiendan para la sexual, aunque faltan estudios controlados específicos.
 

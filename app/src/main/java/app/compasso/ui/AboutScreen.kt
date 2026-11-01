@@ -71,7 +71,7 @@ fun AboutScreen(onLicense: (LicenseDoc) -> Unit, onBack: () -> Unit) {
             Column(Modifier.fillMaxWidth().padding(top = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 AppIconTile(size = 84.dp)
                 Spacer(Modifier.height(10.dp))
-                Text("Compasso", style = Ios.type.serifSection, color = c.label)
+                Text(stringResource(R.string.app_name), style = Ios.type.serifSection, color = c.label)
                 Text(stringResource(R.string.about_version, BuildConfig.VERSION_NAME), style = Ios.type.subhead, color = c.secondary)
             }
         }

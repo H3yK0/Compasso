@@ -29,7 +29,7 @@ Putting the pieces together, current science suggests that:
 ## What helps
 
 - **Cut back on pornography** and the search for constant novelty.
-- **Train arousal without a screen**, slowly and paying attention to your body. That's what Compasso's stop-and-start training does.
+- **Train arousal without a screen**, slowly and paying attention to your body. That's what Lodestar's stop-and-start training does.
 - **Take the weight off performance:** an erection isn't a test; anxiety is one of its biggest enemies.
 - **See a doctor** (urologist) if the difficulty is frequent or started suddenly. Erections also depend on the health of your blood vessels, hormones and mood, and it's worth checking.
 

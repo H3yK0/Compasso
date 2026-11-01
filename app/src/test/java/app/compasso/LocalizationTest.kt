@@ -63,4 +63,24 @@ class LocalizationTest {
         val allowed = setOf("license_agpl", "hint_go_title", "level_summary", "day_points", "greeting_comma", "duration_hours", "duration_min_sec")
         same.forEach { (dir, keys) -> assertEquals(dir, emptySet<String>(), keys - allowed) }
     }
+
+    /** Um nome por idioma: Lodestar (inglês, o padrão), Compasso (português) e Astrolabio (espanhol), sem sobras do nome de outro idioma. */
+    @Test
+    fun appNameIsLocalized() {
+        val names = mapOf("values" to "Lodestar", "values-pt" to "Compasso", "values-es" to "Astrolabio")
+        names.forEach { (dir, name) ->
+            val texts = load(dir)
+            assertEquals(dir, listOf(name), texts.getValue("app_name").texts)
+            val others = names.values - name
+            texts.forEach { (key, e) ->
+                others.forEach { other -> assertTrue("$dir/$key cita $other", e.texts.none { it.contains(other) }) }
+            }
+        }
+        val articles = mapOf("en" to "Lodestar", "pt" to "Compasso", "es" to "Astrolabio")
+        articles.forEach { (lang, name) ->
+            File("src/main/assets/artigos/$lang").listFiles().orEmpty().filter { it.name.endsWith(".md") }.forEach { f ->
+                (articles.values - name).forEach { other -> assertTrue("$lang/${f.name} cita $other", other !in f.readText()) }
+            }
+        }
+    }
 }

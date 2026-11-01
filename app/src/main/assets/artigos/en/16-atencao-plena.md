@@ -43,7 +43,7 @@ In mindfulness groups for relapse, a pause of a few steps is used in the middle 
 4. **Widen.** Look around: where are you, what time is it, what matters to you today?
 5. **Respond by choice.** Now decide the next step, ideally one from your plan.
 
-Practicing when everything is fine too, five minutes a day, keeps the skill ready for when the urge hits. Compasso's Breathe is a good place for that.
+Practicing when everything is fine too, five minutes a day, keeps the skill ready for when the urge hits. Lodestar's Breathe is a good place for that.
 
 ## Sources
 

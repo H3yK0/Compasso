@@ -1,0 +1,1 @@
+O app agora tem um nome próprio em cada idioma: Compasso em português, Lodestar em inglês e Astrolabio em espanhol. O nome no celular, nas notificações discretas, nos textos e nos artigos segue o idioma do app.

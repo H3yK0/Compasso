@@ -34,7 +34,7 @@ Infinite feeds, short videos and pornography sites work exactly like that: endle
 2. **Cut infinite feeds** at risky times: apps off the home screen, notifications off at night.
 3. **Let boredom be boredom** for a few minutes, without chasing the next novelty (see the article on boredom).
 4. **Prefer predictable, good rewards:** a book, a conversation, a walk. They don't set off the same alarm, so they don't pull the same way.
-5. **Wait.** Compasso's smart control spaces out releases so that hurry stops deciding for you.
+5. **Wait.** Lodestar's smart control spaces out releases so that hurry stops deciding for you.
 
 ## Sources
 

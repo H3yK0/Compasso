@@ -29,7 +29,7 @@ Otro estudio enseñó a fumadores a "surfear las ganas": observar el impulso en 
 ## Plan de 10 minutos
 
 1. **Ponles nombre:** "esto son ganas, no una orden". Solo nombrarlas ya crea distancia.
-2. **Respira 2 minutos** con la exhalación más larga que la inhalación (en Compasso: Refugio → Respirar).
+2. **Respira 2 minutos** con la exhalación más larga que la inhalación (en Astrolabio: Refugio → Respirar).
 3. **Ocupa la imaginación** con algo visual durante 3 minutos: uno de los juegos del Refugio, un rompecabezas, dibujar.
 4. **Cambia de lugar:** levántate, toma agua, sal del cuarto, enciende la luz.
 5. **Anota el detonante** cuando la ola baje: hora, lugar, cómo estabas. Eso alimenta tu plan (mira el artículo sobre detonantes).

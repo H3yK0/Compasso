@@ -29,7 +29,7 @@ Juntando las piezas, la ciencia actual sugiere que:
 ## Lo que ayuda
 
 - **Reduce la pornografía** y la búsqueda de novedad constante.
-- **Entrena la excitación sin pantalla**, despacio y prestando atención al cuerpo. Eso es lo que hace el entrenamiento de parar y volver a empezar de Compasso.
+- **Entrena la excitación sin pantalla**, despacio y prestando atención al cuerpo. Eso es lo que hace el entrenamiento de parar y volver a empezar de Astrolabio.
 - **Quita el peso del desempeño:** la erección no es una prueba; la ansiedad es uno de sus mayores enemigos.
 - **Consulta a un médico** (urólogo) si la dificultad es frecuente o empezó de repente. La erección también depende de la salud de los vasos, de las hormonas y del ánimo, y vale la pena revisarlo.
 

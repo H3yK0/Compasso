@@ -121,7 +121,7 @@ fun WelcomeScreen(onStart: () -> Unit) {
                 Astro(progress = 0f, tint = c.accent, size = 214.dp, showRing = false, level = level)
             }
             Spacer(Modifier.height(18.dp))
-            Text("Compasso", style = Ios.type.display.copy(fontSize = 54.sp, lineHeight = 60.sp), color = c.label)
+            Text(stringResource(R.string.app_name), style = Ios.type.display.copy(fontSize = 54.sp, lineHeight = 60.sp), color = c.label)
             Text(
                 stringResource(R.string.welcome_tagline),
                 style = Ios.type.poetic.copy(fontSize = 22.sp, lineHeight = 28.sp),

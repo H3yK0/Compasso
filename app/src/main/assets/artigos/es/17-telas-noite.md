@@ -36,7 +36,7 @@ Junta las piezas: la pantalla retrasa el sueño; duermes menos; al día siguient
 2. **Una hora sin pantalla antes de acostarte**, o lo más que puedas. Empieza con 20 minutos y ve aumentando.
 3. **Cambia el ritual:** libro de papel, ducha tibia, estiramientos, música tranquila, conversación.
 4. **Si usas pantalla en la noche, baja el brillo y usa el modo nocturno.** Ayuda un poco, pero no reemplaza la distancia.
-5. **Lee en Compasso más temprano**, no en la cama. Hasta las lecturas de aquí son una pantalla.
+5. **Lee en Astrolabio más temprano**, no en la cama. Hasta las lecturas de aquí son una pantalla.
 6. **Horarios regulares para dormir y despertar**, incluso el fin de semana, ayudan a que el reloj del cuerpo se asiente.
 
 ## Fuentes

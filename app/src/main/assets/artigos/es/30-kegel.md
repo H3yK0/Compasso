@@ -20,7 +20,7 @@ Es decir: es un entrenamiento prometedor, barato y seguro para la mayoría de la
 
 ## Por qué ayuda al control
 
-Cuando la excitación sube, el suelo pélvico participa en el reflejo de la eyaculación. Un músculo más fuerte y, sobre todo, **mejor conocido** ayuda a notar ese punto antes. Es la misma habilidad que el entrenamiento de parar y volver a empezar de Compasso intenta construir: notar antes, pausar, respirar.
+Cuando la excitación sube, el suelo pélvico participa en el reflejo de la eyaculación. Un músculo más fuerte y, sobre todo, **mejor conocido** ayuda a notar ese punto antes. Es la misma habilidad que el entrenamiento de parar y volver a empezar de Astrolabio intenta construir: notar antes, pausar, respirar.
 
 > La fuerza ayuda. Pero lo que más cuenta es saber dónde está el músculo y poder soltarlo.
 
@@ -30,7 +30,7 @@ Cuando la excitación sube, el suelo pélvico participa en el reflejo de la eyac
 2. **Contrae tirando hacia adentro y hacia arriba**, sin apretar el abdomen, los glúteos ni los muslos.
 3. **Respira con normalidad** mientras sostienes.
 4. **Suelta por completo** entre una contracción y otra. Relajar es la mitad del entrenamiento.
-5. **Empieza suave:** contracciones cortas, acostado. Aumenta el tiempo de a poco, como hace el Kegel de Compasso con los niveles de permanencia.
+5. **Empieza suave:** contracciones cortas, acostado. Aumenta el tiempo de a poco, como hace el Kegel de Astrolabio con los niveles de permanencia.
 6. **Sé constante:** poco cada día, todos los días, vale más que mucho de vez en cuando.
 
 ## Cuándo no hacerlo solo

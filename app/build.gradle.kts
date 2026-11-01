@@ -22,8 +22,8 @@ android {
         applicationId = "io.github.h3yk0.compasso"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.0.0.2"
+        versionCode = 3
+        versionName = "0.0.0.3"
         // O app tem textos em inglês (padrão), português e espanhol: as bibliotecas não trazem outros idiomas.
         resourceConfigurations += listOf("en", "pt", "es")
     }

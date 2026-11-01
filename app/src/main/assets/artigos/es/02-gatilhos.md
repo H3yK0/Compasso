@@ -37,7 +37,7 @@ La fuerza de voluntad se cansa; el entorno no. Haz el camino viejo **más difíc
 
 - El teléfono fuera del cuarto a la hora de dormir.
 - Bloqueadores de sitios activados, con la contraseña guardada por otra persona, si te ayuda.
-- Compasso en la pantalla de inicio, donde antes estaban los atajos de siempre.
+- Astrolabio en la pantalla de inicio, donde antes estaban los atajos de siempre.
 
 ## Ejercicio de hoy
 

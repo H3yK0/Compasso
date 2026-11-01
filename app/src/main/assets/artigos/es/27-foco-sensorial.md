@@ -32,7 +32,7 @@ Una revisión crítica de 2016 recuerda que el foco sensorial se usa mucho, pero
 
 ## Si no tienes pareja
 
-La misma lógica vale para la práctica individual: tocarte con atención en las sensaciones, **sin pornografía**, sin prisa y sin la meta de llegar al final. Es el espíritu del entrenamiento de Compasso: percibir el cuerpo, notar cómo sube la excitación, pausar y respirar.
+La misma lógica vale para la práctica individual: tocarte con atención en las sensaciones, **sin pornografía**, sin prisa y sin la meta de llegar al final. Es el espíritu del entrenamiento de Astrolabio: percibir el cuerpo, notar cómo sube la excitación, pausar y respirar.
 
 ## Cuándo buscar orientación
 

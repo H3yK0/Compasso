@@ -20,7 +20,7 @@ In other words: it's promising, cheap and safe training for most people, but not
 
 ## Why it helps with control
 
-When arousal rises, the pelvic floor takes part in the ejaculation reflex. A stronger and, above all, **better-known** muscle helps you notice that point earlier. It's the same skill Compasso's stop-start training tries to build: notice early, pause, breathe.
+When arousal rises, the pelvic floor takes part in the ejaculation reflex. A stronger and, above all, **better-known** muscle helps you notice that point earlier. It's the same skill Lodestar's stop-start training tries to build: notice early, pause, breathe.
 
 > Strength helps. But what matters most is knowing where the muscle is and being able to let it go.
 
@@ -30,7 +30,7 @@ When arousal rises, the pelvic floor takes part in the ejaculation reflex. A str
 2. **Squeeze by pulling in and up**, without tightening your belly, buttocks or thighs.
 3. **Breathe normally** while you hold.
 4. **Let go completely** between one squeeze and the next. Relaxing is half the training.
-5. **Start light:** short squeezes, lying down. Increase the time little by little, as Compasso's Kegel does with its hold levels.
+5. **Start light:** short squeezes, lying down. Increase the time little by little, as Lodestar's Kegel does with its hold levels.
 6. **Be consistent:** a little every day is worth more than a lot once in a while.
 
 ## When not to do it on your own

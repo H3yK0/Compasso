@@ -29,7 +29,7 @@ Another study taught smokers to "surf the urge": to notice the impulse in the bo
 ## A 10-minute plan
 
 1. **Name it:** "this is an urge, not an order". Just naming it creates some distance.
-2. **Breathe for 2 minutes** with the out-breath longer than the in-breath (in Compasso: Refuge → Breathe).
+2. **Breathe for 2 minutes** with the out-breath longer than the in-breath (in Lodestar: Refuge → Breathe).
 3. **Keep your imagination busy** with something visual for 3 minutes: one of the Refuge games, a puzzle, drawing.
 4. **Change places:** get up, drink some water, leave the room, turn on the light.
 5. **Write down the trigger** once the wave has passed: time, place, how you were feeling. This feeds your plan (see the article on triggers).

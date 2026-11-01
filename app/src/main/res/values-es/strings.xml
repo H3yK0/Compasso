@@ -2,6 +2,9 @@
 <!-- Inglês é o idioma padrão; português em values-pt e espanhol em values-es. As três listas têm as mesmas chaves (LocalizationTest confere). -->
 <resources>
 
+    <!-- 00_brand -->
+    <string name="app_name">Astrolabio</string>
+
     <!-- 01_model -->
     <string name="tab_today">Hoy</string>
     <string name="tab_refuge">Refugio</string>
@@ -41,7 +44,7 @@
     <string name="tier_unbeaten">Invicto</string>
     <string name="need_clean_days">14 días sin “no aguanté” ni sesiones interrumpidas</string>
     <string name="need_streak">14 días seguidos de constancia</string>
-    <string name="accent_teal">Compasso</string>
+    <string name="accent_teal">Astrolabio</string>
     <string name="accent_amber">Ámbar</string>
     <string name="accent_ocean">Océano</string>
     <string name="accent_gold">Oro</string>
@@ -272,7 +275,7 @@
     <string name="summary_saved">Guardado en el historial</string>
     <string name="summary_repeat">Repetir este nivel</string>
     <string name="focus_title">Modo foco</string>
-    <string name="focus_prep_text">Para empezar, fija la pantalla. Android preguntará si puede fijar Compasso: confirma y la sesión empieza sola.</string>
+    <string name="focus_prep_text">Para empezar, fija la pantalla. Android preguntará si puede fijar Astrolabio: confirma y la sesión empieza sola.</string>
     <string name="focus_point_apps">Otras apps, notificaciones y pantalla dividida quedan bloqueadas.</string>
     <string name="focus_point_videos">Los videos y ventanas flotantes se cierran o se ocultan.</string>
     <string name="focus_point_unpin">Al final de la sesión, la app suelta la pantalla sola.</string>
@@ -336,7 +339,7 @@
     <string name="settings_language_footer">Los artículos, las fechas y los números siguen el idioma elegido. Automático usa el idioma del teléfono (portugués, inglés o español).</string>
     <string name="language_system">Automático</string>
     <string name="settings_help">Ayuda</string>
-    <string name="settings_guide">Cómo usar Compasso</string>
+    <string name="settings_guide">Cómo usar Astrolabio</string>
     <string name="settings_replay_intro">Ver de nuevo la presentación</string>
     <string name="settings_tips">Consejos por el camino</string>
     <string name="settings_tips_sub">Muestra un consejo en la primera visita a cada parte</string>
@@ -475,7 +478,7 @@
     <string name="guide_points_text">Los puntos premian la constancia: el check-in del día, Kegel, respirar, jugar, leer y la primera sesión del día (solo con la pantalla fijada). El tope es de %1$d puntos por día. El nivel cuenta los últimos 28 días: Bronce, Plata, Oro, Platino, Diamante e Invicto. Invicto también pide 14 días seguidos de constancia y 14 días sin “no aguanté” ni sesiones interrumpidas. Cada nivel desbloquea un color para la app.</string>
     <string name="guide_reading">Lecturas</string>
     <string name="guide_reading_text">Textos cortos sobre mente, cuerpo y sexualidad, escritos para informar sin asustar. Cada uno cita los estudios usados. Leer hasta el final lo marca como leído y suma puntos una vez por artículo.</string>
-    <string name="guide_privacy_text">Compasso no tiene acceso a internet: todo se guarda solo en este teléfono, sin cuenta. Puedes pedir un código al abrir, ocultar la app en recientes (modo discreto) y borrar el historial. El nombre en clave lo crea la app y no te identifica.</string>
+    <string name="guide_privacy_text">Astrolabio no tiene acceso a internet: todo se guarda solo en este teléfono, sin cuenta. Puedes pedir un código al abrir, ocultar la app en recientes (modo discreto) y borrar el historial. El nombre en clave lo crea la app y no te identifica.</string>
     <string name="pacing_now">Ahora</string>
     <string name="pacing_last_release">Última liberación</string>
     <string name="pacing_none_recent">ninguna reciente</string>
@@ -496,13 +499,13 @@
     <!-- 11_read -->
     <string name="read_intro_empty">Lecturas cortas, con fuentes.</string>
     <string name="read_intro">%1$d de %2$d leídos. Cada uno lleva 2 o 3 minutos.</string>
-    <string name="read_footer">Textos de Compasso, revisados para no exagerar: cada uno cita los estudios al final. No reemplazan la orientación de un profesional de la salud. Licencia CC BY-SA 4.0.</string>
+    <string name="read_footer">Textos de Astrolabio, revisados para no exagerar: cada uno cita los estudios al final. No reemplazan la orientación de un profesional de la salud. Licencia CC BY-SA 4.0.</string>
     <string name="read_start_here">Empieza por aquí</string>
     <string name="read_minutes">%1$d min de lectura</string>
     <string name="read_minutes_done">%1$d min · leído</string>
     <string name="read_done">Leído</string>
     <string name="read_sources">Fuentes</string>
-    <string name="read_article_footer">Este texto informa y no reemplaza una evaluación profesional. Compasso · licencia CC BY-SA 4.0.</string>
+    <string name="read_article_footer">Este texto informa y no reemplaza una evaluación profesional. Astrolabio · licencia CC BY-SA 4.0.</string>
     <string name="refuge_intro">Las ganas vienen en olas y pasan. Elige una salida y quédate aquí hasta que bajen.</string>
     <string name="refuge_breathe_sub">2 minutos con música calma</string>
     <string name="refuge_breathe_now">Respirar ahora</string>
@@ -518,7 +521,7 @@
     <string name="welcome_text">Entrenamiento de control, respiración y un lugar seguro para cuando las ganas aprieten. Lejos de la pornografía, a tu ritmo.</string>
     <string name="welcome_privacy">Sin cuenta y sin internet. Todo se queda solo en este teléfono.</string>
     <string name="intro_1_title">Un refugio, no una prisión</string>
-    <string name="intro_1_text">Compasso ayuda a quien quiere dejar la pornografía, sin culpa. En lugar de videos: un entrenamiento de control con pausas, respiración y un lugar seguro para cuando las ganas aprieten.</string>
+    <string name="intro_1_text">Astrolabio ayuda a quien quiere dejar la pornografía, sin culpa. En lugar de videos: un entrenamiento de control con pausas, respiración y un lugar seguro para cuando las ganas aprieten.</string>
     <string name="intro_2_title">Para y vuelve a empezar</string>
     <string name="intro_2_text">Sigue el ritmo. Cuando la pantalla se ponga roja, manos fuera y respira con las ondas. ¿Sientes que vas a pasarte? Toca “Estoy cerca”. Con el tiempo, notas tu cuerpo antes y duras más.</string>
     <string name="intro_3_title">Control y foco</string>
@@ -533,7 +536,7 @@
     <string name="about_title">Licencia y créditos</string>
     <string name="about_version">Versión %1$s</string>
     <string name="about_licenses">Licencias</string>
-    <string name="about_licenses_footer">Compasso © %1$s %2$s. Este programa es software libre: puedes redistribuirlo y/o modificarlo según los términos de la GNU Affero General Public License, versión 3. Se distribuye con la esperanza de que sea útil, pero SIN NINGUNA GARANTÍA.</string>
+    <string name="about_licenses_footer">Astrolabio © %1$s %2$s. Este programa es software libre: puedes redistribuirlo y/o modificarlo según los términos de la GNU Affero General Public License, versión 3. Se distribuye con la esperanza de que sea útil, pero SIN NINGUNA GARANTÍA.</string>
     <string name="about_code">Código: GNU AGPL v3.0</string>
     <string name="about_articles">Artículos</string>
     <string name="about_font_inter">Fuente Inter</string>
@@ -660,13 +663,13 @@
     <string name="kegel_nudges">Sugerencia al abrir la app</string>
     <string name="kegel_nudges_sub">“Hora del Kegel”, como máximo cada 3 h, de día</string>
     <string name="kegel_reminders">Recordatorios en el teléfono</string>
-    <string name="kegel_reminders_sub">Notificación discreta: solo dice “Compasso”, nunca “Kegel”</string>
+    <string name="kegel_reminders_sub">Notificación discreta: solo dice “Astrolabio”, nunca “Kegel”</string>
     <string name="kegel_reminder_n">Recordatorio %1$d</string>
     <string name="kegel_time_earlier">15 minutos antes</string>
     <string name="kegel_time_later">15 minutos después</string>
     <string name="kegel_reminders_footer">Solo avisa si todavía falta Kegel en el día. Nada sale del teléfono.</string>
     <string name="kegel_perm_title">Notificaciones desactivadas</string>
-    <string name="kegel_perm_text">Para recibir los recordatorios, permite las notificaciones de Compasso en los ajustes de Android.</string>
+    <string name="kegel_perm_text">Para recibir los recordatorios, permite las notificaciones de Astrolabio en los ajustes de Android.</string>
     <string name="kegel_perm_open">Abrir ajustes</string>
     <string name="settings_kegel">Kegel y recordatorios</string>
     <string name="settings_kegel_sub">Permanencia, tiempo y recordatorios en el teléfono</string>
@@ -694,7 +697,7 @@
     <string name="tip_kegel_title">Empieza suave</string>
     <string name="tip_kegel_text">Empieza sosteniendo 3 s. Cada 5 entrenamientos completos liberan la siguiente permanencia. Hasta 3 por día, con descanso entre ellos.</string>
     <string name="guide_kegel">Kegel: el músculo del control</string>
-    <string name="guide_kegel_text">En el Refugio (y en la tarjeta de Hoy) está el entrenamiento de Kegel para el suelo pélvico: contraer y sostener, soltar por completo y, al final, contracciones rápidas. Elige la permanencia (3, 5, 8 o 10 s; cada una se libera tras 5 entrenamientos completos en la anterior) y el tiempo (2, 4 o 6 min). Hasta 3 entrenamientos por día suman puntos. Si quieres, activa recordatorios discretos en el teléfono: solo dicen “Compasso”.</string>
+    <string name="guide_kegel_text">En el Refugio (y en la tarjeta de Hoy) está el entrenamiento de Kegel para el suelo pélvico: contraer y sostener, soltar por completo y, al final, contracciones rápidas. Elige la permanencia (3, 5, 8 o 10 s; cada una se libera tras 5 entrenamientos completos en la anterior) y el tiempo (2, 4 o 6 min). Hasta 3 entrenamientos por día suman puntos. Si quieres, activa recordatorios discretos en el teléfono: solo dicen “Astrolabio”.</string>
     <plurals name="kegel_week_days">
         <item quantity="one">%1$d día con Kegel</item>
         <item quantity="other">%1$d días con Kegel</item>

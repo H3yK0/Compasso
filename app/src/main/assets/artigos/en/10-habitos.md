@@ -37,7 +37,7 @@ And one valuable detail: **missing a single day didn't meaningfully disrupt** ha
 1. **Choose your most frequent risky context**: for example, "lying in bed with my phone after 11 p.m.".
 2. **Define a small, concrete response** for that context: "I plug my phone in to charge in the living room and read ten pages of a book".
 3. **Repeat it every day, the same way.** Simple and identical beats big and varied.
-4. **Track it.** Checking in on Compasso or jotting it on paper shows the curve rising and helps you keep going (see the article on tracking progress).
+4. **Track it.** Checking in on Lodestar or jotting it on paper shows the curve rising and helps you keep going (see the article on tracking progress).
 5. **Review every two weeks:** is the response easy? If not, make it smaller, not bigger.
 
 Two months feel like a lot on day one. Looking back, it's not much to change something that took years to form.

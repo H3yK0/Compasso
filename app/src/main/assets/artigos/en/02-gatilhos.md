@@ -37,7 +37,7 @@ Willpower gets tired; surroundings don't. Make the old path **harder** and the n
 
 - Phone outside the bedroom at bedtime.
 - Website blockers turned on, with the password kept by someone else, if that helps.
-- Compasso on your home screen, where the old shortcuts used to be.
+- Lodestar on your home screen, where the old shortcuts used to be.
 
 ## Today's exercise
 

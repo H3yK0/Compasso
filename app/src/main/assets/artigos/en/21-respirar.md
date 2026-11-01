@@ -24,7 +24,7 @@ The most consistent effects:
 
 In 2023, a Stanford University study randomly assigned participants to do, for a month, **5 minutes a day** of one of three breathing exercises or of mindfulness meditation. The exercise with a **prolonged exhale** ("cyclic sighing": two inhales through the nose, followed by a long exhale through the mouth) brought **greater mood improvement** and a **greater reduction in breathing rate** than meditation.
 
-That's why Compasso's Breathe uses **4 seconds to breathe in and 6 to let the air out**: about 6 breaths a minute, with the longer exhale.
+That's why Lodestar's Breathe uses **4 seconds to breathe in and 6 to let the air out**: about 6 breaths a minute, with the longer exhale.
 
 > You can't order anxiety to leave. But you can let the air out slowly, and your body gets the message.
 

@@ -30,7 +30,7 @@ That's why so many people describe the feeling of **wanting more and more while 
 ## What to do in practice
 
 - **Cut the cues:** phone outside the bedroom, notifications off at night, old shortcuts deleted.
-- **Add friction to the old path** and keep the new one within reach (Compasso on your home screen, for example).
+- **Add friction to the old path** and keep the new one within reach (Lodestar on your home screen, for example).
 - **Teach yourself to wait:** smart control spaces out releases precisely so that "wanting" stops running the clock.
 - **Look for other rewards:** movement, people, music, learning something, finishing a task. The motivation system still needs a target; give it good targets.
 - **A literal "dopamine detox" doesn't exist:** what works is reducing the cues and repeating the new path until it becomes the default.

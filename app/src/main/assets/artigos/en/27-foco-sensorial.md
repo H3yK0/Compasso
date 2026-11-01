@@ -32,7 +32,7 @@ A 2016 critical review points out that sensate focus is widely used, but that **
 
 ## If you don't have a partner
 
-The same logic applies to solo practice: touch with attention on sensations, **without pornography**, without hurry and without the goal of reaching the end. That's the spirit of Compasso's training: perceive your body, notice arousal rising, pause and breathe.
+The same logic applies to solo practice: touch with attention on sensations, **without pornography**, without hurry and without the goal of reaching the end. That's the spirit of Lodestar's training: perceive your body, notice arousal rising, pause and breathe.
 
 ## When to seek guidance
 

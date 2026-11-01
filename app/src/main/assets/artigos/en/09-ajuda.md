@@ -8,7 +8,7 @@ tags: ajuda, recaida
 minutos: 2
 ordem: 9
 ---
-Compasso is a tool for training and support. It doesn't replace a professional, and sometimes the bravest step is asking for help.
+Lodestar is a tool for training and support. It doesn't replace a professional, and sometimes the bravest step is asking for help.
 
 ## Signs that it's worth looking for help
 

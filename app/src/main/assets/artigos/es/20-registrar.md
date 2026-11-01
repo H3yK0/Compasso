@@ -30,13 +30,13 @@ Seguir el progreso cierra un circuito: ves la distancia entre donde estás y ado
 
 ## Cómo registrar sin que se vuelva castigo
 
-1. **Haz el check-in diario** en Compasso. Toma segundos y alimenta tu semana en estrellas y el cielo del mes.
+1. **Haz el check-in diario** en Astrolabio. Toma segundos y alimenta tu semana en estrellas y el cielo del mes.
 2. **Anota los tropiezos como datos**, no como sentencias: hora, lugar, cómo estabas, qué vino antes. Así aparecen los patrones.
 3. **Revisa una vez por semana.** Mira la pestaña Progreso: ¿dónde fue bien la semana? ¿Qué horario es más riesgoso?
 4. **Registra también las victorias pequeñas:** unas ganas que atravesaste, un "Estoy cerca" usado a tiempo, una noche con el teléfono fuera del cuarto.
 5. **Si tiene sentido, comparte** tu progreso con una persona de confianza. No hacen falta detalles; los números de la semana bastan.
 
-El historial de Compasso se queda solo en tu teléfono. Tú decides qué mostrar, y a quién.
+El historial de Astrolabio se queda solo en tu teléfono. Tú decides qué mostrar, y a quién.
 
 ## Fuentes
 
