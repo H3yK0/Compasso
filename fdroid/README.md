@@ -33,10 +33,35 @@ Nesta pasta:
   `.gitignore`). Guarde num gerenciador de senhas e numa cópia offline. **Sem ela, nenhuma versão nova sai**:
   o F-Droid só aceita APKs com essa assinatura.
 
-## Envio ao F-Droid: passo a passo
+## Pedido de inclusão
 
-1. **APK no GitHub**: crie o release `v0.0.0.2` (alvo: o commit `f49df9e` do `main`) e anexe `Compasso-0.0.0.2.apk`
-   (o nome tem que ser exatamente esse).
+**Situação:** o pedido **!55150** (`New app: Compasso`) foi aberto em 31/10/2026 e, com a versão 0.0.0.2, o pipeline
+passou inteiro, incluindo o build reproduzível. Em 01/11/2026 os revisores o fecharam pela regra dos 3 meses: a
+[política de inclusão](https://f-droid.org/docs/Inclusion_Policy/) pede que o app esteja em desenvolvimento ativo há
+pelo menos 3 meses, e o repositório começou em 31/10/2026. O reenvio fica para **fevereiro de 2027**. Não apague o
+fork nem o branch `io.github.h3yk0.compasso`: eles servem para o reenvio. Outras lojas: veja
+[`docs/distribuicao.md`](../docs/distribuicao.md).
+
+### Reenvio (a partir de 01/02/2027)
+
+1. Confira que houve desenvolvimento nesses 3 meses: commits e releases de novembro a janeiro.
+2. Atualize a receita desta pasta para a versão mais nova (`commit` do release, `versionName`, `versionCode`,
+   `CurrentVersion` e `CurrentVersionCode`) e confira com `fdroid lint` e `fdroid build`, usando o APK do release.
+3. No seu fork do `fdroiddata`, branch `io.github.h3yk0.compasso`, abra `metadata/io.github.h3yk0.compasso.yml`
+   e use **Replace** para subir a receita nova.
+4. No !55150, deixe um comentário pedindo para reabrir:
+
+   > Hi! Compasso has now been in active development for over 3 months (first commit on 2026-10-31, with regular
+   > releases since then). The recipe is updated to the latest version and the pipeline is green. Could you please
+   > reopen this MR for review? Thank you!
+
+   Se aparecer o botão **Reopen** para você, pode usá-lo. Se ninguém responder em alguns dias, abra um merge request
+   novo do mesmo branch, com o mesmo título, e cite o !55150 na descrição.
+5. Acompanhe o pipeline e os comentários dos revisores.
+
+### Primeiro envio (como foi feito)
+
+1. **APK no GitHub**: release `v<versão>` com `Compasso-<versão>.apk` anexado (o nome tem que ser exatamente esse).
 2. **Fork** de https://gitlab.com/fdroid/fdroiddata com a sua conta do GitLab. O fork tem que ser público.
 3. **Branch** `io.github.h3yk0.compasso`, a partir de `master`, no fork.
 4. **Arquivo** `metadata/io.github.h3yk0.compasso.yml` no branch, com o conteúdo de `io.github.h3yk0.compasso.yml`
@@ -47,9 +72,6 @@ Nesta pasta:
 6. O pipeline roda o lint e o build. Se o GitLab pedir telefone ou cartão para rodar o pipeline, não preencha:
    deixe um comentário no merge request.
 7. Os revisores respondem por comentário. Depois do merge, o app entra no catálogo na próxima publicação.
-
-**Política de "3 meses":** o F-Droid pede que o app esteja em desenvolvimento ativo há pelo menos 3 meses (salvo
-exceções). Se o pedido for aberto antes disso, os revisores podem deixá-lo em espera até completar o prazo.
 
 ## Versões novas
 

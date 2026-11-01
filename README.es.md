@@ -55,11 +55,18 @@
 
 ## Descargar
 
-- **[Releases de GitHub](https://github.com/H3yK0/Compasso/releases/latest)**: APK firmado.
-- **F-Droid**: enviado, en revisión.
+<a href="https://github.com/ImranR98/Obtainium"><img src="docs/badges/obtainium.png" height="48" alt="Descárgalo con Obtainium"></a>
 
-La compilación es reproducible: F-Droid compila el mismo código y comprueba que el resultado sea igual al APK firmado.
-SHA-256 del certificado de firma: `c98ea9ad403d51fbb661afa0e7c1d936c497b1c3ebca76be9488b0f09113356c`
+- **Obtainium** (recomendado): instala la app directo desde los Releases de GitHub y la mantiene actualizada.
+  Instala [Obtainium](https://github.com/ImranR98/Obtainium), toca **Add App** y pega
+  `https://github.com/H3yK0/Compasso`.
+- **[Releases de GitHub](https://github.com/H3yK0/Compasso/releases/latest)**: el APK firmado, para instalar a mano.
+- **F-Droid**: previsto para febrero de 2027. F-Droid pide 3 meses de desarrollo activo antes de incluir una app, y la
+  compilación ya está lista para ser reproducible allí.
+
+SHA-256 del certificado de firma, para comprobar el APK (por ejemplo con AppVerifier):
+`c98ea9ad403d51fbb661afa0e7c1d936c497b1c3ebca76be9488b0f09113356c`. Dónde se publica la app y por qué (en
+portugués): [docs/distribuicao.md](docs/distribuicao.md).
 
 ## Idiomas
 
@@ -83,6 +90,7 @@ Documentación técnica (en portugués): [docs/tecnico.md](docs/tecnico.md). Rec
 - Código: [GNU Affero General Public License v3.0](LICENSE). Copyright (C) 2026 H3yK0.
 - Artículos (`app/src/main/assets/artigos`): Creative Commons BY-SA 4.0.
 - Fuentes: Inter y Cormorant Garamond, SIL Open Font License 1.1.
+- Insignia de Obtainium (`docs/badges/obtainium.png`): del proyecto Obtainium, GPL-3.0.
 
 La app es una herramienta de apoyo y no reemplaza a un profesional de la salud. Si lo estás pasando mal, habla con
 alguien de confianza o con una línea de ayuda de tu país ([findahelpline.com](https://findahelpline.com)).
