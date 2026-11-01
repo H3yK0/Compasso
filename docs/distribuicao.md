@@ -9,6 +9,7 @@ dados: o Android aceita a atualização de qualquer uma delas.
 |---|---|
 | GitHub Releases | Publicado. Cada versão tem o `Compasso-<versão>.apk` anexado ao release `v<versão>`. |
 | Obtainium | Funciona hoje, sem pedido a ninguém: lê os Releases do GitHub. |
+| Lista do Obtainium | Ainda não: pede 35 estrelas no GitHub e 4 meses de projeto (a partir de 01/03/2027). |
 | F-Droid | Pedido fechado pela regra dos 3 meses. Reenvio a partir de 01/02/2027. |
 | IzzyOnDroid | Não se aplica (política sobre IA generativa). |
 | Aptoide | Possível, mas pago e com verificação de identidade. Adiado. |
@@ -26,6 +27,47 @@ escolher, então é melhor manter um só.
 O selo "Get it on Obtainium" dos READMEs aponta para o repositório do Obtainium, não para o atalho
 `apps.obtainium.imranr.dev/redirect`: essa página de atalho carrega anúncios do Google e analytics, o que não combina
 com um app sem rastreamento.
+
+### Lista comunitária do Obtainium
+
+O site [apps.obtainium.imranr.dev](https://apps.obtainium.imranr.dev/) é uma vitrine de apps prontos para adicionar ao
+Obtainium. Entrar nele não muda nada para quem já usa o link do GitHub, mas ajuda gente nova a achar o app. As regras
+estão em [`APP_CRITERIA.md`](https://github.com/ImranR98/apps.obtainium.imranr.dev/blob/main/APP_CRITERIA.md) e em
+[`CONTRIBUTING.md`](https://github.com/ImranR98/apps.obtainium.imranr.dev/blob/main/CONTRIBUTING.md). Em 01/11/2026,
+para um projeto no GitHub, elas pediam:
+
+- pelo menos **35 estrelas** no repositório (o Compasso tinha 0);
+- pelo menos **4 meses** desde a criação do repositório (criado em 31/10/2026, ou seja, a partir de 01/03/2027);
+- a fonte oficial do app (é o caso) e atualizações nos últimos 12 meses.
+
+Estrelas vêm de gente real que achou o projeto útil, quando ele é divulgado onde o assunto interessa. Trocar ou
+comprar estrelas viola os termos do GitHub e a regra da lista.
+
+Quando cumprir as regras, há dois caminhos. O primeiro é um PR no repositório da lista, a partir de um fork da conta
+H3yK0, com o arquivo `public/data/apps/simple/io.github.h3yk0.compasso.json`. O segundo é uma issue de pedido com o
+link do APK. O arquivo pronto, no mesmo formato dos outros apps "simple" (as categorias válidas estão em
+`public/data/categories.json`):
+
+```json
+{
+    "config": {
+        "id": "io.github.h3yk0.compasso",
+        "url": "https://github.com/H3yK0/Compasso",
+        "author": "H3yK0",
+        "name": "Lodestar"
+    },
+    "icon": "https://raw.githubusercontent.com/H3yK0/Compasso/main/fastlane/metadata/android/en-US/images/icon.png",
+    "categories": [
+        "sports_and_health"
+    ],
+    "description": {
+        "en": "Offline, open-source app to quit porn and regain control: stop-start training, Kegel, breathing and evidence-based reading. No internet, no ads, no tracking."
+    }
+}
+```
+
+Antes de enviar, releia as regras, porque elas podem ter mudado, e teste com `npm run dev` e `npm run validate`,
+como pede o `CONTRIBUTING.md`.
 
 ## F-Droid
 
