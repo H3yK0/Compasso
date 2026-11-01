@@ -16,7 +16,7 @@ Binaries: https://github.com/H3yK0/Compasso/releases/download/v%v/Compasso-%v.ap
 Builds:
   - versionName: 0.0.0.2
     versionCode: 2
-    commit: 935ec3d60aa646d21e00a15a35f51d96c71ba4b8
+    commit: f49df9e15cc031acd04b8138d31efa4d26ddba21
     subdir: app
     gradle:
       - yes
