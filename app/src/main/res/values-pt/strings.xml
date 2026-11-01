@@ -2,6 +2,9 @@
 <!-- Inglês é o idioma padrão; português em values-pt e espanhol em values-es. As três listas têm as mesmas chaves (LocalizationTest confere). -->
 <resources>
 
+    <!-- 00_brand -->
+    <string name="app_name">Compasso</string>
+
     <!-- 01_model -->
     <string name="tab_today">Hoje</string>
     <string name="tab_refuge">Refúgio</string>

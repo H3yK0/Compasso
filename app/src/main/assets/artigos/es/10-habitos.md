@@ -37,7 +37,7 @@ Y un detalle valioso: **saltarse un día no afectó de forma importante** la for
 1. **Elige el contexto de riesgo** más frecuente: por ejemplo, "acostarme con el teléfono después de las 23 h".
 2. **Define una respuesta pequeña y concreta** para ese contexto: "pongo a cargar el teléfono en la sala y leo diez páginas de un libro".
 3. **Repítela todos los días, de la misma forma.** Simple e igual le gana a grande y variado.
-4. **Regístralo.** Marcar el check-in en Compasso o anotarlo en un papel muestra la curva subiendo y ayuda a sostenerlo (mira el artículo sobre registrar el progreso).
+4. **Regístralo.** Marcar el check-in en Astrolabio o anotarlo en un papel muestra la curva subiendo y ayuda a sostenerlo (mira el artículo sobre registrar el progreso).
 5. **Revisa cada dos semanas:** ¿la respuesta es fácil? Si no, hazla más pequeña, no más grande.
 
 Dos meses parecen mucho el primer día. Visto desde atrás, es poco para cambiar algo que tardó años en formarse.

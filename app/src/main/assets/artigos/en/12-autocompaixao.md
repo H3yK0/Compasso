@@ -45,7 +45,7 @@ Heavy self-criticism turns every slip into a threat to your identity ("I'm a fai
 4. **Write two lines as if you were your own friend:** what would they say to you, kindly and honestly?
 5. **Close with a small action:** one tweak to your plan for the next 24 hours.
 
-That's exactly why, on Compasso, marking "Couldn't hold on" honestly earns points: recording without hiding is part of the training, not a punishment.
+That's exactly why, on Lodestar, marking "Couldn't hold on" honestly earns points: recording without hiding is part of the training, not a punishment.
 
 ## Sources
 

@@ -30,7 +30,7 @@ Therapists William Masters and Virginia Johnson called this **spectatoring**: in
 - **Bring your attention to sensations.** Temperature, texture, breathing. When your mind drifts to judging, come back gently, as in mindfulness.
 - **Breathe slowly** before and during. A long exhale helps turn the alarm down.
 - **Talk.** Telling your partner about the fear usually lightens it a lot (see the article on talking about sex).
-- **Train calmly, on your own.** Compasso's stop-start training helps you learn your own rhythm with no audience and no pornography.
+- **Train calmly, on your own.** Lodestar's stop-start training helps you learn your own rhythm with no audience and no pornography.
 
 The review notes that **cognitive behavioral therapy** and **mindfulness training** work well for performance anxiety in general and are recommended for the sexual kind, although specific controlled studies are lacking.
 

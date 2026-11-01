@@ -36,7 +36,7 @@ Con las ganas sexuales pasa algo parecido. Frases como "no puedo pensar en eso, 
 
 ## Un aviso honesto
 
-Estos experimentos se hicieron con pensamientos neutros, en laboratorio, y el efecto rebote no siempre aparece con la misma fuerza en todos los estudios. Pero la lección práctica se mantuvo: prohibir un pensamiento suele funcionar peor que **redirigir la atención** hacia algo específico. Es lo que el Refugio de Compasso intenta ofrecer: un lugar adonde llevar la cabeza cuando insiste.
+Estos experimentos se hicieron con pensamientos neutros, en laboratorio, y el efecto rebote no siempre aparece con la misma fuerza en todos los estudios. Pero la lección práctica se mantuvo: prohibir un pensamiento suele funcionar peor que **redirigir la atención** hacia algo específico. Es lo que el Refugio de Astrolabio intenta ofrecer: un lugar adonde llevar la cabeza cuando insiste.
 
 ## Fuentes
 

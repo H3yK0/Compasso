@@ -34,7 +34,7 @@ Los feeds infinitos, los videos cortos y los sitios de pornografía funcionan ex
 2. **Corta los feeds infinitos** en los horarios de riesgo: aplicaciones fuera de la pantalla de inicio, notificaciones apagadas en la noche.
 3. **Deja que el aburrimiento sea aburrimiento** por unos minutos, sin buscar la siguiente novedad (mira el artículo sobre el aburrimiento).
 4. **Prefiere recompensas previsibles y buenas:** un libro, una conversación, una caminata. No disparan la misma alarma, y por eso no atraen de la misma forma.
-5. **Espera.** El control inteligente de Compasso espacia las liberaciones para que la prisa deje de decidir por ti.
+5. **Espera.** El control inteligente de Astrolabio espacia las liberaciones para que la prisa deje de decidir por ti.
 
 ## Fuentes
 

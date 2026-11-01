@@ -491,17 +491,19 @@ class ScreenshotTest {
     private fun storeShot(lang: String, n: Int, dark: Boolean = true, accent: Accent = Accent.TEAL, content: @Composable () -> Unit) =
         shot("../store/$lang/$n", dark, accent, content)
 
-    private fun storeToday(lang: String) = storeShot(lang, 1) { home(open, articles = articlesIn(lang.take(2)))() }
+    private fun storeWelcome(lang: String) = storeShot(lang, 1) { WelcomeScreen {} }
 
-    private fun storeSession(lang: String) = storeShot(lang, 2) { SessionScreen(ui(PhaseType.GO), true, {}, {}, {}, {}) }
+    private fun storeToday(lang: String) = storeShot(lang, 2) { home(open, articles = articlesIn(lang.take(2)))() }
 
-    private fun storeKegel(lang: String) = storeShot(lang, 3) { kegelRun() }
+    private fun storeSession(lang: String) = storeShot(lang, 3) { SessionScreen(ui(PhaseType.GO), true, {}, {}, {}, {}) }
 
-    private fun storeBreathe(lang: String) = storeShot(lang, 4) {
+    private fun storeKegel(lang: String) = storeShot(lang, 4) { kegelRun() }
+
+    private fun storeBreathe(lang: String) = storeShot(lang, 5) {
         BreatheContent(elapsedMs = 33_000, durationMs = 120_000, onClose = {}, onMore = {})
     }
 
-    private fun storeRead(lang: String) = storeShot(lang, 5, dark = false) {
+    private fun storeRead(lang: String) = storeShot(lang, 6, dark = false) {
         WithTabs(Tab.READ) {
             ReadScreen(
                 articlesIn(lang.take(2)), setOf("gatilhos"), null, {}, {}, bottomPadding = FloatingTabBarSpace,
@@ -510,11 +512,11 @@ class ScreenshotTest {
         }
     }
 
-    private fun storeReader(lang: String) = storeShot(lang, 6) {
+    private fun storeReader(lang: String) = storeShot(lang, 7) {
         ReaderScreen(articlesIn(lang.take(2)).first { it.id == "habitos" }, isRead = false, onRead = {}, onBack = {})
     }
 
-    private fun storeProgress(lang: String) = storeShot(lang, 7, accent = Accent.GOLD) {
+    private fun storeProgress(lang: String) = storeShot(lang, 8, accent = Accent.GOLD) {
         WithTabs(Tab.PROGRESS) {
             ProgressScreen(level, codename, points, records, null, {}, {}, {}, {}, bottomPadding = FloatingTabBarSpace, now = now)
         }
@@ -527,6 +529,7 @@ class ScreenshotTest {
     @Test fun storePt5() = storeReader("pt-BR")
     @Test fun storePt6() = storeProgress("pt-BR")
     @Test fun storePt7() = storeKegel("pt-BR")
+    @Test fun storePt8() = storeWelcome("pt-BR")
 
     @Test @Config(qualifiers = EN) fun storeEn1() = storeToday("en-US")
     @Test @Config(qualifiers = EN) fun storeEn2() = storeSession("en-US")
@@ -535,6 +538,7 @@ class ScreenshotTest {
     @Test @Config(qualifiers = EN) fun storeEn5() = storeReader("en-US")
     @Test @Config(qualifiers = EN) fun storeEn6() = storeProgress("en-US")
     @Test @Config(qualifiers = EN) fun storeEn7() = storeKegel("en-US")
+    @Test @Config(qualifiers = EN) fun storeEn8() = storeWelcome("en-US")
 
     @Test @Config(qualifiers = ES) fun storeEs1() = storeToday("es-ES")
     @Test @Config(qualifiers = ES) fun storeEs2() = storeSession("es-ES")
@@ -543,6 +547,7 @@ class ScreenshotTest {
     @Test @Config(qualifiers = ES) fun storeEs5() = storeReader("es-ES")
     @Test @Config(qualifiers = ES) fun storeEs6() = storeProgress("es-ES")
     @Test @Config(qualifiers = ES) fun storeEs7() = storeKegel("es-ES")
+    @Test @Config(qualifiers = ES) fun storeEs8() = storeWelcome("es-ES")
 
     companion object {
         const val EN = "en-rUS-w392dp-h850dp-xhdpi"

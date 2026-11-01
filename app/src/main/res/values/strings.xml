@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Inglês é o idioma padrão; português em values-pt e espanhol em values-es. As três listas têm as mesmas chaves (LocalizationTest confere). -->
 <resources>
-    <string name="app_name" translatable="false">Compasso</string>
+
+    <!-- 00_brand -->
+    <string name="app_name">Lodestar</string>
 
     <!-- 01_model -->
     <string name="tab_today">Today</string>
@@ -42,7 +44,7 @@
     <string name="tier_unbeaten">Unbeaten</string>
     <string name="need_clean_days">14 days without “couldn’t hold on” or an interrupted session</string>
     <string name="need_streak">14 days in a row of consistency</string>
-    <string name="accent_teal">Compasso</string>
+    <string name="accent_teal">Lodestar</string>
     <string name="accent_amber">Amber</string>
     <string name="accent_ocean">Ocean</string>
     <string name="accent_gold">Gold</string>
@@ -264,7 +266,7 @@
     <string name="summary_saved">Saved to history</string>
     <string name="summary_repeat">Repeat this level</string>
     <string name="focus_title">Focus mode</string>
-    <string name="focus_prep_text">To start, pin the screen. Android will ask whether it can pin Compasso: confirm and the session starts on its own.</string>
+    <string name="focus_prep_text">To start, pin the screen. Android will ask whether it can pin Lodestar: confirm and the session starts on its own.</string>
     <string name="focus_point_apps">Other apps, notifications and split screen are blocked.</string>
     <string name="focus_point_videos">Videos and floating windows are closed or hidden.</string>
     <string name="focus_point_unpin">At the end of the session, the app unpins the screen by itself.</string>
@@ -328,7 +330,7 @@
     <string name="settings_language_footer">Articles, dates and numbers follow the chosen language. Automatic uses the phone’s language (Portuguese, English or Spanish).</string>
     <string name="language_system">Automatic</string>
     <string name="settings_help">Help</string>
-    <string name="settings_guide">How to use Compasso</string>
+    <string name="settings_guide">How to use Lodestar</string>
     <string name="settings_replay_intro">Replay the introduction</string>
     <string name="settings_tips">Tips along the way</string>
     <string name="settings_tips_sub">Shows a tip on the first visit to each part</string>
@@ -465,7 +467,7 @@
     <string name="guide_points_text">Points reward consistency: the day’s check-in, Kegel, breathing, playing, reading and the first session of the day (only with the screen pinned). The cap is %1$d points a day. Your level counts the last 28 days: Bronze, Silver, Gold, Platinum, Diamond and Unbeaten. Unbeaten also asks for 14 days in a row of consistency and 14 days without “couldn’t hold on” or an interrupted session. Each level unlocks a color for the app.</string>
     <string name="guide_reading">Readings</string>
     <string name="guide_reading_text">Short texts about mind, body and sexuality, written to inform without scaring. Each one cites the studies used. Reading to the end marks it as read and earns points once per article.</string>
-    <string name="guide_privacy_text">Compasso has no internet access: everything stays on this phone only, with no account. You can require a passcode on open, hide the app in recents (discreet mode) and clear the history. The codename is created by the app and doesn’t identify you.</string>
+    <string name="guide_privacy_text">Lodestar has no internet access: everything stays on this phone only, with no account. You can require a passcode on open, hide the app in recents (discreet mode) and clear the history. The codename is created by the app and doesn’t identify you.</string>
     <string name="pacing_now">Now</string>
     <string name="pacing_last_release">Last release</string>
     <string name="pacing_none_recent">none recently</string>
@@ -486,13 +488,13 @@
     <!-- 11_read -->
     <string name="read_intro_empty">Short reads, with sources.</string>
     <string name="read_intro">%1$d of %2$d read. Each takes 2 or 3 minutes.</string>
-    <string name="read_footer">Compasso texts, reviewed so as not to exaggerate: each one cites its studies at the end. They don’t replace advice from a health professional. License CC BY-SA 4.0.</string>
+    <string name="read_footer">Lodestar texts, reviewed so as not to exaggerate: each one cites its studies at the end. They don’t replace advice from a health professional. License CC BY-SA 4.0.</string>
     <string name="read_start_here">Start here</string>
     <string name="read_minutes">%1$d min read</string>
     <string name="read_minutes_done">%1$d min · read</string>
     <string name="read_done">Read</string>
     <string name="read_sources">Sources</string>
-    <string name="read_article_footer">This text informs and doesn’t replace a professional assessment. Compasso · CC BY-SA 4.0 license.</string>
+    <string name="read_article_footer">This text informs and doesn’t replace a professional assessment. Lodestar · CC BY-SA 4.0 license.</string>
     <string name="refuge_intro">Urges come in waves and pass. Pick a way out and stay here until it eases.</string>
     <string name="refuge_breathe_sub">2 minutes with a calm soundtrack</string>
     <string name="refuge_breathe_now">Breathe now</string>
@@ -508,7 +510,7 @@
     <string name="welcome_text">Control training, breathing and a safe place for when the urge hits. Away from porn, at your own pace.</string>
     <string name="welcome_privacy">No account and no internet. Everything stays on this phone.</string>
     <string name="intro_1_title">A refuge, not a prison</string>
-    <string name="intro_1_text">Compasso helps people who want to quit porn, without guilt. Instead of videos: control training with pauses, breathing and a safe place for when the urge hits.</string>
+    <string name="intro_1_text">Lodestar helps people who want to quit porn, without guilt. Instead of videos: control training with pauses, breathing and a safe place for when the urge hits.</string>
     <string name="intro_2_title">Stop and start again</string>
     <string name="intro_2_text">Follow the beat. When the screen turns red, hands off and breathe with the waves. Feel like you’re about to go past the point? Tap “I’m close”. Over time, you notice your body sooner and last longer.</string>
     <string name="intro_3_title">Control and focus</string>
@@ -523,7 +525,7 @@
     <string name="about_title">License and credits</string>
     <string name="about_version">Version %1$s</string>
     <string name="about_licenses">Licenses</string>
-    <string name="about_licenses_footer">Compasso © %1$s %2$s. This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License, version 3. It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY.</string>
+    <string name="about_licenses_footer">Lodestar © %1$s %2$s. This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License, version 3. It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY.</string>
     <string name="about_code">Code: GNU AGPL v3.0</string>
     <string name="about_articles">Articles</string>
     <string name="about_font_inter">Inter font</string>
@@ -650,13 +652,13 @@
     <string name="kegel_nudges">Suggestion when opening the app</string>
     <string name="kegel_nudges_sub">“Kegel time”, at most every 3 h, during the day</string>
     <string name="kegel_reminders">Phone reminders</string>
-    <string name="kegel_reminders_sub">A discreet notification: it only says “Compasso”, never “Kegel”</string>
+    <string name="kegel_reminders_sub">A discreet notification: it only says “Lodestar”, never “Kegel”</string>
     <string name="kegel_reminder_n">Reminder %1$d</string>
     <string name="kegel_time_earlier">15 minutes earlier</string>
     <string name="kegel_time_later">15 minutes later</string>
     <string name="kegel_reminders_footer">It only reminds you if there’s still Kegel left for the day. Nothing leaves your phone.</string>
     <string name="kegel_perm_title">Notifications are off</string>
-    <string name="kegel_perm_text">To get reminders, allow notifications for Compasso in Android settings.</string>
+    <string name="kegel_perm_text">To get reminders, allow notifications for Lodestar in Android settings.</string>
     <string name="kegel_perm_open">Open settings</string>
     <string name="settings_kegel">Kegel and reminders</string>
     <string name="settings_kegel_sub">Hold, time and phone reminders</string>
@@ -684,7 +686,7 @@
     <string name="tip_kegel_title">Start light</string>
     <string name="tip_kegel_text">Start by holding for 3 s. Every 5 complete workouts unlock the next hold. Up to 3 a day, with rest in between.</string>
     <string name="guide_kegel">Kegel: the control muscle</string>
-    <string name="guide_kegel_text">In the Refuge (and on the Today card) you’ll find Kegel training for the pelvic floor: squeeze and hold, let go completely and, at the end, quick squeezes. Choose the hold (3, 5, 8 or 10 s; each one unlocks after 5 complete workouts at the previous one) and the time (2, 4 or 6 min). Up to 3 workouts a day earn points. If you like, turn on discreet phone reminders: they only say “Compasso”.</string>
+    <string name="guide_kegel_text">In the Refuge (and on the Today card) you’ll find Kegel training for the pelvic floor: squeeze and hold, let go completely and, at the end, quick squeezes. Choose the hold (3, 5, 8 or 10 s; each one unlocks after 5 complete workouts at the previous one) and the time (2, 4 or 6 min). Up to 3 workouts a day earn points. If you like, turn on discreet phone reminders: they only say “Lodestar”.</string>
     <plurals name="kegel_week_days">
         <item quantity="one">%1$d day with Kegel</item>
         <item quantity="other">%1$d days with Kegel</item>

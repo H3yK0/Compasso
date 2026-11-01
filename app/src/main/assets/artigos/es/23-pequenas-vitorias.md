@@ -29,7 +29,7 @@ Si la experiencia de lograrlo es la fuente más fuerte de confianza, la estrateg
 
 ## Cómo aplicarlo en el día a día
 
-- **Elige el nivel correcto.** En Compasso, empieza por Fácil. Terminar una sesión completa, usando "Estoy cerca" cuando lo necesites, es una experiencia de dominio. Sube de nivel cuando las últimas se sientan firmes; la app te sugiere cuándo.
+- **Elige el nivel correcto.** En Astrolabio, empieza por Fácil. Terminar una sesión completa, usando "Estoy cerca" cuando lo necesites, es una experiencia de dominio. Sube de nivel cuando las últimas se sientan firmes; la app te sugiere cuándo.
 - **Cuenta las victorias pequeñas como victorias.** Unas ganas que atravesaste, una noche con el teléfono fuera del cuarto, un check-in honesto.
 - **Usa ejemplos de quienes lo lograron.** Los grupos de apoyo funcionan también porque ves a personas parecidas a ti avanzando.
 - **Elige bien las voces a tu alrededor.** Alguien que cree en ti, sin presión, ayuda más que mil videos motivacionales.

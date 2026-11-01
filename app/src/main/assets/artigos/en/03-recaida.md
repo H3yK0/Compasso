@@ -35,7 +35,7 @@ Those who see the slip as **a specific situation they didn't yet know how to han
 4. **Get back to your routine today:** check in tomorrow, breathe, play, read. Don't wait for "Monday".
 5. **If slips are frequent**, that's information, not a verdict: it may be time to ask for help (see the article on professional help).
 
-## How Compasso handles this
+## How Lodestar handles this
 
 Marking "Couldn't hold on" honestly earns honesty points, because recording it is part of the training. The day streak starts over, but your level counts the last 28 days: **one bad day doesn't erase a good month**.
 

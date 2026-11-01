@@ -27,7 +27,7 @@ Un punto importante en la investigación es el **control percibido**. El estrés
 ## Qué hacer con esta información
 
 1. **Trata el estrés como una señal de riesgo**, igual que la noche y la soledad. Un "día pesado" pide un plan de protección, no confianza extra.
-2. **Decide antes, no durante.** Las decisiones tomadas con calma, en la mañana, valen más que las tomadas a las 23 h después de un mal día. Por eso existe el control inteligente de Compasso: los cambios que aflojan el control solo valen 24 h después.
+2. **Decide antes, no durante.** Las decisiones tomadas con calma, en la mañana, valen más que las tomadas a las 23 h después de un mal día. Por eso existe el control inteligente de Astrolabio: los cambios que aflojan el control solo valen 24 h después.
 3. **Devuélvele un poco de control al cuerpo.** La respiración lenta, con una exhalación larga, ayuda a bajar la activación (mira el artículo sobre respirar despacio). Dos minutos en Respirar ya cuentan.
 4. **Muévete.** Una caminata corta o algunos ejercicios descargan parte de la tensión y cambian el contexto.
 5. **Encuentra una acción pequeña sobre el problema.** Escribir lo que te pesa y un primer paso concreto reduce la sensación de descontrol.

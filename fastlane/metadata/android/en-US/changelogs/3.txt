@@ -1,0 +1,1 @@
+The app now has its own name in each language: Lodestar in English, Compasso in Portuguese and Astrolabio in Spanish. The name on your home screen, in the discreet notifications, in the texts and in the articles follows the app's language.

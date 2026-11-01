@@ -95,7 +95,7 @@ class ReminderTest {
         assertFalse(text.contains("Kegel", ignoreCase = true))
         assertEquals(android.app.Notification.VISIBILITY_PRIVATE, n.visibility)
         assertNotNull(n.publicVersion)
-        assertEquals("Compasso", shadowOf(n.publicVersion).contentTitle.toString())
+        assertEquals(app.getString(R.string.app_name), shadowOf(n.publicVersion).contentTitle.toString())
         assertNull(n.publicVersion.extras.getCharSequence(android.app.Notification.EXTRA_TEXT))
         // tocar abre o app direto no Kegel
         val open = shadowOf(n.contentIntent).savedIntent

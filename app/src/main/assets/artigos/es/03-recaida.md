@@ -35,7 +35,7 @@ En cambio, quien ve el desliz como **una situación concreta que todavía no sab
 4. **Vuelve a la rutina hoy:** haz el check-in mañana, respira, juega, lee. No esperes al "lunes".
 5. **Si los deslices son frecuentes**, eso es información, no una sentencia: tal vez sea hora de pedir ayuda (mira el artículo sobre ayuda profesional).
 
-## Cómo lo trata Compasso
+## Cómo lo trata Astrolabio
 
 Marcar "No aguanté" con honestidad suma puntos de honestidad, porque registrarlo es parte del entrenamiento. La racha de días vuelve a empezar, pero tu nivel cuenta los últimos 28 días: **un mal día no borra un buen mes**.
 

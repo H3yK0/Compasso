@@ -36,7 +36,7 @@ Something similar happens with sexual urges. Phrases like "I can't think about i
 
 ## An honest caveat
 
-These experiments used neutral thoughts, in a lab, and the rebound effect doesn't always show up with the same strength in every study. But the practical lesson held: forbidding a thought tends to work worse than **redirecting your attention** to something specific. That's what Compasso's Refuge tries to offer: a place to take your mind when it insists.
+These experiments used neutral thoughts, in a lab, and the rebound effect doesn't always show up with the same strength in every study. But the practical lesson held: forbidding a thought tends to work worse than **redirecting your attention** to something specific. That's what Lodestar's Refuge tries to offer: a place to take your mind when it insists.
 
 ## Sources
 

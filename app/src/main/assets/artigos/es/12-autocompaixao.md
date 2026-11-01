@@ -45,7 +45,7 @@ La autocrítica pesada convierte cada desliz en una amenaza a tu identidad ("soy
 4. **Escribe dos líneas como si fueras tu propio amigo:** ¿qué te diría, con cariño y sinceridad?
 5. **Cierra con una acción pequeña:** un ajuste al plan para las próximas 24 horas.
 
-Por eso, en Compasso, marcar "No aguanté" con honestidad da puntos: registrar sin esconderte es parte del entrenamiento, no un castigo.
+Por eso, en Astrolabio, marcar "No aguanté" con honestidad da puntos: registrar sin esconderte es parte del entrenamiento, no un castigo.
 
 ## Fuentes
 

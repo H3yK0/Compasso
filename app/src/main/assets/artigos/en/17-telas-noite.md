@@ -36,7 +36,7 @@ Put the pieces together: the screen delays sleep; you sleep less; the next day y
 2. **One screen-free hour before bed**, or as much as you can. Start with 20 minutes and build up.
 3. **Swap the ritual:** a paper book, a warm shower, stretching, calm music, conversation.
 4. **If you use a screen at night, lower the brightness and use night mode.** It helps a little, but it doesn't replace distance.
-5. **Read on Compasso earlier**, not in bed. Even the readings here are a screen.
+5. **Read on Lodestar earlier**, not in bed. Even the readings here are a screen.
 6. **Regular times to sleep and wake up**, weekends included, help the body clock settle.
 
 ## Sources

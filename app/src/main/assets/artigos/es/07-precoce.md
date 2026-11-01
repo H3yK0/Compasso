@@ -22,7 +22,7 @@ Es decir, no es solo el reloj: lo que la define es el tiempo **junto con** la fa
 
 ## De dónde viene el "parar y volver a empezar"
 
-En 1956, el urólogo James Semans describió la técnica de **detener el estímulo** cuando se acerca la sensación de "punto sin retorno", esperar a que baje y volver a empezar. Más tarde Masters y Johnson popularizaron una variante con presión. Compasso está construido sobre esa idea: ritmo, pausa, respiración y el botón **"Estoy cerca"**.
+En 1956, el urólogo James Semans describió la técnica de **detener el estímulo** cuando se acerca la sensación de "punto sin retorno", esperar a que baje y volver a empezar. Más tarde Masters y Johnson popularizaron una variante con presión. Astrolabio está construido sobre esa idea: ritmo, pausa, respiración y el botón **"Estoy cerca"**.
 
 ## Lo que dicen los estudios
 

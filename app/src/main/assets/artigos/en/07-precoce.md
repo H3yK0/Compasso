@@ -22,7 +22,7 @@ In other words, it isn't just the clock: what defines it is the time **together*
 
 ## Where "stop and start" comes from
 
-In 1956, urologist James Semans described the technique of **stopping stimulation** when the "point of no return" feeling gets close, waiting for it to subside, and starting again. Later Masters and Johnson popularized a variation with a squeeze. Compasso is built on this idea: rhythm, pause, breathing and the **"I'm close"** button.
+In 1956, urologist James Semans described the technique of **stopping stimulation** when the "point of no return" feeling gets close, waiting for it to subside, and starting again. Later Masters and Johnson popularized a variation with a squeeze. Lodestar is built on this idea: rhythm, pause, breathing and the **"I'm close"** button.
 
 ## What the studies say
 

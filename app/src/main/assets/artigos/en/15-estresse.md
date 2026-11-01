@@ -27,7 +27,7 @@ An important point in the research is **perceived control**. Stress that feels u
 ## What to do with this information
 
 1. **Treat stress as a risk signal**, just like night and loneliness. A "heavy day" calls for a protection plan, not extra confidence.
-2. **Decide beforehand, not during.** Decisions made calmly in the morning are worth more than ones made at 11 p.m. after a bad day. That's why Compasso's smart control exists: changes that loosen control only take effect 24 hours later.
+2. **Decide beforehand, not during.** Decisions made calmly in the morning are worth more than ones made at 11 p.m. after a bad day. That's why Lodestar's smart control exists: changes that loosen control only take effect 24 hours later.
 3. **Give your body back a little control.** Slow breathing, with a long exhale, helps lower arousal (see the article on slow breathing). Two minutes in Breathe already count.
 4. **Move.** A short walk or a few exercises discharge some of the tension and change the context.
 5. **Find one small action on the problem.** Writing down what's weighing on you and a first concrete step reduces the sense of being out of control.

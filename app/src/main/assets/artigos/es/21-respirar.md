@@ -24,7 +24,7 @@ Los efectos más consistentes:
 
 En 2023, un estudio de la Universidad de Stanford asignó al azar a los participantes a hacer, durante un mes, **5 minutos al día** de uno de tres ejercicios de respiración o de meditación de atención plena. El ejercicio con **exhalación prolongada** ("suspiro cíclico": dos inhalaciones por la nariz, seguidas de una exhalación larga por la boca) trajo **mayor mejora del ánimo** y **mayor reducción de la frecuencia respiratoria** que la meditación.
 
-Por eso Respirar, en Compasso, usa **4 segundos para inhalar y 6 para soltar el aire**: unas 6 respiraciones por minuto, con la exhalación más larga.
+Por eso Respirar, en Astrolabio, usa **4 segundos para inhalar y 6 para soltar el aire**: unas 6 respiraciones por minuto, con la exhalación más larga.
 
 > No puedes ordenarle a la ansiedad que se vaya. Pero puedes soltar el aire despacio, y el cuerpo entiende el mensaje.
 

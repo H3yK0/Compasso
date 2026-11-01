@@ -29,7 +29,7 @@ If the experience of succeeding is the strongest source of confidence, the strat
 
 ## How to apply it every day
 
-- **Pick the right level.** On Compasso, start with Easy. Finishing a whole session, using "I'm close" when you need to, is a mastery experience. Move up a level when your last sessions feel solid; the app suggests when.
+- **Pick the right level.** On Lodestar, start with Easy. Finishing a whole session, using "I'm close" when you need to, is a mastery experience. Move up a level when your last sessions feel solid; the app suggests when.
 - **Count small wins as wins.** An urge you rode out, a night with the phone out of the bedroom, an honest check-in.
 - **Use examples of people who made it.** Support groups also work because you see people like you moving forward.
 - **Choose the voices around you carefully.** Someone who believes in you, without pressure, helps more than a thousand motivational videos.

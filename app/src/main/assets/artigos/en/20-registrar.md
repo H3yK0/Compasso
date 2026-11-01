@@ -30,13 +30,13 @@ Tracking progress closes a loop: you see the gap between where you are and where
 
 ## How to track without it becoming a punishment
 
-1. **Do your daily check-in** on Compasso. It takes seconds and feeds your week in stars and your sky for the month.
+1. **Do your daily check-in** on Lodestar. It takes seconds and feeds your week in stars and your sky for the month.
 2. **Record stumbles as data**, not verdicts: time, place, how you were feeling, what came before. That's how patterns show up.
 3. **Review once a week.** Look at the Progress tab: where did the week go well? Which time of day is riskiest?
 4. **Record the small wins too:** an urge you rode out, an "I'm close" used early, a night with the phone out of the bedroom.
 5. **If it makes sense, share** your progress with a trusted person. No details needed; the week's numbers are enough.
 
-Compasso's history stays only on your phone. You decide what to show, and to whom.
+Lodestar's history stays only on your phone. You decide what to show, and to whom.
 
 ## Sources
 

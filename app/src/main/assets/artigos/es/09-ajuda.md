@@ -8,7 +8,7 @@ tags: ajuda, recaida
 minutos: 2
 ordem: 9
 ---
-Compasso es una herramienta de entrenamiento y de apoyo. No reemplaza a un profesional, y a veces el paso más valiente es pedir ayuda.
+Astrolabio es una herramienta de entrenamiento y de apoyo. No reemplaza a un profesional, y a veces el paso más valiente es pedir ayuda.
 
 ## Señales de que vale la pena buscar ayuda
 
